@@ -1,25 +1,25 @@
 # Core dependencies
-pandas==2.0.3
-numpy==1.24.3
-scipy==1.11.1
-torch==2.0.1
-torchvision==0.15.2
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.11.0
+torch>=2.0.0
+torchvision>=0.15.0
 
 # Reinforcement Learning
-stable-baselines3==2.3.0
-gymnasium==0.29.1
-shimmy==0.2.1
+stable-baselines3>=2.1.0
+gymnasium>=0.28.0
+shimmy>=0.2.0
 
 # Trading and Technical Analysis
-binance-futures-connector==3.3.1
-pandas-ta==0.3.14b
+binance-futures-connector>=3.3.0
+pandas-ta>=0.3.14b
 ta==0.10.2
-ccxt==4.1.0
-websocket-client==1.6.1
+ccxt==4.4.96
+websocket-client>=1.6.0
 
 # Performance optimization
-numba==0.57.1
-pyarrow==12.0.1
+numba>=0.57.0
+pyarrow>=12.0.0
 
 # Machine Learning
 lightgbm==4.0.0
