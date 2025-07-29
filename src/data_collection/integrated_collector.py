@@ -131,12 +131,11 @@ async def main() -> None:
     import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import (
+    from src.config import (  # noqa: E402
         BINANCE_SYMBOL, BINANCE_DEPTH_LEVELS, BINANCE_BUFFER_SIZE,
         GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, 
         RAW_DATA_DIR, UPLOAD_WORKERS, CLEANUP_AFTER_UPLOAD
     )
-    
     collector = IntegratedDataCollector(
         symbol=BINANCE_SYMBOL,
         depth_levels=BINANCE_DEPTH_LEVELS,
@@ -155,7 +154,7 @@ async def main() -> None:
     def signal_handler(sig: int) -> None:
         logger.info(f"Received signal {sig}, shutting down...")
         # Store reference to avoid RUF006
-        _ = asyncio.create_task(collector.stop())
+        _ = asyncio.create_task(collector.stop())  # noqa: RUF006
 
     for sig in (signal.SIGTERM, signal.SIGINT):
         # Create a closure to capture the signal value

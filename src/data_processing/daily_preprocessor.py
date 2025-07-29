@@ -256,7 +256,7 @@ class DailyPreprocessor:
 
         return merged
 
-    async def process_date(self, date: datetime) -> str | None:
+    async def process_date(self, date: datetime) -> str | None:  # noqa: C901
         """Process all data for a specific date.
 
         Args:
@@ -373,7 +373,7 @@ async def main() -> None:
     # Use configuration settings
     import sys
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, PROCESSED_DATA_DIR
+    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, PROCESSED_DATA_DIR  # noqa: E402
 
     # Create preprocessor
     preprocessor = DailyPreprocessor(
