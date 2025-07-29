@@ -253,7 +253,7 @@ async def main() -> None:
     # Use configuration settings
     import sys
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, RAW_DATA_DIR  # noqa: E402
+    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, RAW_DATA_DIR  # noqa: E402,I001
     
     uploader = GCSUploader(
         bucket_name=GCS_BUCKET,

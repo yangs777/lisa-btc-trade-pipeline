@@ -131,7 +131,7 @@ async def main() -> None:
     import sys
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import (  # noqa: E402
+    from src.config import (  # noqa: E402,I001
         BINANCE_SYMBOL, BINANCE_DEPTH_LEVELS, BINANCE_BUFFER_SIZE,
         GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, 
         RAW_DATA_DIR, UPLOAD_WORKERS, CLEANUP_AFTER_UPLOAD
