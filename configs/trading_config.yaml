@@ -1,0 +1,188 @@
+# Trading System Configuration
+# Master Blueprint v0.3
+
+# Target Metrics
+targets:
+  stage_1:
+    annual_pnl_pct: 38  # >= 38%
+    sharpe_ratio: 1.3   # >= 1.3
+    max_drawdown_pct: 8 # <= 8%
+    hit_rate_pct: 55    # >= 55%
+  stage_2:
+    annual_pnl_pct: 52  # >= 52%
+    sharpe_ratio: 1.45  # >= 1.45
+    max_drawdown_pct: 10 # <= 10%
+    hit_rate_pct: 57    # >= 57%
+
+# Data Collection
+data_collection:
+  symbol: "BTCUSDT"
+  depth_levels: 20
+  snapshot_interval_ms: 1000  # 1 second
+  rotation_minutes: 60
+  local_buffer_size: 3600
+  reconnect_max_delay_seconds: 60
+
+# GCS Configuration
+gcs:
+  bucket_name: "btc-orderbook-data"
+  project_id: "my-project-779482"
+  service_account: "btc-collector-sa@my-project-779482.iam.gserviceaccount.com"
+  upload_interval_minutes: 5
+  delete_after_upload: false
+  daily_preprocessing_time: "19:05"  # UTC (04:05 KST)
+
+# Feature Engineering
+features:
+  total_count: 104
+  categories:
+    price_liquidity: 18
+    order_flow: 22
+    volatility: 12
+    momentum: 14
+    trend: 13
+    bands_channels: 8
+    volume_psych: 17
+  selection:
+    method: "shap"
+    active_features_min: 40
+    active_features_max: 60
+    reselection_frequency_days: 7
+
+# Trading Parameters
+trading:
+  symbol: "BTCUSDT"
+  base_leverage: 5  # Production leverage
+  test_leverage_min: 1
+  test_leverage_max: 2
+  position_sizing:
+    method: "kelly"
+    kelly_fraction: 0.5  # Conservative Kelly
+    max_position_pct: 1.0  # Max 1% of equity
+  transaction_costs:
+    maker_fee_pct: 0.02
+    taker_fee_pct: 0.04
+    slippage_min_pct: 0.05
+    maker_ratio: 0.6
+  execution:
+    single_position_only: true
+    isolated_margin: true
+    time_fence_buffer_seconds: 2
+
+# τ-SAC Configuration
+tau_sac:
+  tau_values: [3, 6, 9, 12]  # seconds
+  action_space: ["flat", "long", "short", "exit"]
+  observation_features:
+    - "feature_vector"  # 40-60 selected features
+    - "position_flag"   # -1, 0, 1
+    - "entry_price"
+    - "time_in_position"
+    - "tau_remaining"
+    - "volatility_30s"
+    - "current_drawdown"
+
+# Risk Management
+risk_management:
+  max_drawdown_pct: 8
+  consecutive_loss_limit: 6
+  consecutive_loss_pause_minutes: 60
+  max_daily_loss_pct: 3
+  force_exit_conditions:
+    flash_crash_sigma: 4
+    volatility_multiplier: 3
+    drawdown_pct: 8
+  position_limits:
+    max_position_size_pct: 1
+    min_position_size_btc: 0.001
+
+# Model Training
+training:
+  algorithm: "sac_discrete"
+  replay_buffer_size: 100000
+  warm_start_episodes: 10000
+  batch_size: 256
+  learning_rate: 0.0003
+  entropy_alpha: "auto"
+  target_update_interval: 1000
+  curriculum:
+    epochs_0_3: [3]      # Only τ=3
+    epochs_4_7: [3, 6]   # τ={3,6}
+    epochs_8_plus: [3, 6, 9, 12]  # All τ values
+  validation:
+    method: "walk_forward"
+    window_months: 6
+    step_months: 1
+  hyperparameter_search:
+    platform: "vertex_vizier"
+    parameters:
+      - "learning_rate"
+      - "entropy_alpha"
+      - "reward_alpha"
+      - "reward_beta"
+      - "reward_rho"
+      - "network_depth"
+
+# Reward Function (RBSR)
+reward:
+  alpha: 1.0      # Sharpe component weight
+  beta: 0.002     # Inaction penalty
+  gamma: 0.2      # Drawdown penalty
+  rho: 0.0008     # Trade frequency bonus
+  confidence_threshold: 0.6
+  sortino_variant: false
+
+# API Server
+api_server:
+  host: "0.0.0.0"
+  port: 8000
+  max_latency_ms: 200
+  worker_threads: 4
+  model_cache_size: 3
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics:
+      - "pnl_cumulative"
+      - "sharpe_rolling_7d"
+      - "drawdown_current"
+      - "trade_frequency"
+      - "prediction_latency_ms"
+      - "position_duration_seconds"
+      - "win_rate_rolling"
+  grafana:
+    enabled: true
+    port: 3000
+    dashboards:
+      - "trading_performance"
+      - "system_health"
+      - "risk_metrics"
+  alerts:
+    discord_webhook: "${DISCORD_WEBHOOK_URL}"
+    alert_conditions:
+      - "drawdown > 6%"
+      - "consecutive_losses >= 4"
+      - "latency_p99 > 300ms"
+      - "model_confidence < 0.3"
+
+# Paper Trading
+paper_trading:
+  enabled: true
+  duration_weeks: 4
+  mock_latency:
+    mean_ms: 120
+    std_ms: 30
+  identical_logging: true
+  performance_threshold:
+    sharpe_ratio: 1.2
+    max_drawdown_pct: 10
+
+# Environment Variables (loaded from .env)
+env_vars:
+  - "BINANCE_API_KEY"
+  - "GOOGLE_APPLICATION_CREDENTIALS"
+  - "DISCORD_WEBHOOK_URL"
+  - "PROMETHEUS_REMOTE_WRITE_URL"
