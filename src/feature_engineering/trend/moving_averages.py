@@ -12,7 +12,7 @@ class SMA(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize SMA.
-        
+
         Args:
             window: Period for SMA calculation
             price_col: Price column to use
@@ -36,7 +36,7 @@ class EMA(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize EMA.
-        
+
         Args:
             window: Period for EMA calculation
             price_col: Price column to use
@@ -60,7 +60,7 @@ class WMA(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize WMA.
-        
+
         Args:
             window: Period for WMA calculation
             price_col: Price column to use
@@ -89,7 +89,7 @@ class HMA(PriceIndicator):
 
     def __init__(self, window: int = 9, price_col: str = "close", fillna: bool = True):
         """Initialize HMA.
-        
+
         Args:
             window: Period for HMA calculation
             price_col: Price column to use
@@ -136,7 +136,7 @@ class TEMA(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize TEMA.
-        
+
         Args:
             window: Period for TEMA calculation
             price_col: Price column to use
@@ -168,7 +168,7 @@ class DEMA(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize DEMA.
-        
+
         Args:
             window: Period for DEMA calculation
             price_col: Price column to use
@@ -200,7 +200,7 @@ class KAMA(PriceIndicator):
     def __init__(self, window: int = 10, fast: int = 2, slow: int = 30,
                  price_col: str = "close", fillna: bool = True):
         """Initialize KAMA.
-        
+
         Args:
             window: Period for efficiency ratio
             fast: Fast EMA period

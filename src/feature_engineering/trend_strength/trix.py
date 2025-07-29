@@ -10,7 +10,7 @@ class TRIX(PriceIndicator):
 
     def __init__(self, window: int = 14, price_col: str = "close", fillna: bool = True):
         """Initialize TRIX.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use

@@ -11,7 +11,7 @@ class RSI(PriceIndicator):
 
     def __init__(self, window: int = 14, price_col: str = "close", fillna: bool = True):
         """Initialize RSI.
-        
+
         Args:
             window: Period for RSI calculation
             price_col: Price column to use
@@ -50,7 +50,7 @@ class StochasticK(OHLCVIndicator):
 
     def __init__(self, window: int = 14, smooth: int = 3, fillna: bool = True):
         """Initialize Stochastic K.
-        
+
         Args:
             window: Period for calculation
             smooth: Smoothing period for %K
@@ -85,7 +85,7 @@ class StochasticD(OHLCVIndicator):
 
     def __init__(self, window: int = 14, smooth_k: int = 3, smooth_d: int = 3, fillna: bool = True):
         """Initialize Stochastic D.
-        
+
         Args:
             window: Period for calculation
             smooth_k: Smoothing period for %K
@@ -117,7 +117,7 @@ class StochRSIK(PriceIndicator):
 
     def __init__(self, window: int = 14, smooth: int = 3, price_col: str = "close", fillna: bool = True):
         """Initialize StochRSI K.
-        
+
         Args:
             window: Period for RSI and Stochastic
             smooth: Smoothing period
@@ -153,7 +153,7 @@ class StochRSID(PriceIndicator):
     def __init__(self, window: int = 14, smooth_k: int = 3, smooth_d: int = 3,
                  price_col: str = "close", fillna: bool = True):
         """Initialize StochRSI D.
-        
+
         Args:
             window: Period for RSI and Stochastic
             smooth_k: Smoothing period for %K
@@ -187,7 +187,7 @@ class CCI(OHLCVIndicator):
 
     def __init__(self, window: int = 20, fillna: bool = True):
         """Initialize CCI.
-        
+
         Args:
             window: Period for CCI calculation
             fillna: Whether to fill NaN values
@@ -224,7 +224,7 @@ class WilliamsR(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize Williams %R.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -254,7 +254,7 @@ class ROC(PriceIndicator):
 
     def __init__(self, window: int = 10, price_col: str = "close", fillna: bool = True):
         """Initialize ROC.
-        
+
         Args:
             window: Period for ROC calculation
             price_col: Price column to use
@@ -281,7 +281,7 @@ class Momentum(PriceIndicator):
 
     def __init__(self, window: int = 10, price_col: str = "close", fillna: bool = True):
         """Initialize Momentum.
-        
+
         Args:
             window: Period for momentum calculation
             price_col: Price column to use
@@ -308,7 +308,7 @@ class TSI(PriceIndicator):
 
     def __init__(self, slow: int = 25, fast: int = 13, price_col: str = "close", fillna: bool = True):
         """Initialize TSI.
-        
+
         Args:
             slow: Slow EMA period
             fast: Fast EMA period
@@ -349,7 +349,7 @@ class UltimateOscillator(OHLCVIndicator):
 
     def __init__(self, fast: int = 7, medium: int = 14, slow: int = 28, fillna: bool = True):
         """Initialize Ultimate Oscillator.
-        
+
         Args:
             fast: Fast period
             medium: Medium period
@@ -403,7 +403,7 @@ class AwesomeOscillator(OHLCVIndicator):
 
     def __init__(self, fast: int = 5, slow: int = 34, fillna: bool = True):
         """Initialize Awesome Oscillator.
-        
+
         Args:
             fast: Fast SMA period
             slow: Slow SMA period

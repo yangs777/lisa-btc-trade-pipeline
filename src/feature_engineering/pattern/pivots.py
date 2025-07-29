@@ -10,7 +10,7 @@ class PivotHigh(OHLCVIndicator):
 
     def __init__(self, window: int = 5, fillna: bool = True):
         """Initialize Pivot High.
-        
+
         Args:
             window: Number of bars on each side to check
             fillna: Whether to fill NaN values
@@ -57,7 +57,7 @@ class PivotLow(OHLCVIndicator):
 
     def __init__(self, window: int = 5, fillna: bool = True):
         """Initialize Pivot Low.
-        
+
         Args:
             window: Number of bars on each side to check
             fillna: Whether to fill NaN values

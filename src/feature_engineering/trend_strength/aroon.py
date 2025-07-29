@@ -10,7 +10,7 @@ class AroonUp(OHLCVIndicator):
 
     def __init__(self, window: int = 25, fillna: bool = True):
         """Initialize Aroon Up.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -41,7 +41,7 @@ class AroonDown(OHLCVIndicator):
 
     def __init__(self, window: int = 25, fillna: bool = True):
         """Initialize Aroon Down.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -72,7 +72,7 @@ class AroonOsc(OHLCVIndicator):
 
     def __init__(self, window: int = 25, fillna: bool = True):
         """Initialize Aroon Oscillator.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values

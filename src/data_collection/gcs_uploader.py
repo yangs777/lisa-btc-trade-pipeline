@@ -25,7 +25,7 @@ class GCSUploader:
         cleanup_after_upload: bool = True,
     ):
         """Initialize GCS uploader.
-        
+
         Args:
             bucket_name: GCS bucket name
             project_id: GCP project ID
@@ -67,10 +67,10 @@ class GCSUploader:
 
     async def _upload_file(self, file_path: Path) -> bool:
         """Upload a single file to GCS.
-        
+
         Args:
             file_path: Path to the file to upload
-            
+
         Returns:
             True if upload successful, False otherwise
         """
@@ -179,7 +179,7 @@ class GCSUploader:
 
     async def start(self, num_workers: int = 3) -> None:
         """Start the GCS uploader.
-        
+
         Args:
             num_workers: Number of concurrent upload workers
         """
@@ -229,10 +229,10 @@ class GCSUploader:
 
     async def upload_file(self, file_path: str) -> bool:
         """Upload a specific file to GCS.
-        
+
         Args:
             file_path: Path to the file to upload
-            
+
         Returns:
             True if upload successful, False otherwise
         """
@@ -250,12 +250,16 @@ async def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
-    # Use the service account key stored in /tmp
+    # Use configuration settings
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.parent))
+    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, RAW_DATA_DIR
+    
     uploader = GCSUploader(
-        bucket_name="btc-orderbook-data",
-        project_id="my-project-779482",
-        credentials_path="/tmp/gcp_service_account_key.json",
-        local_data_dir="./data/raw",
+        bucket_name=GCS_BUCKET,
+        project_id=GCP_PROJECT_ID,
+        credentials_path=GCP_CREDENTIALS_PATH,
+        local_data_dir=str(RAW_DATA_DIR),
         cleanup_after_upload=False,  # Keep files for testing
     )
 

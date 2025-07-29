@@ -11,7 +11,7 @@ class MACD(PriceIndicator):
     def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
                  price_col: str = "close", fillna: bool = True):
         """Initialize MACD.
-        
+
         Args:
             fast: Fast EMA period
             slow: Slow EMA period
@@ -48,7 +48,7 @@ class MACDSignal(PriceIndicator):
     def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
                  price_col: str = "close", fillna: bool = True):
         """Initialize MACD Signal.
-        
+
         Args:
             fast: Fast EMA period
             slow: Slow EMA period
@@ -84,7 +84,7 @@ class MACDHist(PriceIndicator):
     def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
                  price_col: str = "close", fillna: bool = True):
         """Initialize MACD Histogram.
-        
+
         Args:
             fast: Fast EMA period
             slow: Slow EMA period

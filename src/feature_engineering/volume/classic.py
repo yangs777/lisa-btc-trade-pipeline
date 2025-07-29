@@ -10,7 +10,7 @@ class OBV(VolumeIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize OBV.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -50,7 +50,7 @@ class AD(OHLCVIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize A/D.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -79,7 +79,7 @@ class ADL(OHLCVIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize ADL.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -101,7 +101,7 @@ class CMF(OHLCVIndicator):
 
     def __init__(self, window: int = 20, fillna: bool = True):
         """Initialize CMF.
-        
+
         Args:
             window: Period for CMF calculation
             fillna: Whether to fill NaN values
@@ -134,7 +134,7 @@ class EMV(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize EMV.
-        
+
         Args:
             window: Period for EMV calculation
             fillna: Whether to fill NaN values
@@ -169,7 +169,7 @@ class ForceIndex(OHLCVIndicator):
 
     def __init__(self, window: int = 13, fillna: bool = True):
         """Initialize Force Index.
-        
+
         Args:
             window: Period for EMA smoothing
             fillna: Whether to fill NaN values
@@ -198,7 +198,7 @@ class NVI(VolumeIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize NVI.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -238,7 +238,7 @@ class PVI(VolumeIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize PVI.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -278,7 +278,7 @@ class VPT(OHLCVIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize VPT.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """

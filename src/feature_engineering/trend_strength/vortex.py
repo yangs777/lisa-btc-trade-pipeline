@@ -10,7 +10,7 @@ class VortexPlus(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize VI+.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -54,7 +54,7 @@ class VortexMinus(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize VI-.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values

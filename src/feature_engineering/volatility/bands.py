@@ -11,7 +11,7 @@ class BollingerMiddle(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Bollinger Middle.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -35,7 +35,7 @@ class BollingerUpper(PriceIndicator):
 
     def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
         """Initialize Bollinger Upper.
-        
+
         Args:
             window: Period for calculation
             std: Number of standard deviations
@@ -63,7 +63,7 @@ class BollingerLower(PriceIndicator):
 
     def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
         """Initialize Bollinger Lower.
-        
+
         Args:
             window: Period for calculation
             std: Number of standard deviations
@@ -91,7 +91,7 @@ class BollingerWidth(PriceIndicator):
 
     def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
         """Initialize Bollinger Width.
-        
+
         Args:
             window: Period for calculation
             std: Number of standard deviations
@@ -126,7 +126,7 @@ class BollingerPercent(PriceIndicator):
 
     def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
         """Initialize Bollinger %B.
-        
+
         Args:
             window: Period for calculation
             std: Number of standard deviations
@@ -163,7 +163,7 @@ class KeltnerMiddle(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Keltner Middle.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -187,7 +187,7 @@ class KeltnerUpper(OHLCVIndicator):
 
     def __init__(self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True):
         """Initialize Keltner Upper.
-        
+
         Args:
             window: Period for EMA calculation
             atr_window: Period for ATR calculation
@@ -223,7 +223,7 @@ class KeltnerLower(OHLCVIndicator):
 
     def __init__(self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True):
         """Initialize Keltner Lower.
-        
+
         Args:
             window: Period for EMA calculation
             atr_window: Period for ATR calculation
@@ -259,7 +259,7 @@ class DonchianUpper(OHLCVIndicator):
 
     def __init__(self, window: int = 20, fillna: bool = True):
         """Initialize Donchian Upper.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -282,7 +282,7 @@ class DonchianLower(OHLCVIndicator):
 
     def __init__(self, window: int = 20, fillna: bool = True):
         """Initialize Donchian Lower.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values

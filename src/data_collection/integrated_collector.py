@@ -28,7 +28,7 @@ class IntegratedDataCollector:
         upload_workers: int = 2,
     ):
         """Initialize integrated data collector.
-        
+
         Args:
             symbol: Trading pair symbol
             depth_levels: Orderbook depth levels (5, 10, or 20)
@@ -126,17 +126,26 @@ async def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
-    # Create integrated collector
+    # Create integrated collector with config
+    import sys
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent.parent.parent))
+    from src.config import (
+        BINANCE_SYMBOL, BINANCE_DEPTH_LEVELS, BINANCE_BUFFER_SIZE,
+        GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, 
+        RAW_DATA_DIR, UPLOAD_WORKERS, CLEANUP_AFTER_UPLOAD
+    )
+    
     collector = IntegratedDataCollector(
-        symbol="btcusdt",
-        depth_levels=20,
-        buffer_size=500,
-        local_data_dir="./data/raw",
-        bucket_name="btc-orderbook-data",
-        project_id="my-project-779482",
-        credentials_path="/tmp/gcp_service_account_key.json",
-        cleanup_after_upload=True,
-        upload_workers=2,
+        symbol=BINANCE_SYMBOL,
+        depth_levels=BINANCE_DEPTH_LEVELS,
+        buffer_size=BINANCE_BUFFER_SIZE,
+        local_data_dir=str(RAW_DATA_DIR),
+        bucket_name=GCS_BUCKET,
+        project_id=GCP_PROJECT_ID,
+        credentials_path=GCP_CREDENTIALS_PATH,
+        cleanup_after_upload=CLEANUP_AFTER_UPLOAD,
+        upload_workers=UPLOAD_WORKERS,
     )
 
     # Setup signal handlers
@@ -144,13 +153,14 @@ async def main() -> None:
 
     def signal_handler(sig: int) -> None:
         logger.info(f"Received signal {sig}, shutting down...")
-        asyncio.create_task(collector.stop())
+        # Store reference to avoid RUF006
+        _ = asyncio.create_task(collector.stop())
 
     for sig in (signal.SIGTERM, signal.SIGINT):
         # Create a closure to capture the signal value
         def make_handler(s: int) -> None:
             signal_handler(s)
-        loop.add_signal_handler(sig, lambda: make_handler(sig))
+        loop.add_signal_handler(sig, lambda s=sig: make_handler(s))
 
     try:
         # Run collector

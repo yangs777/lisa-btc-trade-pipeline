@@ -25,7 +25,7 @@ class DailyPreprocessor:
         local_work_dir: str = "./data/preprocessed",
     ):
         """Initialize daily preprocessor.
-        
+
         Args:
             bucket_name: GCS bucket name
             project_id: GCP project ID
@@ -258,10 +258,10 @@ class DailyPreprocessor:
 
     async def process_date(self, date: datetime) -> str | None:
         """Process all data for a specific date.
-        
+
         Args:
             date: Date to process
-            
+
         Returns:
             Path to processed file in GCS if successful, None otherwise
         """
@@ -342,11 +342,11 @@ class DailyPreprocessor:
         end_date: datetime
     ) -> list[str]:
         """Process data for a date range.
-        
+
         Args:
             start_date: Start date (inclusive)
             end_date: End date (inclusive)
-            
+
         Returns:
             List of processed file paths in GCS
         """
@@ -370,11 +370,17 @@ async def main() -> None:
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
+    # Use configuration settings
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent.parent))
+    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, PROCESSED_DATA_DIR
+
     # Create preprocessor
     preprocessor = DailyPreprocessor(
-        bucket_name="btc-orderbook-data",
-        project_id="my-project-779482",
-        credentials_path="/tmp/gcp_service_account_key.json",
+        bucket_name=GCS_BUCKET,
+        project_id=GCP_PROJECT_ID,
+        credentials_path=GCP_CREDENTIALS_PATH,
+        local_work_dir=str(PROCESSED_DATA_DIR),
     )
 
     # Process yesterday's data

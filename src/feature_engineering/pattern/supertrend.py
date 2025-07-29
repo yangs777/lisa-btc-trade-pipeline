@@ -11,7 +11,7 @@ class SuperTrend(OHLCVIndicator):
 
     def __init__(self, window: int = 10, mult: float = 3.0, fillna: bool = True):
         """Initialize SuperTrend.
-        
+
         Args:
             window: ATR period
             mult: ATR multiplier

@@ -25,7 +25,7 @@ class BinanceWebSocketCollector:
         output_dir: str = "./data/raw",
     ):
         """Initialize Binance WebSocket collector.
-        
+
         Args:
             symbol: Trading pair symbol (default: btcusdt)
             depth_levels: Orderbook depth levels (5, 10, or 20)

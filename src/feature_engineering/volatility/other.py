@@ -11,7 +11,7 @@ class UlcerIndex(PriceIndicator):
 
     def __init__(self, window: int = 14, price_col: str = "close", fillna: bool = True):
         """Initialize Ulcer Index.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -50,7 +50,7 @@ class MassIndex(PriceIndicator):
 
     def __init__(self, window: int = 25, ema_period: int = 9, fillna: bool = True):
         """Initialize Mass Index.
-        
+
         Args:
             window: Sum period
             ema_period: EMA period for range calculation

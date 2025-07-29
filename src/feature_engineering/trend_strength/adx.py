@@ -10,7 +10,7 @@ class DIPlus(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize +DI.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -59,7 +59,7 @@ class DIMinus(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize -DI.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values
@@ -108,7 +108,7 @@ class ADX(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize ADX.
-        
+
         Args:
             window: Period for calculation
             fillna: Whether to fill NaN values

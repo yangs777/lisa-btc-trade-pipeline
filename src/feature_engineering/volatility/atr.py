@@ -10,7 +10,7 @@ class ATR(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize ATR.
-        
+
         Args:
             window: Period for ATR calculation
             fillna: Whether to fill NaN values
@@ -43,7 +43,7 @@ class NATR(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize NATR.
-        
+
         Args:
             window: Period for NATR calculation
             fillna: Whether to fill NaN values

@@ -10,7 +10,7 @@ class PSAR(OHLCVIndicator):
 
     def __init__(self, af: float = 0.02, max_af: float = 0.2, fillna: bool = True):
         """Initialize PSAR.
-        
+
         Args:
             af: Acceleration factor
             max_af: Maximum acceleration factor
@@ -86,7 +86,7 @@ class PSARTrend(OHLCVIndicator):
 
     def __init__(self, af: float = 0.02, max_af: float = 0.2, fillna: bool = True):
         """Initialize PSAR Trend.
-        
+
         Args:
             af: Acceleration factor
             max_af: Maximum acceleration factor

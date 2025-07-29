@@ -10,7 +10,7 @@ class MFI(OHLCVIndicator):
 
     def __init__(self, window: int = 14, fillna: bool = True):
         """Initialize MFI.
-        
+
         Args:
             window: Period for MFI calculation
             fillna: Whether to fill NaN values
@@ -62,7 +62,7 @@ class VWAP(OHLCVIndicator):
 
     def __init__(self, fillna: bool = True):
         """Initialize VWAP.
-        
+
         Args:
             fillna: Whether to fill NaN values
         """
@@ -74,7 +74,7 @@ class VWAP(OHLCVIndicator):
 
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate VWAP.
-        
+
         Note: This is a cumulative VWAP from the start of the data.
         For intraday VWAP that resets daily, additional date handling would be needed.
         """
@@ -98,7 +98,7 @@ class VWMA(OHLCVIndicator):
 
     def __init__(self, window: int = 20, fillna: bool = True):
         """Initialize VWMA.
-        
+
         Args:
             window: Period for VWMA calculation
             fillna: Whether to fill NaN values

@@ -17,7 +17,7 @@ class FeatureEngineer:
 
     def __init__(self, config_path: str | None = None):
         """Initialize Feature Engineer.
-        
+
         Args:
             config_path: Path to indicators YAML config file
         """
@@ -127,10 +127,10 @@ class FeatureEngineer:
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply all indicators to the dataframe.
-        
+
         Args:
             df: Input dataframe with OHLCV columns
-            
+
         Returns:
             DataFrame with all indicator features added
         """
@@ -152,11 +152,11 @@ class FeatureEngineer:
 
     def transform_selective(self, df: pd.DataFrame, indicator_names: list[str]) -> pd.DataFrame:
         """Apply only selected indicators.
-        
+
         Args:
             df: Input dataframe with OHLCV columns
             indicator_names: List of indicator names to calculate
-            
+
         Returns:
             DataFrame with selected indicator features added
         """
@@ -178,7 +178,7 @@ class FeatureEngineer:
 
     def get_indicator_info(self) -> dict[str, dict]:
         """Get information about all indicators.
-        
+
         Returns:
             Dictionary with indicator information
         """

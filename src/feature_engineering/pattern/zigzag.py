@@ -11,7 +11,7 @@ class ZigZag(OHLCVIndicator):
 
     def __init__(self, pct: float = 5.0, fillna: bool = True):
         """Initialize ZigZag.
-        
+
         Args:
             pct: Minimum percentage change to form a new zig or zag
             fillna: Whether to fill NaN values

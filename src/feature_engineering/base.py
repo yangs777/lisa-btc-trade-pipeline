@@ -15,7 +15,7 @@ class BaseIndicator(ABC):
         fill_method: str = "zero",
     ):
         """Initialize base indicator.
-        
+
         Args:
             window_size: Lookback period for calculations
             fillna: Whether to fill NaN values
@@ -28,10 +28,10 @@ class BaseIndicator(ABC):
     @abstractmethod
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate indicator values.
-        
+
         Args:
             df: Input DataFrame with OHLCV columns
-            
+
         Returns:
             Series with indicator values
         """
@@ -69,7 +69,7 @@ class PriceIndicator(BaseIndicator):
         fill_method: str = "zero",
     ):
         """Initialize price indicator.
-        
+
         Args:
             price_col: Column to use for price ('close', 'high', 'low', 'open')
             window_size: Lookback period

@@ -13,7 +13,7 @@ class Correlation(PriceIndicator):
     def __init__(self, window: int = 20, price_col: str = "close",
                  benchmark_col: str = "volume", fillna: bool = True):
         """Initialize Correlation.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -46,7 +46,7 @@ class Beta(PriceIndicator):
     def __init__(self, window: int = 20, price_col: str = "close",
                  market_col: str = "close", fillna: bool = True):
         """Initialize Beta.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -82,7 +82,7 @@ class LinearReg(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Linear Regression.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -115,7 +115,7 @@ class LinearRegSlope(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Linear Regression Slope.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -148,7 +148,7 @@ class LinearRegAngle(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Linear Regression Angle.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -177,7 +177,7 @@ class TSF(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize TSF.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use

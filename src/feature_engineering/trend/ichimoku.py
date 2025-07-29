@@ -10,7 +10,7 @@ class IchimokuTenkan(OHLCVIndicator):
 
     def __init__(self, window: int = 9, fillna: bool = True):
         """Initialize Ichimoku Tenkan.
-        
+
         Args:
             window: Period for calculation (default 9)
             fillna: Whether to fill NaN values
@@ -38,7 +38,7 @@ class IchimokuKijun(OHLCVIndicator):
 
     def __init__(self, window: int = 26, fillna: bool = True):
         """Initialize Ichimoku Kijun.
-        
+
         Args:
             window: Period for calculation (default 26)
             fillna: Whether to fill NaN values
@@ -66,7 +66,7 @@ class IchimokuSenkouA(OHLCVIndicator):
 
     def __init__(self, tenkan: int = 9, kijun: int = 26, fillna: bool = True):
         """Initialize Ichimoku Senkou A.
-        
+
         Args:
             tenkan: Tenkan-sen period (default 9)
             kijun: Kijun-sen period (default 26)
@@ -106,7 +106,7 @@ class IchimokuSenkouB(OHLCVIndicator):
 
     def __init__(self, window: int = 52, fillna: bool = True):
         """Initialize Ichimoku Senkou B.
-        
+
         Args:
             window: Period for calculation (default 52)
             fillna: Whether to fill NaN values

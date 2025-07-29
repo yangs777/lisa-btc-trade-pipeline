@@ -19,7 +19,7 @@ class IndicatorRegistry:
 
     def register(self, name: str, indicator_class: type[BaseIndicator]) -> None:
         """Register an indicator class.
-        
+
         Args:
             name: Indicator name
             indicator_class: Indicator class
@@ -31,10 +31,10 @@ class IndicatorRegistry:
 
     def get(self, name: str) -> type[BaseIndicator] | None:
         """Get an indicator class by name.
-        
+
         Args:
             name: Indicator name
-            
+
         Returns:
             Indicator class or None if not found
         """
@@ -46,7 +46,7 @@ class IndicatorRegistry:
 
     def load_config(self, config_path: str) -> None:
         """Load indicator configurations from YAML file.
-        
+
         Args:
             config_path: Path to YAML configuration file
         """
@@ -66,10 +66,10 @@ class IndicatorRegistry:
 
     def create_indicator(self, name: str) -> BaseIndicator | None:
         """Create an indicator instance from configuration.
-        
+
         Args:
             name: Indicator name from config
-            
+
         Returns:
             Indicator instance or None if not found
         """
@@ -94,7 +94,7 @@ class IndicatorRegistry:
 
     def create_all_indicators(self) -> dict[str, BaseIndicator]:
         """Create all configured indicators.
-        
+
         Returns:
             Dictionary of indicator instances by name
         """

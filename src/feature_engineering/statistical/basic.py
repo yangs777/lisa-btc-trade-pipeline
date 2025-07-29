@@ -11,7 +11,7 @@ class StdDev(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize StdDev.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -35,7 +35,7 @@ class Variance(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Variance.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -59,7 +59,7 @@ class SEM(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize SEM.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -87,7 +87,7 @@ class Skew(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Skew.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
@@ -111,7 +111,7 @@ class Kurtosis(PriceIndicator):
 
     def __init__(self, window: int = 20, price_col: str = "close", fillna: bool = True):
         """Initialize Kurtosis.
-        
+
         Args:
             window: Period for calculation
             price_col: Price column to use
