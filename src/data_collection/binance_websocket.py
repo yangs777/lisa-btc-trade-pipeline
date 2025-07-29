@@ -5,7 +5,7 @@ import json
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import aiofiles
 import websockets
@@ -49,7 +49,7 @@ class BinanceWebSocketCollector:
         self.agg_trade_buffer: list[Dict[str, Any]] = []
         
         # Statistics
-        self.stats = {
+        self.stats: Dict[str, Union[int, Optional[datetime]]] = {
             "orderbook_count": 0,
             "trade_count": 0,
             "agg_trade_count": 0,
@@ -76,7 +76,7 @@ class BinanceWebSocketCollector:
             }
             
             self.orderbook_buffer.append(data)
-            self.stats["orderbook_count"] += 1
+            self.stats["orderbook_count"] = int(self.stats.get("orderbook_count", 0)) + 1
             self.stats["last_orderbook_time"] = datetime.now(timezone.utc)
             
             if len(self.orderbook_buffer) >= self.buffer_size:
@@ -84,7 +84,7 @@ class BinanceWebSocketCollector:
                 
         except Exception as e:
             logger.error(f"Error processing orderbook message: {e}")
-            self.stats["errors"] += 1
+            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
 
     async def _handle_trade_message(self, message: Dict[str, Any]) -> None:
         """Process trade message."""
@@ -103,7 +103,7 @@ class BinanceWebSocketCollector:
             }
             
             self.trade_buffer.append(data)
-            self.stats["trade_count"] += 1
+            self.stats["trade_count"] = int(self.stats.get("trade_count", 0)) + 1
             self.stats["last_trade_time"] = datetime.now(timezone.utc)
             
             if len(self.trade_buffer) >= self.buffer_size:
@@ -111,7 +111,7 @@ class BinanceWebSocketCollector:
                 
         except Exception as e:
             logger.error(f"Error processing trade message: {e}")
-            self.stats["errors"] += 1
+            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
 
     async def _handle_agg_trade_message(self, message: Dict[str, Any]) -> None:
         """Process aggregated trade message."""
@@ -130,14 +130,14 @@ class BinanceWebSocketCollector:
             }
             
             self.agg_trade_buffer.append(data)
-            self.stats["agg_trade_count"] += 1
+            self.stats["agg_trade_count"] = int(self.stats.get("agg_trade_count", 0)) + 1
             
             if len(self.agg_trade_buffer) >= self.buffer_size:
                 await self._flush_agg_trade_buffer()
                 
         except Exception as e:
             logger.error(f"Error processing aggregated trade message: {e}")
-            self.stats["errors"] += 1
+            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
 
     async def _flush_orderbook_buffer(self) -> None:
         """Write orderbook buffer to disk."""
@@ -190,7 +190,7 @@ class BinanceWebSocketCollector:
         await self._flush_trade_buffer()
         await self._flush_agg_trade_buffer()
 
-    async def _websocket_handler(self, stream_name: str, handler_func) -> None:
+    async def _websocket_handler(self, stream_name: str, handler_func: Any) -> None:
         """Handle WebSocket connection for a specific stream."""
         url = f"{self.ws_base_url}/{stream_name}"
         retry_count = 0
@@ -223,7 +223,7 @@ class BinanceWebSocketCollector:
                     
             except Exception as e:
                 logger.error(f"Unexpected error in {stream_name}: {e}")
-                self.stats["errors"] += 1
+                self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
                 retry_count += 1
                 if retry_count < max_retries:
                     await asyncio.sleep(2 ** retry_count)
@@ -253,7 +253,7 @@ class BinanceWebSocketCollector:
         ]
         
         # Periodic buffer flush
-        async def periodic_flush():
+        async def periodic_flush() -> None:
             while self._running:
                 await asyncio.sleep(60)  # Flush every minute
                 await self._flush_all_buffers()
@@ -282,7 +282,11 @@ class BinanceWebSocketCollector:
         await self._flush_all_buffers()
         
         # Log statistics
-        runtime = datetime.now(timezone.utc) - self.stats["start_time"]
+        start_time = self.stats.get("start_time")
+        if isinstance(start_time, datetime):
+            runtime = datetime.now(timezone.utc) - start_time
+        else:
+            runtime = None
         logger.info(
             f"Collection stopped. Statistics:\n"
             f"  Runtime: {runtime}\n"
@@ -297,7 +301,7 @@ class BinanceWebSocketCollector:
         return self.stats.copy()
 
 
-async def main():
+async def main() -> None:
     """Example usage of BinanceWebSocketCollector."""
     logging.basicConfig(
         level=logging.INFO,

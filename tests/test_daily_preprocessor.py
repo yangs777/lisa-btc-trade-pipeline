@@ -1,4 +1,5 @@
 """Tests for daily preprocessor."""
+# mypy: ignore-errors
 
 import asyncio
 import json

@@ -100,10 +100,10 @@ class LinearReg(PriceIndicator):
         
         def linear_regression_value(y: np.ndarray) -> float:
             if len(y) < 2:
-                return np.nan
+                return float('nan')
             x = np.arange(len(y))
             slope, intercept, _, _, _ = stats.linregress(x, y)
-            return slope * (len(y) - 1) + intercept
+            return float(slope * (len(y) - 1) + intercept)
             
         linreg = price.rolling(window=self.window_size).apply(linear_regression_value, raw=True)
         
@@ -133,10 +133,10 @@ class LinearRegSlope(PriceIndicator):
         
         def calculate_slope(y: np.ndarray) -> float:
             if len(y) < 2:
-                return np.nan
+                return float('nan')
             x = np.arange(len(y))
             slope, _, _, _, _ = stats.linregress(x, y)
-            return slope
+            return float(slope)
             
         slope = price.rolling(window=self.window_size).apply(calculate_slope, raw=True)
         
@@ -195,11 +195,11 @@ class TSF(PriceIndicator):
         
         def forecast_next(y: np.ndarray) -> float:
             if len(y) < 2:
-                return np.nan
+                return float('nan')
             x = np.arange(len(y))
             slope, intercept, _, _, _ = stats.linregress(x, y)
             # Project one period ahead
-            return slope * len(y) + intercept
+            return float(slope * len(y) + intercept)
             
         tsf = price.rolling(window=self.window_size).apply(forecast_next, raw=True)
         

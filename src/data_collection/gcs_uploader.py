@@ -5,7 +5,7 @@ import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Union
 
 import aiofiles
 from google.cloud import storage
@@ -55,7 +55,7 @@ class GCSUploader:
             raise
             
         # Upload statistics
-        self.stats = {
+        self.stats: Dict[str, Union[int, Optional[datetime]]] = {
             "files_uploaded": 0,
             "bytes_uploaded": 0,
             "files_failed": 0,
@@ -94,8 +94,8 @@ class GCSUploader:
             )
             
             file_size = len(content)
-            self.stats["files_uploaded"] += 1
-            self.stats["bytes_uploaded"] += file_size
+            self.stats["files_uploaded"] = int(self.stats.get("files_uploaded", 0)) + 1
+            self.stats["bytes_uploaded"] = int(self.stats.get("bytes_uploaded", 0)) + file_size
             self.stats["last_upload_time"] = datetime.now(timezone.utc)
             
             logger.info(
@@ -107,7 +107,7 @@ class GCSUploader:
             if self.cleanup_after_upload:
                 try:
                     file_path.unlink()
-                    self.stats["files_deleted"] += 1
+                    self.stats["files_deleted"] = int(self.stats.get("files_deleted", 0)) + 1
                     logger.debug(f"Deleted local file: {file_path}")
                 except Exception as e:
                     logger.warning(f"Failed to delete local file {file_path}: {e}")
@@ -121,7 +121,7 @@ class GCSUploader:
                 logger.error(f"GCS upload error for {file_path}: {e}")
             else:
                 logger.error(f"Unexpected error uploading {file_path}: {e}")
-            self.stats["files_failed"] += 1
+            self.stats["files_failed"] = int(self.stats.get("files_failed", 0)) + 1
             return False
             
     async def _upload_worker(self) -> None:
@@ -207,7 +207,11 @@ class GCSUploader:
             await asyncio.sleep(0.1)
             
         # Log statistics
-        runtime = datetime.now(timezone.utc) - self.stats["start_time"]
+        start_time = self.stats.get("start_time")
+        if isinstance(start_time, datetime):
+            runtime = datetime.now(timezone.utc) - start_time
+        else:
+            runtime = None
         logger.info(
             f"Upload stopped. Statistics:\n"
             f"  Runtime: {runtime}\n"
@@ -233,7 +237,7 @@ class GCSUploader:
         return self.stats.copy()
 
 
-async def main():
+async def main() -> None:
     """Example usage of GCSUploader."""
     logging.basicConfig(
         level=logging.INFO,
