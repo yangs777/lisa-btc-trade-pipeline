@@ -30,7 +30,6 @@ class PSAR(OHLCVIndicator):
 
         high = df['high'].values
         low = df['low'].values
-        close = df['close'].values
 
         psar = pd.Series(index=df.index, dtype=float)
 

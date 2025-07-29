@@ -202,7 +202,7 @@ class BinanceWebSocketCollector:
         await self._flush_trade_buffer()
         await self._flush_agg_trade_buffer()
 
-    async def _websocket_handler(self, stream_name: str, handler_func: Any) -> None:
+    async def _websocket_handler(self, stream_name: str, handler_func: Any) -> None:  # noqa: C901
         """Handle WebSocket connection for a specific stream."""
         url = f"{self.ws_base_url}/{stream_name}"
         retry_count = 0
