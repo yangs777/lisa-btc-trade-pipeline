@@ -6,7 +6,7 @@ from src.risk_management.models.cost_model import CostModel
 class TestCostModel:
     """Test trading cost calculations."""
 
-    def test_basic_commission_calculation(self):
+    def test_basic_commission_calculation(self) -> None:
         """Test basic commission calculation."""
         model = CostModel(
             maker_fee=0.0002,
@@ -22,7 +22,7 @@ class TestCostModel:
         assert costs.commission == 100000 * 0.0005  # $50
         assert costs.commission == 50.0
 
-    def test_maker_vs_taker_fees(self):
+    def test_maker_vs_taker_fees(self) -> None:
         """Test difference between maker and taker fees."""
         model = CostModel()
 
@@ -42,7 +42,7 @@ class TestCostModel:
         assert maker_costs.commission == 20.0  # 0.02%
         assert taker_costs.commission == 50.0  # 0.05%
 
-    def test_slippage_calculation(self):
+    def test_slippage_calculation(self) -> None:
         """Test slippage calculation."""
         model = CostModel(slippage_bps=5.0)
 
@@ -67,7 +67,7 @@ class TestCostModel:
         # Urgent: 5bps * 1.5 = 7.5bps = $75
         assert abs(costs_urgent.slippage - 75.0) < 1.0
 
-    def test_size_impact_on_slippage(self):
+    def test_size_impact_on_slippage(self) -> None:
         """Test size impact on slippage."""
         model = CostModel(slippage_bps=5.0)
 
@@ -97,7 +97,7 @@ class TestCostModel:
         assert slip_large > slip_small
         assert slip_xlarge > slip_large
 
-    def test_funding_costs(self):
+    def test_funding_costs(self) -> None:
         """Test funding cost calculation."""
         model = CostModel(funding_rate=0.0001)  # 0.01% per 8 hours
 
@@ -110,7 +110,7 @@ class TestCostModel:
         # 3 periods * 0.01% * $100k = $30
         assert abs(costs.funding - 30.0) < 0.1
 
-    def test_round_trip_costs(self):
+    def test_round_trip_costs(self) -> None:
         """Test complete round trip cost calculation."""
         model = CostModel()
 
@@ -136,7 +136,7 @@ class TestCostModel:
         total = result["total_commission"] + result["total_slippage"] + result["total_funding"]
         assert abs(result["total_cost"] - total) < 0.01
 
-    def test_vip_discounts(self):
+    def test_vip_discounts(self) -> None:
         """Test VIP level fee discounts."""
         # No discount
         model_vip0 = CostModel(vip_level=0)
@@ -150,7 +150,7 @@ class TestCostModel:
         assert costs_vip3.commission < costs_vip0.commission
         assert abs(costs_vip3.commission - costs_vip0.commission * 0.85) < 0.01
 
-    def test_annual_cost_estimation(self):
+    def test_annual_cost_estimation(self) -> None:
         """Test annual cost estimation."""
         model = CostModel()
 
@@ -174,7 +174,7 @@ class TestCostModel:
         assert estimates["cost_per_trade"] == estimates["total_annual_costs"] / (5 * 252)
         assert estimates["daily_costs"] == estimates["total_annual_costs"] / 252
 
-    def test_breakeven_calculation(self):
+    def test_breakeven_calculation(self) -> None:
         """Test breakeven move calculation."""
         model = CostModel()
 
@@ -190,7 +190,7 @@ class TestCostModel:
         if result["total_cost"] == 200:
             assert result["breakeven_move"] == 0.2
 
-    def test_edge_cases(self):
+    def test_edge_cases(self) -> None:
         """Test edge cases."""
         model = CostModel()
 

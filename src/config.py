@@ -28,7 +28,7 @@ RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def load_config():
+def load_config() -> dict:
     """Load configuration from environment."""
     return {
         "project_id": GCP_PROJECT_ID,
@@ -42,7 +42,7 @@ def load_config():
     }
 
 
-def get_env_var(name: str, default: str = None) -> str:
+def get_env_var(name: str, default: str | None = None) -> str | None:
     """Get environment variable with optional default."""
     return os.environ.get(name, default)
 

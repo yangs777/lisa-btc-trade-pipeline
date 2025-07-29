@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 class MetricsCollector:
     """Collect and aggregate metrics."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize collector."""
         self.predictions = []
         self.trades = []
@@ -16,7 +16,7 @@ class MetricsCollector:
         self.errors = defaultdict(int)
         self.start_time = datetime.now()
     
-    def record_prediction(self, action: str, confidence: float, position_size: float):
+    def record_prediction(self, action: str, confidence: float, position_size: float) -> None:
         """Record a prediction."""
         self.predictions.append({
             "action": action,
@@ -25,7 +25,7 @@ class MetricsCollector:
             "timestamp": datetime.now()
         })
     
-    def record_trade(self, symbol: str, side: str, size: float, price: float, pnl: float):
+    def record_trade(self, symbol: str, side: str, size: float, price: float, pnl: float) -> None:
         """Record a trade."""
         self.trades.append({
             "symbol": symbol,
@@ -36,17 +36,17 @@ class MetricsCollector:
             "timestamp": datetime.now()
         })
     
-    def record_latency(self, operation: str, latency: float):
+    def record_latency(self, operation: str, latency: float) -> None:
         """Record operation latency."""
         self.latencies[operation].append(latency)
     
-    def record_error(self, operation: str, error: str):
+    def record_error(self, operation: str, error: str) -> None:
         """Record an error."""
         self.errors[operation] += 1
     
     def get_metrics(self) -> Dict[str, Any]:
         """Get current metrics."""
-        predictions_by_action = defaultdict(int)
+        predictions_by_action: Dict[str, int] = defaultdict(int)
         for pred in self.predictions:
             predictions_by_action[pred["action"]] += 1
         
@@ -81,7 +81,7 @@ class MetricsCollector:
             "uptime_hours": metrics["uptime_seconds"] / 3600
         }
     
-    def reset(self):
+    def reset(self) -> None:
         """Reset all metrics."""
         self.predictions.clear()
         self.trades.clear()

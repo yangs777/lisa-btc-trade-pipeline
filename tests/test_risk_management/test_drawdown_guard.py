@@ -8,7 +8,7 @@ from src.risk_management.models.drawdown_guard import DrawdownGuard
 class TestDrawdownGuard:
     """Test drawdown guard functionality."""
 
-    def test_drawdown_calculation(self):
+    def test_drawdown_calculation(self) -> None:
         """Test basic drawdown calculation."""
         guard = DrawdownGuard(max_drawdown=0.10)
 
@@ -24,7 +24,7 @@ class TestDrawdownGuard:
         assert status["peak_equity"] == 110000
         assert not status["is_triggered"]  # Below 10% threshold
 
-    def test_drawdown_trigger(self):
+    def test_drawdown_trigger(self) -> None:
         """Test drawdown trigger activation."""
         guard = DrawdownGuard(max_drawdown=0.10)
 
@@ -40,7 +40,7 @@ class TestDrawdownGuard:
         assert status["is_triggered"]
         assert status["current_drawdown"] > 0.10
 
-    def test_position_scaling(self):
+    def test_position_scaling(self) -> None:
         """Test position scaling based on drawdown."""
         guard = DrawdownGuard(max_drawdown=0.10, scale_positions=True)
 
@@ -65,7 +65,7 @@ class TestDrawdownGuard:
         multiplier = guard.get_risk_multiplier()
         assert 0.2 < multiplier < 0.3  # Should be 0.25
 
-    def test_recovery_period(self):
+    def test_recovery_period(self) -> None:
         """Test recovery period after trigger."""
         guard = DrawdownGuard(max_drawdown=0.10, recovery_days=7)
 
@@ -86,7 +86,7 @@ class TestDrawdownGuard:
         status = guard.update(115000, base_time + timedelta(days=8))
         assert not status["is_triggered"]
 
-    def test_lookback_window(self):
+    def test_lookback_window(self) -> None:
         """Test lookback window for peak calculation."""
         guard = DrawdownGuard(max_drawdown=0.10, lookback_days=30)
 
@@ -103,7 +103,7 @@ class TestDrawdownGuard:
         assert guard.peak_equity < 150000
         assert guard.peak_equity == 119000  # Most recent value
 
-    def test_max_drawdown_calculation(self):
+    def test_max_drawdown_calculation(self) -> None:
         """Test maximum drawdown tracking."""
         guard = DrawdownGuard()
 
@@ -126,7 +126,7 @@ class TestDrawdownGuard:
         max_dd = guard._calculate_max_drawdown()
         assert abs(max_dd - 0.217) < 0.001
 
-    def test_days_in_drawdown(self):
+    def test_days_in_drawdown(self) -> None:
         """Test counting days in drawdown."""
         guard = DrawdownGuard()
         base_time = datetime.now()
@@ -144,7 +144,7 @@ class TestDrawdownGuard:
         # Should be 5 days since last peak
         assert status["days_in_drawdown"] == 5
 
-    def test_no_scaling_mode(self):
+    def test_no_scaling_mode(self) -> None:
         """Test binary mode (no scaling)."""
         guard = DrawdownGuard(max_drawdown=0.10, scale_positions=False)
 
@@ -158,7 +158,7 @@ class TestDrawdownGuard:
         guard.update(98000)  # 10.9% drawdown
         assert guard.get_risk_multiplier() == 0.0
 
-    def test_reset_functionality(self):
+    def test_reset_functionality(self) -> None:
         """Test guard reset."""
         guard = DrawdownGuard()
 
@@ -177,7 +177,7 @@ class TestDrawdownGuard:
         assert guard.peak_equity == 0.0
         assert not guard.drawdown_triggered
 
-    def test_empty_history_handling(self):
+    def test_empty_history_handling(self) -> None:
         """Test handling of empty history."""
         guard = DrawdownGuard()
 
