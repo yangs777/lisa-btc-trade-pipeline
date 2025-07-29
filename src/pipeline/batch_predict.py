@@ -3,7 +3,7 @@
 import argparse
 import json
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import numpy as np
 
 
@@ -20,7 +20,7 @@ class BatchPredictor:
             model_path: Path to saved model
         """
         self.model_path = model_path
-        self.model = None
+        self.model: Optional[Dict[str, Any]] = None
     
     def load_model(self) -> None:
         """Load the trained model."""

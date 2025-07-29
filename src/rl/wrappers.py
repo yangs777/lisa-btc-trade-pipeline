@@ -131,7 +131,7 @@ class TradingEnvWrapper(gym.Wrapper):
             self.obs_mean += delta / self.n_obs
             self.obs_std += delta * (obs - self.obs_mean)
 
-    def get_normalization_stats(self) -> dict[str, np.ndarray]:
+    def get_normalization_stats(self) -> dict[str, Any]:
         """Get current normalization statistics."""
         if self.n_obs > 1:
             std = np.sqrt(self.obs_std / (self.n_obs - 1)) if self.obs_std is not None else None

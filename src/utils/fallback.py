@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional
 class FallbackManager:
     """Manage fallback strategies for system resilience."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize fallback manager."""
         self.strategies: Dict[str, Callable] = {}
         self.priority_order: List[str] = []
@@ -29,7 +29,7 @@ class FallbackManager:
             if name not in self.priority_order:
                 self.priority_order.append(name)
     
-    def execute(self, *args, **kwargs) -> Any:
+    def execute(self, *args: Any, **kwargs: Any) -> Any:
         """Execute strategies in priority order until one succeeds.
         
         Args:

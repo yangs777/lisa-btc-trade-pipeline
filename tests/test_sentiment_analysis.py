@@ -8,7 +8,7 @@ from src.feature_engineering.sentiment import SentimentAnalyzer
 class TestSentimentAnalyzer:
     """Test SentimentAnalyzer class."""
     
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test analyzer initialization."""
         analyzer = SentimentAnalyzer(window_size=50)
         
@@ -16,7 +16,7 @@ class TestSentimentAnalyzer:
         assert len(analyzer.sentiment_history) == 0
         assert len(analyzer.volume_history) == 0
     
-    def test_compute_features_with_fear_greed_index(self):
+    def test_compute_features_with_fear_greed_index(self) -> None:
         """Test computing features with Fear & Greed Index."""
         analyzer = SentimentAnalyzer()
         
@@ -31,7 +31,7 @@ class TestSentimentAnalyzer:
         assert features["sentiment_fear"] == 0
         assert features["sentiment_greed"] == 0.5  # (75-50)/50
     
-    def test_compute_features_extreme_fear(self):
+    def test_compute_features_extreme_fear(self) -> None:
         """Test features during extreme fear."""
         analyzer = SentimentAnalyzer()
         
@@ -46,7 +46,7 @@ class TestSentimentAnalyzer:
         assert features["sentiment_fear"] == 0.8  # (50-10)/50
         assert features["sentiment_greed"] == 0
     
-    def test_compute_features_with_social_volume(self):
+    def test_compute_features_with_social_volume(self) -> None:
         """Test computing features with social volume."""
         analyzer = SentimentAnalyzer()
         
@@ -63,7 +63,7 @@ class TestSentimentAnalyzer:
         assert "social_volume_change" in features
         assert features["social_volume_spike"] == True  # 200 > 90th percentile
     
-    def test_compute_features_social_volume_no_history(self):
+    def test_compute_features_social_volume_no_history(self) -> None:
         """Test social volume with no history."""
         analyzer = SentimentAnalyzer()
         
@@ -76,7 +76,7 @@ class TestSentimentAnalyzer:
         assert features["social_volume_change"] == 0
         assert features["social_volume_spike"] == False
     
-    def test_compute_features_with_news_sentiment(self):
+    def test_compute_features_with_news_sentiment(self) -> None:
         """Test computing features with news sentiment."""
         analyzer = SentimentAnalyzer()
         
@@ -102,7 +102,7 @@ class TestSentimentAnalyzer:
         assert features["news_bullish"] == 0
         assert features["news_bearish"] == 0.6
     
-    def test_sentiment_momentum(self):
+    def test_sentiment_momentum(self) -> None:
         """Test sentiment momentum calculation."""
         analyzer = SentimentAnalyzer()
         
@@ -118,7 +118,7 @@ class TestSentimentAnalyzer:
         assert features["sentiment_momentum"] > 0  # Positive momentum
         assert "sentiment_momentum_10" in features
     
-    def test_composite_sentiment_score(self):
+    def test_composite_sentiment_score(self) -> None:
         """Test composite sentiment calculation."""
         analyzer = SentimentAnalyzer()
         
@@ -137,7 +137,7 @@ class TestSentimentAnalyzer:
         assert "composite_sentiment" in features
         assert 0 <= features["composite_sentiment"] <= 1
     
-    def test_analyze_crowd_behavior_fomo(self):
+    def test_analyze_crowd_behavior_fomo(self) -> None:
         """Test FOMO indicator calculation."""
         analyzer = SentimentAnalyzer()
         
@@ -150,7 +150,7 @@ class TestSentimentAnalyzer:
         
         assert features["fomo_score"] == 0.15 * 2.0  # High FOMO
     
-    def test_analyze_crowd_behavior_panic(self):
+    def test_analyze_crowd_behavior_panic(self) -> None:
         """Test panic indicator calculation."""
         analyzer = SentimentAnalyzer()
         
@@ -163,7 +163,7 @@ class TestSentimentAnalyzer:
         
         assert features["panic_score"] == 0.05 * 0.8  # Moderate panic
     
-    def test_analyze_crowd_behavior_herd(self):
+    def test_analyze_crowd_behavior_herd(self) -> None:
         """Test herd behavior indicators."""
         analyzer = SentimentAnalyzer()
         
@@ -187,7 +187,7 @@ class TestSentimentAnalyzer:
         assert features["herd_bias"] == 0.6  # abs(0.2-0.5)*2
         assert features["herd_direction"] == -1  # Short bias
     
-    def test_get_sentiment_signals_no_history(self):
+    def test_get_sentiment_signals_no_history(self) -> None:
         """Test getting signals with no history."""
         analyzer = SentimentAnalyzer()
         
@@ -196,7 +196,7 @@ class TestSentimentAnalyzer:
         assert signals["signal"] == 0
         assert signals["confidence"] == 0
     
-    def test_get_sentiment_signals_extreme_fear(self):
+    def test_get_sentiment_signals_extreme_fear(self) -> None:
         """Test signals during extreme fear."""
         analyzer = SentimentAnalyzer()
         
@@ -210,7 +210,7 @@ class TestSentimentAnalyzer:
         assert signals["confidence"] == 0.25  # (0.2-0.15)/0.2
         assert signals["sentiment_level"] == 0.15
     
-    def test_get_sentiment_signals_extreme_greed(self):
+    def test_get_sentiment_signals_extreme_greed(self) -> None:
         """Test signals during extreme greed."""
         analyzer = SentimentAnalyzer()
         
@@ -224,7 +224,7 @@ class TestSentimentAnalyzer:
         assert signals["confidence"] == 0.5  # (0.9-0.8)/0.2
         assert signals["sentiment_level"] == 0.9
     
-    def test_get_sentiment_signals_bullish_reversal(self):
+    def test_get_sentiment_signals_bullish_reversal(self) -> None:
         """Test bullish reversal signal."""
         analyzer = SentimentAnalyzer()
         
@@ -237,7 +237,7 @@ class TestSentimentAnalyzer:
         assert signals["signal"] == 0.5  # Moderate buy
         assert signals["confidence"] == 0.5
     
-    def test_get_sentiment_signals_bearish_reversal(self):
+    def test_get_sentiment_signals_bearish_reversal(self) -> None:
         """Test bearish reversal signal."""
         analyzer = SentimentAnalyzer()
         
@@ -250,7 +250,7 @@ class TestSentimentAnalyzer:
         assert signals["signal"] == -0.5  # Moderate sell
         assert signals["confidence"] == 0.5
     
-    def test_sentiment_history_window_limit(self):
+    def test_sentiment_history_window_limit(self) -> None:
         """Test that history respects window size."""
         analyzer = SentimentAnalyzer(window_size=5)
         
@@ -263,7 +263,7 @@ class TestSentimentAnalyzer:
         assert len(analyzer.sentiment_history) == 5
         assert analyzer.sentiment_history[-1] == 0.9  # Last value
     
-    def test_volume_history_window_limit(self):
+    def test_volume_history_window_limit(self) -> None:
         """Test that volume history respects window size."""
         analyzer = SentimentAnalyzer(window_size=5)
         
@@ -276,7 +276,7 @@ class TestSentimentAnalyzer:
         assert len(analyzer.volume_history) == 5
         assert analyzer.volume_history[-1] == 900  # Last value
     
-    def test_empty_sentiment_data(self):
+    def test_empty_sentiment_data(self) -> None:
         """Test handling empty sentiment data."""
         analyzer = SentimentAnalyzer()
         
@@ -286,7 +286,7 @@ class TestSentimentAnalyzer:
         assert isinstance(features, dict)
         assert "composite_sentiment" not in features  # No data for composite
     
-    def test_partial_crowd_metrics(self):
+    def test_partial_crowd_metrics(self) -> None:
         """Test crowd behavior with partial metrics."""
         analyzer = SentimentAnalyzer()
         
@@ -300,7 +300,7 @@ class TestSentimentAnalyzer:
         features = analyzer.analyze_crowd_behavior(metrics)
         assert "panic_score" not in features  # Missing price change
     
-    def test_neutral_sentiment(self):
+    def test_neutral_sentiment(self) -> None:
         """Test neutral sentiment (50 on Fear & Greed)."""
         analyzer = SentimentAnalyzer()
         

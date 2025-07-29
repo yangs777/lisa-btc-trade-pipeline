@@ -148,7 +148,7 @@ class HyperparameterOptimizer:
     
     def _sample_params(self) -> Dict[str, Any]:
         """Sample parameters from search space."""
-        params = {}
+        params: Dict[str, Any] = {}
         
         for param_name, param_range in self.search_space.items():
             if isinstance(param_range, tuple):
