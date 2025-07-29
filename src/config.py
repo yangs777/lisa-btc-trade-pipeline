@@ -1,8 +1,7 @@
 """Configuration settings for the BTC trading pipeline."""
 
 import os
-from pathlib import Path  # noqa: I001
-
+from pathlib import Path
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent
