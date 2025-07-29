@@ -1,4 +1,5 @@
 """Tests for GCS uploader."""
+
 # mypy: ignore-errors
 
 import asyncio
@@ -8,10 +9,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Mock google.cloud imports before importing our module
-sys.modules['google'] = MagicMock()
-sys.modules['google.cloud'] = MagicMock()
-sys.modules['google.cloud.storage'] = MagicMock()
-sys.modules['google.cloud.exceptions'] = MagicMock()
+sys.modules["google"] = MagicMock()
+sys.modules["google.cloud"] = MagicMock()
+sys.modules["google.cloud.storage"] = MagicMock()
+sys.modules["google.cloud.exceptions"] = MagicMock()
 
 from src.data_collection.gcs_uploader import GCSUploader  # noqa: E402
 
@@ -19,7 +20,7 @@ from src.data_collection.gcs_uploader import GCSUploader  # noqa: E402
 @pytest.fixture
 def mock_gcs_client():
     """Create mock GCS client."""
-    with patch('src.data_collection.gcs_uploader.storage.Client') as mock_client:
+    with patch("src.data_collection.gcs_uploader.storage.Client") as mock_client:
         mock_bucket = MagicMock()
         mock_client.return_value.bucket.return_value = mock_bucket
         yield mock_client, mock_bucket
@@ -74,7 +75,7 @@ async def test_upload_file_success(uploader, sample_file, mock_gcs_client) -> No
         func(*args)
         return None
 
-    with patch('asyncio.get_event_loop') as mock_loop:
+    with patch("asyncio.get_event_loop") as mock_loop:
         mock_loop.return_value.run_in_executor = mock_executor
 
         success = await uploader._upload_file(sample_file)
@@ -94,10 +95,8 @@ async def test_upload_file_failure(uploader, sample_file, mock_gcs_client) -> No
     mock_bucket.blob.return_value = mock_blob
 
     # Mock upload to raise exception
-    with patch('asyncio.get_event_loop') as mock_loop:
-        mock_loop.return_value.run_in_executor = AsyncMock(
-            side_effect=Exception("Upload failed")
-        )
+    with patch("asyncio.get_event_loop") as mock_loop:
+        mock_loop.return_value.run_in_executor = AsyncMock(side_effect=Exception("Upload failed"))
 
         success = await uploader._upload_file(sample_file)
 
@@ -125,7 +124,7 @@ async def test_cleanup_after_upload(mock_gcs_client, tmp_path) -> None:
     test_file = tmp_path / "test.jsonl"
     test_file.write_text('{"test": "data"}\n')
 
-    with patch('asyncio.get_event_loop') as mock_loop:
+    with patch("asyncio.get_event_loop") as mock_loop:
         mock_loop.return_value.run_in_executor = AsyncMock(return_value=None)
 
         success = await uploader._upload_file(test_file)
@@ -142,7 +141,7 @@ async def test_upload_queue_processing(uploader, sample_file) -> None:
     await uploader._upload_queue.put(sample_file)
 
     # Mock upload method
-    with patch.object(uploader, '_upload_file', new=AsyncMock(return_value=True)):
+    with patch.object(uploader, "_upload_file", new=AsyncMock(return_value=True)):
         uploader._running = True
 
         # Run worker briefly
@@ -168,7 +167,7 @@ async def test_directory_scanning(uploader, tmp_path) -> None:
     # Create some test files
     (tmp_path / "file1.jsonl").write_text('{"data": 1}\n')
     (tmp_path / "file2.jsonl").write_text('{"data": 2}\n')
-    (tmp_path / "file3.txt").write_text('not a jsonl file\n')  # Should be ignored
+    (tmp_path / "file3.txt").write_text("not a jsonl file\n")  # Should be ignored
 
     uploader._running = True
 
@@ -211,7 +210,7 @@ async def test_upload_specific_file(uploader, sample_file, mock_gcs_client) -> N
     mock_blob = MagicMock()
     mock_bucket.blob.return_value = mock_blob
 
-    with patch('asyncio.get_event_loop') as mock_loop:
+    with patch("asyncio.get_event_loop") as mock_loop:
         mock_loop.return_value.run_in_executor = AsyncMock(return_value=None)
 
         success = await uploader.upload_file(str(sample_file))

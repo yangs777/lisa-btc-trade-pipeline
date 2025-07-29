@@ -41,8 +41,7 @@ jobs:
     - name: Run linting
       run: |
         ruff check src tests
-        # TODO: Re-enable Black formatting after fixing all 35 files
-        # black --check src tests
+        black --check src tests
     
     - name: Run security checks
       run: |

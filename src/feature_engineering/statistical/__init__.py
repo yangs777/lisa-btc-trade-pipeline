@@ -14,5 +14,5 @@ __all__ = [
     "LinearRegSlope",
     "Skew",
     "StdDev",
-    "Variance"
+    "Variance",
 ]

@@ -31,18 +31,18 @@ class PivotHigh(OHLCVIndicator):
         # Look for pivot highs
         for i in range(self.window_size, len(df) - self.window_size):
             is_pivot = True
-            current_high = df['high'].iloc[i]
+            current_high = df["high"].iloc[i]
 
             # Check left side
             for j in range(i - self.window_size, i):
-                if df['high'].iloc[j] >= current_high:
+                if df["high"].iloc[j] >= current_high:
                     is_pivot = False
                     break
 
             # Check right side
             if is_pivot:
                 for j in range(i + 1, i + self.window_size + 1):
-                    if df['high'].iloc[j] > current_high:
+                    if df["high"].iloc[j] > current_high:
                         is_pivot = False
                         break
 
@@ -78,18 +78,18 @@ class PivotLow(OHLCVIndicator):
         # Look for pivot lows
         for i in range(self.window_size, len(df) - self.window_size):
             is_pivot = True
-            current_low = df['low'].iloc[i]
+            current_low = df["low"].iloc[i]
 
             # Check left side
             for j in range(i - self.window_size, i):
-                if df['low'].iloc[j] <= current_low:
+                if df["low"].iloc[j] <= current_low:
                     is_pivot = False
                     break
 
             # Check right side
             if is_pivot:
                 for j in range(i + 1, i + self.window_size + 1):
-                    if df['low'].iloc[j] < current_low:
+                    if df["low"].iloc[j] < current_low:
                         is_pivot = False
                         break
 

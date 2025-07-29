@@ -26,10 +26,10 @@ class MFI(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate typical price
-        typical_price = (df['high'] + df['low'] + df['close']) / 3
+        typical_price = (df["high"] + df["low"] + df["close"]) / 3
 
         # Calculate raw money flow
-        raw_money_flow = typical_price * df['volume']
+        raw_money_flow = typical_price * df["volume"]
 
         # Determine positive and negative money flow
         positive_flow = pd.Series(0, index=df.index)
@@ -81,11 +81,11 @@ class VWAP(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate typical price
-        typical_price = (df['high'] + df['low'] + df['close']) / 3
+        typical_price = (df["high"] + df["low"] + df["close"]) / 3
 
         # Calculate cumulative values
-        cumulative_pv = (typical_price * df['volume']).cumsum()
-        cumulative_volume = df['volume'].cumsum()
+        cumulative_pv = (typical_price * df["volume"]).cumsum()
+        cumulative_volume = df["volume"].cumsum()
 
         # Calculate VWAP
         vwap = cumulative_pv / cumulative_volume
@@ -114,11 +114,11 @@ class VWMA(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate price * volume
-        pv = df['close'] * df['volume']
+        pv = df["close"] * df["volume"]
 
         # Calculate rolling sums
         pv_sum = pv.rolling(window=self.window_size).sum()
-        volume_sum = df['volume'].rolling(window=self.window_size).sum()
+        volume_sum = df["volume"].rolling(window=self.window_size).sum()
 
         # Calculate VWMA
         vwma = pv_sum / volume_sum

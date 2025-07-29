@@ -15,5 +15,5 @@ __all__ = [
     "VPT",
     "VWAP",
     "VWMA",
-    "ForceIndex"
+    "ForceIndex",
 ]

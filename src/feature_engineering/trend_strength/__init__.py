@@ -14,5 +14,5 @@ __all__ = [
     "DIMinus",
     "DIPlus",
     "VortexMinus",
-    "VortexPlus"
+    "VortexPlus",
 ]
