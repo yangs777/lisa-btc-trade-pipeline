@@ -1,13 +1,13 @@
 """τ-SAC (Temperature-aware Soft Actor-Critic) implementation for trading."""
 
+from typing import Any
+
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
-from typing import Optional, Tuple, Dict, Any
 from stable_baselines3 import SAC
-from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
 
 class TradingFeatureExtractor(BaseFeaturesExtractor):
@@ -245,10 +245,10 @@ class TauSACTrader:
         self,
         total_timesteps: int,
         log_interval: int = 100,
-        eval_env: Optional[Any] = None,
+        eval_env: Any | None = None,
         eval_freq: int = 10000,
         n_eval_episodes: int = 5,
-        save_path: Optional[str] = None,
+        save_path: str | None = None,
     ) -> None:
         """Train the τ-SAC model.
 
@@ -294,7 +294,7 @@ class TauSACTrader:
         self,
         observation: np.ndarray,
         deterministic: bool = True,
-    ) -> Tuple[np.ndarray, Optional[Tuple[torch.Tensor, ...]]]:
+    ) -> tuple[np.ndarray, tuple[torch.Tensor, ...] | None]:
         """Predict action for given observation.
 
         Args:
@@ -314,7 +314,7 @@ class TauSACTrader:
         """Load model from disk."""
         self.model = SAC.load(path, env=self.env, device=self.device)
 
-    def get_trading_metrics(self, test_env: Any, n_episodes: int = 10) -> Dict[str, float]:
+    def get_trading_metrics(self, test_env: Any, n_episodes: int = 10) -> dict[str, float]:
         """Evaluate trading performance on test environment.
 
         Args:

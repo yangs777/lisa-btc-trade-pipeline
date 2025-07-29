@@ -1,9 +1,10 @@
 """Trading environment implementation for τ-SAC reinforcement learning."""
 
+from typing import Any, ClassVar
+
+import gymnasium as gym
 import numpy as np
 import pandas as pd
-from typing import Any, Optional, Tuple
-import gymnasium as gym
 from gymnasium import spaces
 
 from .rewards import RBSRReward
@@ -19,7 +20,7 @@ class BTCTradingEnvironment(gym.Env):
     - Margin requirements
     """
 
-    metadata = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, list[str]]] = {"render_modes": ["human"]}
 
     def __init__(
         self,
@@ -31,7 +32,7 @@ class BTCTradingEnvironment(gym.Env):
         slippage_factor: float = 0.0001,  # 0.01% per unit size
         leverage: float = 1.0,  # No leverage by default
         lookback_window: int = 100,
-        render_mode: Optional[str] = None,
+        render_mode: str | None = None,
     ):
         """Initialize trading environment.
 
@@ -87,9 +88,9 @@ class BTCTradingEnvironment(gym.Env):
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ) -> Tuple[np.ndarray, dict]:
+        seed: int | None = None,
+        options: dict | None = None,
+    ) -> tuple[np.ndarray, dict]:
         """Reset environment to initial state."""
         super().reset(seed=seed)
 
@@ -114,7 +115,7 @@ class BTCTradingEnvironment(gym.Env):
 
         return obs, info
 
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
         """Execute one trading step."""
         if self.done:
             raise ValueError("Episode is done. Call reset() to start a new episode.")
@@ -283,7 +284,7 @@ class BTCTradingEnvironment(gym.Env):
             "n_trades": len(self.trades),
         }
 
-    def render(self) -> Optional[str]:
+    def render(self) -> str | None:
         """Render current state."""
         if self.render_mode == "human":
             info = self._get_info()

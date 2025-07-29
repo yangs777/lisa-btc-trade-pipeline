@@ -7,7 +7,7 @@ from .wrappers import TradingEnvWrapper
 
 __all__ = [
     "BTCTradingEnvironment",
-    "TauSACTrader",
     "RBSRReward",
+    "TauSACTrader",
     "TradingEnvWrapper",
 ]

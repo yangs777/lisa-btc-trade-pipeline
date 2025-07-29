@@ -49,20 +49,17 @@ jobs:
     
     - name: Run tests with coverage
       run: |
-        # TODO: Fix mock issues in indicator tests
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v -k "not test_sma_indicator and not test_ema_indicator and not test_rsi_indicator and not test_cci_indicator and not test_bollinger_bands and not test_obv_indicator and not test_ohlcv_validation_detailed and not test_process_date_with_data" || true
+        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v --cov-fail-under=85
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
-        fail_ci_if_error: false
+        fail_ci_if_error: true
 
   gcp-validation:
     runs-on: ubuntu-latest
     needs: test
-    continue-on-error: true
-    if: false  # Temporarily disabled until GCP authentication is properly configured
     steps:
     - uses: actions/checkout@v3
     

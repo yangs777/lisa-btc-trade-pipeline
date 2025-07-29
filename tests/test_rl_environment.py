@@ -1,9 +1,7 @@
 """Tests for reinforcement learning environment."""
 
-import pytest
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 
 from src.rl.environments import BTCTradingEnvironment
 from src.rl.rewards import RBSRReward
@@ -114,7 +112,7 @@ class TestBTCTradingEnvironment:
 
         # Check that fees were deducted
         position_value = env.position * env.prices[env.current_step - 1]
-        expected_fee = position_value * env.taker_fee
+        # expected_fee = position_value * env.taker_fee
 
         assert env.balance < initial_balance - position_value  # Fees deducted
 
@@ -248,7 +246,7 @@ class TestRBSRReward:
 
         # Simulate an episode
         equities = [100000]
-        for i in range(100):
+        for _i in range(100):
             change = np.random.normal(0.001, 0.01)
             equities.append(equities[-1] * (1 + change))
             reward_calc.calculate_reward(equities[-1], 0, 0, 0)
