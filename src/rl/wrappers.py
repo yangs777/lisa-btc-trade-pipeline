@@ -1,6 +1,6 @@
 """Environment wrappers for training stability and monitoring."""
 
-from typing import Any
+from typing import Any, Optional
 
 import gymnasium as gym
 import numpy as np
@@ -41,8 +41,8 @@ class TradingEnvWrapper(gym.Wrapper):
         self.reward_scale = reward_scale
 
         # Track statistics for normalization
-        self.obs_mean = None
-        self.obs_std = None
+        self.obs_mean: Optional[np.ndarray] = None
+        self.obs_std: Optional[np.ndarray] = None
         self.n_obs = 0
 
         # Episode tracking
@@ -78,7 +78,7 @@ class TradingEnvWrapper(gym.Wrapper):
             obs, reward, terminated, truncated, info = self.env.step(action)
             total_reward += float(reward)
 
-            self.episode_rewards.append(reward)
+            self.episode_rewards.append(float(reward))
             self.episode_length += 1
 
             if terminated or truncated:
@@ -141,7 +141,7 @@ class TradingEnvWrapper(gym.Wrapper):
         return {
             "mean": self.obs_mean.copy() if self.obs_mean is not None else np.array([]),
             "std": std if std is not None else np.array([]),
-            "n_samples": self.n_obs,
+            "n_samples": int(self.n_obs),
         }
 
 

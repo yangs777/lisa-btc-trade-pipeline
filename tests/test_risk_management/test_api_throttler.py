@@ -11,7 +11,7 @@ from src.risk_management.models.api_throttler import BinanceAPIThrottler, RateLi
 class TestBinanceAPIThrottler:
     """Test API rate limit management."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Reset class-level state before each test."""
         # Reset WEIGHT_LIMITS to ensure fresh state
         BinanceAPIThrottler.WEIGHT_LIMITS = {
@@ -21,7 +21,7 @@ class TestBinanceAPIThrottler:
         }
 
     @pytest.mark.asyncio
-    async def test_basic_rate_limiting(self):
+    async def test_basic_rate_limiting(self) -> None:
         """Test basic rate limit checking."""
         throttler = BinanceAPIThrottler(safety_margin=0.8)
 
@@ -34,7 +34,7 @@ class TestBinanceAPIThrottler:
         assert usage["1m"]["current_weight"] == 1
 
     @pytest.mark.asyncio
-    async def test_weight_accumulation(self):
+    async def test_weight_accumulation(self) -> None:
         """Test weight accumulation."""
         throttler = BinanceAPIThrottler()
 
@@ -46,7 +46,7 @@ class TestBinanceAPIThrottler:
         assert usage["1m"]["current_weight"] == 5
 
     @pytest.mark.asyncio
-    async def test_heavy_endpoint(self):
+    async def test_heavy_endpoint(self) -> None:
         """Test heavy weight endpoint."""
         throttler = BinanceAPIThrottler()
 
@@ -57,7 +57,7 @@ class TestBinanceAPIThrottler:
         assert usage["1m"]["current_weight"] == 40
 
     @pytest.mark.asyncio
-    async def test_safety_margin(self):
+    async def test_safety_margin(self) -> None:
         """Test safety margin enforcement."""
         throttler = BinanceAPIThrottler(
             safety_margin=0.1,  # Only use 10% of limit
@@ -77,7 +77,7 @@ class TestBinanceAPIThrottler:
         assert not can_proceed
 
     @pytest.mark.asyncio
-    async def test_order_limits(self):
+    async def test_order_limits(self) -> None:
         """Test order-specific limits."""
         throttler = BinanceAPIThrottler()
 
@@ -93,7 +93,7 @@ class TestBinanceAPIThrottler:
         assert usage["order_10s"]["current_weight"] == 1
 
     @pytest.mark.asyncio
-    async def test_batch_requests(self):
+    async def test_batch_requests(self) -> None:
         """Test batch request handling."""
         throttler = BinanceAPIThrottler()
 
@@ -117,7 +117,7 @@ class TestBinanceAPIThrottler:
         capacity = throttler.estimate_capacity("ticker_24hr", 60)
         assert capacity == 24  # 960 / 40
 
-    def test_batch_executor_creation(self):
+    def test_batch_executor_creation(self) -> None:
         """Test batch executor creation."""
         throttler = BinanceAPIThrottler()
 
@@ -125,7 +125,7 @@ class TestBinanceAPIThrottler:
         assert callable(executor)
 
     @pytest.mark.asyncio
-    async def test_unknown_endpoint(self):
+    async def test_unknown_endpoint(self) -> None:
         """Test handling of unknown endpoints."""
         throttler = BinanceAPIThrottler()
 
@@ -147,7 +147,7 @@ class TestBinanceAPIThrottler:
         assert metrics["throttle_rate"] == 0
 
     @pytest.mark.asyncio
-    async def test_non_trading_endpoints(self):
+    async def test_non_trading_endpoints(self) -> None:
         """Test that non-trading endpoints don't affect order limits."""
         throttler = BinanceAPIThrottler()
 
@@ -175,7 +175,7 @@ class TestBinanceAPIThrottler:
         assert throttler.throttled_count == 0
 
     @pytest.mark.asyncio
-    async def test_window_expiration(self):
+    async def test_window_expiration(self) -> None:
         """Test rate limit window expiration."""
         throttler = BinanceAPIThrottler()
 
@@ -200,7 +200,7 @@ class TestBinanceAPIThrottler:
         assert abs(usage["1m"]["usage_percentage"] - 50.0) < 0.1
 
     @pytest.mark.asyncio
-    async def test_burst_allowance(self):
+    async def test_burst_allowance(self) -> None:
         """Test burst allowance feature."""
         throttler = BinanceAPIThrottler(safety_margin=0.5, burst_allowance=0.2)  # Allow 20% burst
 

@@ -1,6 +1,6 @@
 """Sentiment analysis features for trading."""
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Deque
 import numpy as np
 from collections import deque
 
@@ -15,8 +15,8 @@ class SentimentAnalyzer:
             window_size: Window size for rolling calculations
         """
         self.window_size = window_size
-        self.sentiment_history = deque(maxlen=window_size)
-        self.volume_history = deque(maxlen=window_size)
+        self.sentiment_history: Deque[float] = deque(maxlen=window_size)
+        self.volume_history: Deque[float] = deque(maxlen=window_size)
     
     def compute_features(self, sentiment_data: Dict[str, Any]) -> Dict[str, float]:
         """Compute sentiment features.
@@ -82,8 +82,8 @@ class SentimentAnalyzer:
             "social_volume_change": 0.3
         }
         
-        composite = 0
-        total_weight = 0
+        composite = 0.0
+        total_weight = 0.0
         
         for feature, weight in weights.items():
             if feature in features:
@@ -145,17 +145,17 @@ class SentimentAnalyzer:
         previous = self.sentiment_history[-2]
         
         # Basic contrarian signals
-        signal = 0
-        confidence = 0
+        signal = 0.0
+        confidence = 0.0
         
         # Extreme fear = potential buy
         if current < 0.2:
-            signal = 1
+            signal = 1.0
             confidence = (0.2 - current) / 0.2
         
         # Extreme greed = potential sell
         elif current > 0.8:
-            signal = -1
+            signal = -1.0
             confidence = (current - 0.8) / 0.2
         
         # Momentum reversal

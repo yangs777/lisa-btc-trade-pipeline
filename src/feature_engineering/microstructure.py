@@ -159,7 +159,7 @@ class MicrostructureFeatures:
                 denominator = n * x2 - x_sum * x_sum
                 if denominator != 0:
                     slope = (n * xy - x_sum * y_sum) / denominator
-                    return slope
+                    return float(slope)
         
         return 0.0
     

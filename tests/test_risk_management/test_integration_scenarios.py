@@ -13,7 +13,7 @@ from src.risk_management.risk_manager import RiskManager
 class TestRiskManagementIntegration:
     """Test complete risk management workflows."""
 
-    def test_complete_trading_scenario(self):
+    def test_complete_trading_scenario(self) -> None:
         """Test a complete trading scenario with multiple positions."""
         # Initialize with Kelly sizing
         kelly = KellyPositionSizer(kelly_fraction=0.25, min_edge=0.02)
@@ -126,7 +126,7 @@ class TestRiskManagementIntegration:
         assert report["portfolio_metrics"]["open_positions"] == 1  # One closed
         assert report["portfolio_metrics"]["drawdown_triggered"]
 
-    def test_api_throttling_integration(self):
+    def test_api_throttling_integration(self) -> None:
         """Test API throttling during rapid trading."""
         rm = RiskManager()
 
@@ -153,7 +153,7 @@ class TestRiskManagementIntegration:
         api_metrics = rm.api_throttler.get_metrics()
         assert api_metrics["total_requests"] > 0
 
-    def test_position_sizing_strategies_comparison(self):
+    def test_position_sizing_strategies_comparison(self) -> None:
         """Compare different position sizing strategies."""
         portfolio = 100000
         price = 50000
@@ -168,17 +168,36 @@ class TestRiskManagementIntegration:
 
         # Test Kelly
         rm_kelly = RiskManager(position_sizer=KellyPositionSizer())
-        result_kelly = rm_kelly.check_new_position("BTC/USDT", **params)
+        result_kelly = rm_kelly.check_new_position(
+            "BTC/USDT",
+            params["portfolio_value"],
+            params["current_price"],
+            params["signal_confidence"],
+            win_rate=params["win_rate"],
+            avg_win=params["avg_win"],
+            avg_loss=params["avg_loss"]
+        )
 
         # Test Fixed Fractional
         rm_fixed = RiskManager(position_sizer=FixedFractionalPositionSizer(risk_per_trade=0.02))
-        result_fixed = rm_fixed.check_new_position("BTC/USDT", **params)
+        result_fixed = rm_fixed.check_new_position(
+            "BTC/USDT",
+            params["portfolio_value"],
+            params["current_price"],
+            params["signal_confidence"]
+        )
 
         # Test Volatility Parity
         rm_vol = RiskManager(position_sizer=VolatilityParityPositionSizer(target_volatility=0.15))
         params_vol = params.copy()
         params_vol["volatility"] = 0.80  # 80% annual vol
-        result_vol = rm_vol.check_new_position("BTC/USDT", **params_vol)
+        result_vol = rm_vol.check_new_position(
+            "BTC/USDT",
+            params_vol["portfolio_value"],
+            params_vol["current_price"],
+            params_vol["signal_confidence"],
+            volatility=params_vol["volatility"]
+        )
 
         # All should approve but with different sizes
         assert result_kelly["approved"]
@@ -189,7 +208,7 @@ class TestRiskManagementIntegration:
         assert result_kelly["position_size"] != result_fixed["position_size"]
         assert result_fixed["position_size"] != result_vol["position_size"]
 
-    def test_daily_loss_limit_scenario(self):
+    def test_daily_loss_limit_scenario(self) -> None:
         """Test daily loss limit enforcement."""
         rm = RiskManager(max_daily_loss=0.02, max_position_count=5)
 
@@ -205,7 +224,7 @@ class TestRiskManagementIntegration:
             positions.append(f"pos{i}")
 
         # Close positions with losses
-        total_loss = 0
+        total_loss = 0.0
         for pos_id in positions[:2]:
             pnl = rm.record_position_close(
                 position_id=pos_id,
@@ -232,7 +251,7 @@ class TestRiskManagementIntegration:
             assert not result["approved"]
             assert "Daily loss limit" in result["reason"]
 
-    def test_cost_impact_on_small_positions(self):
+    def test_cost_impact_on_small_positions(self) -> None:
         """Test how costs affect small position viability."""
         rm = RiskManager()
 
@@ -255,7 +274,7 @@ class TestRiskManagementIntegration:
 
         # At some point, positions become too small
 
-    def test_recovery_after_drawdown(self):
+    def test_recovery_after_drawdown(self) -> None:
         """Test system behavior during recovery from drawdown."""
         rm = RiskManager(max_drawdown=0.10)
 

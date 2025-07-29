@@ -35,7 +35,7 @@ class ErrorHandler:
             Wrapped function with retry logic
         """
         @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             last_exception = None
             
             for attempt in range(self.max_retries):
@@ -50,10 +50,13 @@ class ErrorHandler:
                         time.sleep(wait_time)
                     else:
                         # Last attempt failed
-                        raise last_exception
+                        raise last_exception from e
             
             # Should not reach here
-            raise last_exception
+            if last_exception:
+                raise last_exception
+            else:
+                raise RuntimeError("No exception captured")
         
         return wrapper
     
@@ -86,7 +89,7 @@ class CircuitBreaker:
         self.last_failure_time: Optional[float] = None
         self.state = "closed"  # closed, open, half_open
     
-    def call(self, func: Callable, *args, **kwargs) -> Any:
+    def call(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """Call function with circuit breaker protection.
         
         Args:

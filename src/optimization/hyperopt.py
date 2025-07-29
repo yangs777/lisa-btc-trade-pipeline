@@ -1,6 +1,6 @@
 """Hyperparameter optimization utilities."""
 
-from typing import Dict, Any, Callable, Union, List, Tuple
+from typing import Dict, Any, Callable, Union, List, Tuple, Optional
 import numpy as np
 import random
 
@@ -157,7 +157,7 @@ class HyperparameterOptimizer:
                 if isinstance(low, int) and isinstance(high, int):
                     params[param_name] = random.randint(low, high)
                 else:
-                    params[param_name] = random.uniform(low, high)
+                    params[param_name] = float(random.uniform(low, high))
             elif isinstance(param_range, list):
                 # Categorical parameter
                 params[param_name] = random.choice(param_range)

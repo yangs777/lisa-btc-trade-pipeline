@@ -108,7 +108,8 @@ def load_yaml_config(path: str) -> dict[str, Any]:
     """
     import yaml
     with open(path, 'r') as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f)
+        return config if config is not None else {}
 
 
 def validate_data(data: Any) -> bool:
