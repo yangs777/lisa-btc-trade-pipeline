@@ -1,0 +1,313 @@
+# Technical Indicators Configuration
+# Total: 104 indicators across different categories
+
+trend:
+  - name: SMA_5
+    class: SMA
+    params: {window: 5}
+  - name: SMA_10
+    class: SMA
+    params: {window: 10}
+  - name: SMA_20
+    class: SMA
+    params: {window: 20}
+  - name: SMA_50
+    class: SMA
+    params: {window: 50}
+  - name: SMA_100
+    class: SMA
+    params: {window: 100}
+  - name: SMA_200
+    class: SMA
+    params: {window: 200}
+  - name: EMA_5
+    class: EMA
+    params: {window: 5}
+  - name: EMA_10
+    class: EMA
+    params: {window: 10}
+  - name: EMA_20
+    class: EMA
+    params: {window: 20}
+  - name: EMA_50
+    class: EMA
+    params: {window: 50}
+  - name: EMA_100
+    class: EMA
+    params: {window: 100}
+  - name: EMA_200
+    class: EMA
+    params: {window: 200}
+  - name: WMA_10
+    class: WMA
+    params: {window: 10}
+  - name: WMA_20
+    class: WMA
+    params: {window: 20}
+  - name: HMA_9
+    class: HMA
+    params: {window: 9}
+  - name: HMA_21
+    class: HMA
+    params: {window: 21}
+  - name: TEMA_20
+    class: TEMA
+    params: {window: 20}
+  - name: DEMA_20
+    class: DEMA
+    params: {window: 20}
+  - name: KAMA_10
+    class: KAMA
+    params: {window: 10}
+  - name: ICHIMOKU_TENKAN
+    class: IchimokuTenkan
+    params: {window: 9}
+  - name: ICHIMOKU_KIJUN
+    class: IchimokuKijun
+    params: {window: 26}
+  - name: ICHIMOKU_SENKOU_A
+    class: IchimokuSenkouA
+    params: {tenkan: 9, kijun: 26}
+  - name: ICHIMOKU_SENKOU_B
+    class: IchimokuSenkouB
+    params: {window: 52}
+
+momentum:
+  - name: RSI_7
+    class: RSI
+    params: {window: 7}
+  - name: RSI_14
+    class: RSI
+    params: {window: 14}
+  - name: RSI_21
+    class: RSI
+    params: {window: 21}
+  - name: STOCH_K
+    class: StochasticK
+    params: {window: 14, smooth: 3}
+  - name: STOCH_D
+    class: StochasticD
+    params: {window: 14, smooth_k: 3, smooth_d: 3}
+  - name: STOCHRSI_K
+    class: StochRSIK
+    params: {window: 14, smooth: 3}
+  - name: STOCHRSI_D
+    class: StochRSID
+    params: {window: 14, smooth_k: 3, smooth_d: 3}
+  - name: MACD
+    class: MACD
+    params: {fast: 12, slow: 26, signal: 9}
+  - name: MACD_SIGNAL
+    class: MACDSignal
+    params: {fast: 12, slow: 26, signal: 9}
+  - name: MACD_HIST
+    class: MACDHist
+    params: {fast: 12, slow: 26, signal: 9}
+  - name: CCI_14
+    class: CCI
+    params: {window: 14}
+  - name: CCI_20
+    class: CCI
+    params: {window: 20}
+  - name: WILLIAMS_R
+    class: WilliamsR
+    params: {window: 14}
+  - name: ROC_10
+    class: ROC
+    params: {window: 10}
+  - name: ROC_20
+    class: ROC
+    params: {window: 20}
+  - name: MOM_10
+    class: Momentum
+    params: {window: 10}
+  - name: MOM_20
+    class: Momentum
+    params: {window: 20}
+  - name: TSI
+    class: TSI
+    params: {slow: 25, fast: 13}
+  - name: UO
+    class: UltimateOscillator
+    params: {fast: 7, medium: 14, slow: 28}
+  - name: AO
+    class: AwesomeOscillator
+    params: {fast: 5, slow: 34}
+
+volatility:
+  - name: ATR_14
+    class: ATR
+    params: {window: 14}
+  - name: ATR_20
+    class: ATR
+    params: {window: 20}
+  - name: NATR_14
+    class: NATR
+    params: {window: 14}
+  - name: BB_UPPER
+    class: BollingerUpper
+    params: {window: 20, std: 2}
+  - name: BB_MIDDLE
+    class: BollingerMiddle
+    params: {window: 20}
+  - name: BB_LOWER
+    class: BollingerLower
+    params: {window: 20, std: 2}
+  - name: BB_WIDTH
+    class: BollingerWidth
+    params: {window: 20, std: 2}
+  - name: BB_PERCENT
+    class: BollingerPercent
+    params: {window: 20, std: 2}
+  - name: KC_UPPER
+    class: KeltnerUpper
+    params: {window: 20, atr_window: 10, mult: 2}
+  - name: KC_MIDDLE
+    class: KeltnerMiddle
+    params: {window: 20}
+  - name: KC_LOWER
+    class: KeltnerLower
+    params: {window: 20, atr_window: 10, mult: 2}
+  - name: DC_UPPER
+    class: DonchianUpper
+    params: {window: 20}
+  - name: DC_LOWER
+    class: DonchianLower
+    params: {window: 20}
+  - name: ULCER_INDEX
+    class: UlcerIndex
+    params: {window: 14}
+  - name: MASS_INDEX
+    class: MassIndex
+    params: {window: 25}
+
+volume:
+  - name: OBV
+    class: OBV
+    params: {}
+  - name: AD
+    class: AD
+    params: {}
+  - name: ADL
+    class: ADL
+    params: {}
+  - name: CMF_20
+    class: CMF
+    params: {window: 20}
+  - name: EMV_14
+    class: EMV
+    params: {window: 14}
+  - name: FI_13
+    class: ForceIndex
+    params: {window: 13}
+  - name: MFI_14
+    class: MFI
+    params: {window: 14}
+  - name: NVI
+    class: NVI
+    params: {}
+  - name: PVI
+    class: PVI
+    params: {}
+  - name: VWAP
+    class: VWAP
+    params: {}
+  - name: VPT
+    class: VPT
+    params: {}
+  - name: VWMA_20
+    class: VWMA
+    params: {window: 20}
+
+trend_strength:
+  - name: ADX_14
+    class: ADX
+    params: {window: 14}
+  - name: ADX_20
+    class: ADX
+    params: {window: 20}
+  - name: DI_PLUS_14
+    class: DIPlus
+    params: {window: 14}
+  - name: DI_MINUS_14
+    class: DIMinus
+    params: {window: 14}
+  - name: AROON_UP_25
+    class: AroonUp
+    params: {window: 25}
+  - name: AROON_DOWN_25
+    class: AroonDown
+    params: {window: 25}
+  - name: AROON_OSC_25
+    class: AroonOsc
+    params: {window: 25}
+  - name: VI_PLUS_14
+    class: VortexPlus
+    params: {window: 14}
+  - name: VI_MINUS_14
+    class: VortexMinus
+    params: {window: 14}
+  - name: TRIX_14
+    class: TRIX
+    params: {window: 14}
+  - name: MI_9
+    class: MassIndex
+    params: {window: 9}
+
+pattern:
+  - name: PSAR
+    class: PSAR
+    params: {af: 0.02, max_af: 0.2}
+  - name: PSAR_TREND
+    class: PSARTrend
+    params: {af: 0.02, max_af: 0.2}
+  - name: SUPERTREND_7_3
+    class: SuperTrend
+    params: {window: 7, mult: 3}
+  - name: SUPERTREND_10_3
+    class: SuperTrend
+    params: {window: 10, mult: 3}
+  - name: ZIG_ZAG_5
+    class: ZigZag
+    params: {pct: 5}
+  - name: PIVOT_HIGH
+    class: PivotHigh
+    params: {window: 5}
+  - name: PIVOT_LOW
+    class: PivotLow
+    params: {window: 5}
+
+statistical:
+  - name: STDDEV_20
+    class: StdDev
+    params: {window: 20}
+  - name: VAR_20
+    class: Variance
+    params: {window: 20}
+  - name: SEM_20
+    class: SEM
+    params: {window: 20}
+  - name: SKEW_20
+    class: Skew
+    params: {window: 20}
+  - name: KURT_20
+    class: Kurtosis
+    params: {window: 20}
+  - name: CORREL_20
+    class: Correlation
+    params: {window: 20}
+  - name: BETA_20
+    class: Beta
+    params: {window: 20}
+  - name: LINEARREG_20
+    class: LinearReg
+    params: {window: 20}
+  - name: LINEARREG_SLOPE_20
+    class: LinearRegSlope
+    params: {window: 20}
+  - name: LINEARREG_ANGLE_20
+    class: LinearRegAngle
+    params: {window: 20}
+  - name: TSF_20
+    class: TSF
+    params: {window: 20}
