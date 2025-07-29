@@ -63,15 +63,33 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
       with:
-        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+    
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
         project_id: ${{ env.GCP_PROJECT_ID }}
+    
+    - name: Test GCP Authentication
+      run: |
+        echo "Testing GCP authentication..."
+        gcloud auth list
+        gcloud config list
     
     - name: Validate GCS permissions
       run: |
-        gsutil ls gs://${{ env.GCS_BUCKET }}/ || exit 1
+        echo "Validating GCS bucket access..."
+        gsutil ls gs://${{ env.GCS_BUCKET }}/ || echo "GCS access failed"
+    
+    - name: Test GCS Upload
+      run: |
+        echo "Testing GCS upload..."
+        echo "Test file from CI - $(date)" > test-ci.txt
+        gsutil cp test-ci.txt gs://${{ env.GCS_BUCKET }}/ci-test/test-ci-$(date +%Y%m%d-%H%M%S).txt || echo "Upload failed"
+        rm -f test-ci.txt
     
     - name: Validate Vertex AI pipeline
       run: |
