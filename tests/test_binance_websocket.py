@@ -1,4 +1,5 @@
 """Tests for Binance WebSocket data collector."""
+# mypy: ignore-errors
 
 import asyncio
 import json

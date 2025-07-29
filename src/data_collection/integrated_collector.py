@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import signal
-from typing import Optional
+from typing import Optional, List
 
 from .binance_websocket import BinanceWebSocketCollector
 from .gcs_uploader import GCSUploader
@@ -60,7 +60,7 @@ class IntegratedDataCollector:
             cleanup_after_upload=cleanup_after_upload,
         )
         
-        self._tasks = []
+        self._tasks: List[asyncio.Task] = []
         self._running = False
         
     async def start(self) -> None:
@@ -120,7 +120,7 @@ class IntegratedDataCollector:
         }
 
 
-async def main():
+async def main() -> None:
     """Run integrated data collection with signal handling."""
     logging.basicConfig(
         level=logging.INFO,
@@ -143,7 +143,7 @@ async def main():
     # Setup signal handlers
     loop = asyncio.get_event_loop()
     
-    def signal_handler(sig):
+    def signal_handler(sig: int) -> None:
         logger.info(f"Received signal {sig}, shutting down...")
         asyncio.create_task(collector.stop())
         

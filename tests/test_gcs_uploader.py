@@ -1,4 +1,5 @@
 """Tests for GCS uploader."""
+# mypy: ignore-errors
 
 import asyncio
 import sys

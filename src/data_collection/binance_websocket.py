@@ -76,7 +76,9 @@ class BinanceWebSocketCollector:
             }
             
             self.orderbook_buffer.append(data)
-            self.stats["orderbook_count"] = int(self.stats.get("orderbook_count", 0)) + 1
+            orderbook_count = self.stats.get("orderbook_count", 0)
+            if isinstance(orderbook_count, int):
+                self.stats["orderbook_count"] = orderbook_count + 1
             self.stats["last_orderbook_time"] = datetime.now(timezone.utc)
             
             if len(self.orderbook_buffer) >= self.buffer_size:
@@ -84,7 +86,9 @@ class BinanceWebSocketCollector:
                 
         except Exception as e:
             logger.error(f"Error processing orderbook message: {e}")
-            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
+            errors = self.stats.get("errors", 0)
+            if isinstance(errors, int):
+                self.stats["errors"] = errors + 1
 
     async def _handle_trade_message(self, message: Dict[str, Any]) -> None:
         """Process trade message."""
@@ -103,7 +107,9 @@ class BinanceWebSocketCollector:
             }
             
             self.trade_buffer.append(data)
-            self.stats["trade_count"] = int(self.stats.get("trade_count", 0)) + 1
+            trade_count = self.stats.get("trade_count", 0)
+            if isinstance(trade_count, int):
+                self.stats["trade_count"] = trade_count + 1
             self.stats["last_trade_time"] = datetime.now(timezone.utc)
             
             if len(self.trade_buffer) >= self.buffer_size:
@@ -111,7 +117,9 @@ class BinanceWebSocketCollector:
                 
         except Exception as e:
             logger.error(f"Error processing trade message: {e}")
-            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
+            errors = self.stats.get("errors", 0)
+            if isinstance(errors, int):
+                self.stats["errors"] = errors + 1
 
     async def _handle_agg_trade_message(self, message: Dict[str, Any]) -> None:
         """Process aggregated trade message."""
@@ -130,14 +138,18 @@ class BinanceWebSocketCollector:
             }
             
             self.agg_trade_buffer.append(data)
-            self.stats["agg_trade_count"] = int(self.stats.get("agg_trade_count", 0)) + 1
+            agg_trade_count = self.stats.get("agg_trade_count", 0)
+            if isinstance(agg_trade_count, int):
+                self.stats["agg_trade_count"] = agg_trade_count + 1
             
             if len(self.agg_trade_buffer) >= self.buffer_size:
                 await self._flush_agg_trade_buffer()
                 
         except Exception as e:
             logger.error(f"Error processing aggregated trade message: {e}")
-            self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
+            errors = self.stats.get("errors", 0)
+            if isinstance(errors, int):
+                self.stats["errors"] = errors + 1
 
     async def _flush_orderbook_buffer(self) -> None:
         """Write orderbook buffer to disk."""
@@ -223,7 +235,9 @@ class BinanceWebSocketCollector:
                     
             except Exception as e:
                 logger.error(f"Unexpected error in {stream_name}: {e}")
-                self.stats["errors"] = int(self.stats.get("errors", 0)) + 1
+                errors = self.stats.get("errors", 0)
+            if isinstance(errors, int):
+                self.stats["errors"] = errors + 1
                 retry_count += 1
                 if retry_count < max_retries:
                     await asyncio.sleep(2 ** retry_count)

@@ -94,8 +94,12 @@ class GCSUploader:
             )
             
             file_size = len(content)
-            self.stats["files_uploaded"] = int(self.stats.get("files_uploaded", 0)) + 1
-            self.stats["bytes_uploaded"] = int(self.stats.get("bytes_uploaded", 0)) + file_size
+            files_uploaded = self.stats.get("files_uploaded", 0)
+            if isinstance(files_uploaded, int):
+                self.stats["files_uploaded"] = files_uploaded + 1
+            bytes_uploaded = self.stats.get("bytes_uploaded", 0)
+            if isinstance(bytes_uploaded, int):
+                self.stats["bytes_uploaded"] = bytes_uploaded + file_size
             self.stats["last_upload_time"] = datetime.now(timezone.utc)
             
             logger.info(
@@ -107,7 +111,9 @@ class GCSUploader:
             if self.cleanup_after_upload:
                 try:
                     file_path.unlink()
-                    self.stats["files_deleted"] = int(self.stats.get("files_deleted", 0)) + 1
+                    files_deleted = self.stats.get("files_deleted", 0)
+                    if isinstance(files_deleted, int):
+                        self.stats["files_deleted"] = files_deleted + 1
                     logger.debug(f"Deleted local file: {file_path}")
                 except Exception as e:
                     logger.warning(f"Failed to delete local file {file_path}: {e}")
@@ -121,7 +127,9 @@ class GCSUploader:
                 logger.error(f"GCS upload error for {file_path}: {e}")
             else:
                 logger.error(f"Unexpected error uploading {file_path}: {e}")
-            self.stats["files_failed"] = int(self.stats.get("files_failed", 0)) + 1
+            files_failed = self.stats.get("files_failed", 0)
+            if isinstance(files_failed, int):
+                self.stats["files_failed"] = files_failed + 1
             return False
             
     async def _upload_worker(self) -> None:
