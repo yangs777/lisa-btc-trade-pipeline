@@ -79,6 +79,12 @@ lisa_btc_trade_pipeline_v1_1/
 │   ├── feature_selector.py    # SHAP-based selection
 │   └── feature_validator.py   # Data quality checks
 │
+├── src/                      # Source code
+│   ├── data_collection/     # WebSocket & GCS modules
+│   ├── data_processing/     # Daily preprocessor
+│   ├── feature_engineering/ # 104 indicators
+│   └── rl/                  # τ-SAC RL system (Task 4)
+│
 ├── training/                 # RL training system
 │   ├── tau_sac.py           # τ-SAC implementation
 │   ├── rl_env.py            # Trading environment
