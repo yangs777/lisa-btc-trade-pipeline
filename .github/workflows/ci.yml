@@ -36,12 +36,12 @@ jobs:
         pip install -r requirements-minimal.txt
     
     - name: Run type checking
-      run: mypy --install-types --non-interactive --ignore-missing-imports .
+      run: mypy --install-types --non-interactive --ignore-missing-imports src tests
     
     - name: Run linting
       run: |
-        ruff check .
-        black --check .
+        ruff check src tests
+        black --check src tests
     
     - name: Run security checks
       run: |
