@@ -148,7 +148,10 @@ async def main() -> None:
         asyncio.create_task(collector.stop())
         
     for sig in (signal.SIGTERM, signal.SIGINT):
-        loop.add_signal_handler(sig, lambda s=sig: signal_handler(s))
+        # Create a closure to capture the signal value
+        def make_handler(s: int) -> None:
+            signal_handler(s)
+        loop.add_signal_handler(sig, lambda: make_handler(sig))
     
     try:
         # Run collector
