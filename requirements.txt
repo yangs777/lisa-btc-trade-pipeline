@@ -39,7 +39,7 @@ fastapi==0.104.1
 uvicorn==0.24.0
 pydantic==2.4.2
 python-multipart==0.0.6
-aiohttp==3.8.5
+aiohttp>=3.10.11
 
 # Monitoring and Observability
 prometheus-client==0.18.0
