@@ -1,0 +1,87 @@
+# Vertex AI Pipeline for BTC/USDT Data Preprocessing
+# This pipeline processes raw orderbook data and generates features for τ-SAC model training
+
+apiVersion: argoproj.io/v3alpha1
+kind: Workflow
+metadata:
+  generateName: btc-preprocess-pipeline-
+  annotations:
+    pipelines.kubeflow.org/kfp_sdk_version: "1.8.0"
+    pipelines.kubeflow.org/pipeline_compilation_time: "2024-02-01T00:00:00"
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "BTC/USDT data preprocessing pipeline for τ-SAC trading system", "name": "btc-preprocess-pipeline"}'
+spec:
+  entrypoint: btc-preprocess-pipeline
+  templates:
+  - name: btc-preprocess-pipeline
+    dag:
+      tasks:
+      - name: data-validation
+        template: data-validation
+      - name: feature-engineering
+        template: feature-engineering
+        dependencies: [data-validation]
+      - name: data-splitting
+        template: data-splitting
+        dependencies: [feature-engineering]
+      - name: model-training-prep
+        template: model-training-prep
+        dependencies: [data-splitting]
+  
+  - name: data-validation
+    container:
+      image: gcr.io/my-project-779482/btc-preprocessor:latest
+      command: [python, -m, src.preprocessing.data_validator]
+      env:
+      - name: GCS_BUCKET
+        value: "btc-orderbook-data"
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/secrets/gcp/key.json"
+      volumeMounts:
+      - name: gcp-key
+        mountPath: /secrets/gcp
+    
+  - name: feature-engineering
+    container:
+      image: gcr.io/my-project-779482/btc-preprocessor:latest
+      command: [python, -m, src.features.feature_engineering]
+      env:
+      - name: GCS_BUCKET
+        value: "btc-orderbook-data"
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/secrets/gcp/key.json"
+      volumeMounts:
+      - name: gcp-key
+        mountPath: /secrets/gcp
+    
+  - name: data-splitting
+    container:
+      image: gcr.io/my-project-779482/btc-preprocessor:latest
+      command: [python, -m, src.preprocessing.data_splitter]
+      env:
+      - name: GCS_BUCKET
+        value: "btc-orderbook-data"
+      - name: TRAIN_TEST_SPLIT
+        value: "0.8"
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/secrets/gcp/key.json"
+      volumeMounts:
+      - name: gcp-key
+        mountPath: /secrets/gcp
+    
+  - name: model-training-prep
+    container:
+      image: gcr.io/my-project-779482/btc-preprocessor:latest
+      command: [python, -m, src.preprocessing.training_data_prep]
+      env:
+      - name: GCS_BUCKET
+        value: "btc-orderbook-data"
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: "/secrets/gcp/key.json"
+      volumeMounts:
+      - name: gcp-key
+        mountPath: /secrets/gcp
+  
+  volumes:
+  - name: gcp-key
+    secret:
+      secretName: gcp-key

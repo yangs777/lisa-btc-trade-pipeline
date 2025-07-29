@@ -59,6 +59,7 @@ jobs:
   gcp-validation:
     runs-on: ubuntu-latest
     needs: test
+    if: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY != '' }}
     steps:
     - uses: actions/checkout@v3
     
