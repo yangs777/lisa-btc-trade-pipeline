@@ -236,8 +236,8 @@ class BinanceWebSocketCollector:
             except Exception as e:
                 logger.error(f"Unexpected error in {stream_name}: {e}")
                 errors = self.stats.get("errors", 0)
-            if isinstance(errors, int):
-                self.stats["errors"] = errors + 1
+                if isinstance(errors, int):
+                    self.stats["errors"] = errors + 1
                 retry_count += 1
                 if retry_count < max_retries:
                     await asyncio.sleep(2 ** retry_count)
