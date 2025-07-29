@@ -77,7 +77,7 @@ class WMA(PriceIndicator):
         price = self._get_price(df)
         weights = np.arange(1, self.window_size + 1)
         
-        def weighted_mean(x):
+        def weighted_mean(x: np.ndarray) -> float:
             return np.sum(weights[-len(x):] * x) / np.sum(weights[-len(x):])
             
         wma = price.rolling(window=self.window_size).apply(weighted_mean, raw=True)
@@ -123,7 +123,7 @@ class HMA(PriceIndicator):
         """Helper method to calculate WMA."""
         weights = np.arange(1, period + 1)
         
-        def weighted_mean(x):
+        def weighted_mean(x: np.ndarray) -> float:
             if len(x) < period:
                 return np.nan
             return np.sum(weights * x[-period:]) / np.sum(weights)

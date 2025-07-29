@@ -365,7 +365,7 @@ class DailyPreprocessor:
         return processed_files
 
 
-async def main():
+async def main() -> None:
     """Example usage of DailyPreprocessor."""
     logging.basicConfig(
         level=logging.INFO,

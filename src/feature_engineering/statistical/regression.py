@@ -98,7 +98,7 @@ class LinearReg(PriceIndicator):
         """Calculate Linear Regression (end point of regression line)."""
         price = self._get_price(df)
         
-        def linear_regression_value(y):
+        def linear_regression_value(y: np.ndarray) -> float:
             if len(y) < 2:
                 return np.nan
             x = np.arange(len(y))
@@ -131,7 +131,7 @@ class LinearRegSlope(PriceIndicator):
         """Calculate Linear Regression Slope."""
         price = self._get_price(df)
         
-        def calculate_slope(y):
+        def calculate_slope(y: np.ndarray) -> float:
             if len(y) < 2:
                 return np.nan
             x = np.arange(len(y))
@@ -193,7 +193,7 @@ class TSF(PriceIndicator):
         """Calculate Time Series Forecast (projects one period ahead)."""
         price = self._get_price(df)
         
-        def forecast_next(y):
+        def forecast_next(y: np.ndarray) -> float:
             if len(y) < 2:
                 return np.nan
             x = np.arange(len(y))

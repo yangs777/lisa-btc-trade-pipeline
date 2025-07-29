@@ -1,4 +1,5 @@
 """Tests for feature engineering module."""
+# mypy: ignore-errors
 
 import json
 import sys

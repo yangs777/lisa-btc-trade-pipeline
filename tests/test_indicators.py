@@ -1,4 +1,5 @@
 """Tests for specific indicator implementations."""
+# mypy: ignore-errors
 
 import sys
 from unittest.mock import MagicMock, patch

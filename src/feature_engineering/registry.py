@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class IndicatorRegistry:
     """Registry for managing and loading technical indicators."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the registry."""
         self._indicators: Dict[str, Type[BaseIndicator]] = {}
         self._configs: Dict[str, dict] = {}

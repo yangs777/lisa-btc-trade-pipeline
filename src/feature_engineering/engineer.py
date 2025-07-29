@@ -40,7 +40,7 @@ class FeatureEngineer:
         self.indicators = registry.create_all_indicators()
         logger.info(f"Initialized {len(self.indicators)} indicators")
         
-    def _register_all_indicators(self):
+    def _register_all_indicators(self) -> None:
         """Register all indicator classes with the registry."""
         # Trend indicators
         registry.register("SMA", trend.SMA)
