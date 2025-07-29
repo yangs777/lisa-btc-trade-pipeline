@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import signal
+from typing import Callable
 
 from .binance_websocket import BinanceWebSocketCollector
 from .gcs_uploader import GCSUploader
@@ -158,9 +159,11 @@ async def main() -> None:
 
     for sig in (signal.SIGTERM, signal.SIGINT):
         # Create a closure to capture the signal value
-        def make_handler(s: int) -> None:
-            signal_handler(s)
-        loop.add_signal_handler(sig, lambda s=sig: make_handler(s))
+        def make_handler(s: int) -> Callable[[], None]:
+            def handler() -> None:
+                signal_handler(s)
+            return handler
+        loop.add_signal_handler(sig, make_handler(sig))
 
     try:
         # Run collector
