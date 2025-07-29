@@ -1,30 +1,21 @@
 """Main feature engineering class."""
 
 import logging
-from typing import Dict, List, Optional
-import pandas as pd
 from pathlib import Path
 
-from .registry import registry
-from .base import BaseIndicator
+import pandas as pd
 
 # Import all indicator categories to register them
-from . import trend
-from . import momentum
-from . import volatility
-from . import volume
-from . import trend_strength
-from . import pattern
-from . import statistical
-
+from . import momentum, pattern, statistical, trend, trend_strength, volatility, volume
+from .registry import registry
 
 logger = logging.getLogger(__name__)
 
 
 class FeatureEngineer:
     """Main class for feature engineering."""
-    
-    def __init__(self, config_path: Optional[str] = None):
+
+    def __init__(self, config_path: str | None = None):
         """Initialize Feature Engineer.
         
         Args:
@@ -32,14 +23,14 @@ class FeatureEngineer:
         """
         self.config_path = config_path or str(Path(__file__).parent.parent.parent / "indicators.yaml")
         self._register_all_indicators()
-        
+
         # Load configuration
         registry.load_config(self.config_path)
-        
+
         # Create all indicators
         self.indicators = registry.create_all_indicators()
         logger.info(f"Initialized {len(self.indicators)} indicators")
-        
+
     def _register_all_indicators(self) -> None:
         """Register all indicator classes with the registry."""
         # Trend indicators
@@ -54,7 +45,7 @@ class FeatureEngineer:
         registry.register("IchimokuKijun", trend.IchimokuKijun)
         registry.register("IchimokuSenkouA", trend.IchimokuSenkouA)
         registry.register("IchimokuSenkouB", trend.IchimokuSenkouB)
-        
+
         # Momentum indicators
         registry.register("RSI", momentum.RSI)
         registry.register("StochasticK", momentum.StochasticK)
@@ -71,7 +62,7 @@ class FeatureEngineer:
         registry.register("TSI", momentum.TSI)
         registry.register("UltimateOscillator", momentum.UltimateOscillator)
         registry.register("AwesomeOscillator", momentum.AwesomeOscillator)
-        
+
         # Volatility indicators
         registry.register("ATR", volatility.ATR)
         registry.register("NATR", volatility.NATR)
@@ -87,7 +78,7 @@ class FeatureEngineer:
         registry.register("DonchianLower", volatility.DonchianLower)
         registry.register("UlcerIndex", volatility.UlcerIndex)
         registry.register("MassIndex", volatility.MassIndex)
-        
+
         # Volume indicators
         registry.register("OBV", volume.OBV)
         registry.register("AD", volume.AD)
@@ -101,7 +92,7 @@ class FeatureEngineer:
         registry.register("VWAP", volume.VWAP)
         registry.register("VPT", volume.VPT)
         registry.register("VWMA", volume.VWMA)
-        
+
         # Trend strength indicators
         registry.register("ADX", trend_strength.ADX)
         registry.register("DIPlus", trend_strength.DIPlus)
@@ -112,7 +103,7 @@ class FeatureEngineer:
         registry.register("VortexPlus", trend_strength.VortexPlus)
         registry.register("VortexMinus", trend_strength.VortexMinus)
         registry.register("TRIX", trend_strength.TRIX)
-        
+
         # Pattern indicators
         registry.register("PSAR", pattern.PSAR)
         registry.register("PSARTrend", pattern.PSARTrend)
@@ -120,7 +111,7 @@ class FeatureEngineer:
         registry.register("ZigZag", pattern.ZigZag)
         registry.register("PivotHigh", pattern.PivotHigh)
         registry.register("PivotLow", pattern.PivotLow)
-        
+
         # Statistical indicators
         registry.register("StdDev", statistical.StdDev)
         registry.register("Variance", statistical.Variance)
@@ -133,7 +124,7 @@ class FeatureEngineer:
         registry.register("LinearRegSlope", statistical.LinearRegSlope)
         registry.register("LinearRegAngle", statistical.LinearRegAngle)
         registry.register("TSF", statistical.TSF)
-        
+
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply all indicators to the dataframe.
         
@@ -145,7 +136,7 @@ class FeatureEngineer:
         """
         # Create a copy to avoid modifying the original
         result_df = df.copy()
-        
+
         # Apply each indicator
         for name, indicator in self.indicators.items():
             try:
@@ -155,11 +146,11 @@ class FeatureEngineer:
                 logger.error(f"Failed to calculate {name}: {e}")
                 # Fill with NaN if calculation fails
                 result_df[name] = pd.NA
-                
+
         logger.info(f"Calculated {len(self.indicators)} indicators")
         return result_df
-        
-    def transform_selective(self, df: pd.DataFrame, indicator_names: List[str]) -> pd.DataFrame:
+
+    def transform_selective(self, df: pd.DataFrame, indicator_names: list[str]) -> pd.DataFrame:
         """Apply only selected indicators.
         
         Args:
@@ -170,34 +161,34 @@ class FeatureEngineer:
             DataFrame with selected indicator features added
         """
         result_df = df.copy()
-        
+
         for name in indicator_names:
             if name not in self.indicators:
                 logger.warning(f"Indicator {name} not found")
                 continue
-                
+
             try:
                 logger.debug(f"Calculating {name}")
                 result_df[name] = self.indicators[name].transform(df)
             except Exception as e:
                 logger.error(f"Failed to calculate {name}: {e}")
                 result_df[name] = pd.NA
-                
+
         return result_df
-        
-    def get_indicator_info(self) -> Dict[str, Dict]:
+
+    def get_indicator_info(self) -> dict[str, dict]:
         """Get information about all indicators.
         
         Returns:
             Dictionary with indicator information
         """
         info = {}
-        
+
         for name, indicator in self.indicators.items():
             info[name] = {
                 "class": indicator.__class__.__name__,
                 "module": indicator.__class__.__module__,
                 "window_size": getattr(indicator, "window_size", None),
             }
-            
+
         return info

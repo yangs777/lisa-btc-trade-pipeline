@@ -1,11 +1,18 @@
 """Statistical indicators."""
 
-from .basic import StdDev, Variance, SEM, Skew, Kurtosis
-from .regression import (
-    Correlation, Beta, LinearReg, LinearRegSlope, LinearRegAngle, TSF
-)
+from .basic import SEM, Kurtosis, Skew, StdDev, Variance
+from .regression import TSF, Beta, Correlation, LinearReg, LinearRegAngle, LinearRegSlope
 
 __all__ = [
-    "StdDev", "Variance", "SEM", "Skew", "Kurtosis",
-    "Correlation", "Beta", "LinearReg", "LinearRegSlope", "LinearRegAngle", "TSF"
+    "SEM",
+    "TSF",
+    "Beta",
+    "Correlation",
+    "Kurtosis",
+    "LinearReg",
+    "LinearRegAngle",
+    "LinearRegSlope",
+    "Skew",
+    "StdDev",
+    "Variance"
 ]

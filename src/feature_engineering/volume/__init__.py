@@ -1,9 +1,19 @@
 """Volume indicators."""
 
-from .classic import OBV, AD, ADL, CMF, EMV, ForceIndex, NVI, PVI, VPT
+from .classic import AD, ADL, CMF, EMV, NVI, OBV, PVI, VPT, ForceIndex
 from .price_volume import MFI, VWAP, VWMA
 
 __all__ = [
-    "OBV", "AD", "ADL", "CMF", "EMV", "ForceIndex", "NVI", "PVI", "VPT",
-    "MFI", "VWAP", "VWMA"
+    "AD",
+    "ADL",
+    "CMF",
+    "EMV",
+    "MFI",
+    "NVI",
+    "OBV",
+    "PVI",
+    "VPT",
+    "VWAP",
+    "VWMA",
+    "ForceIndex"
 ]

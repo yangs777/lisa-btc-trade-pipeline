@@ -3,7 +3,6 @@
 import asyncio
 import logging
 import signal
-from typing import Optional, List
 
 from .binance_websocket import BinanceWebSocketCollector
 from .gcs_uploader import GCSUploader
@@ -13,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class IntegratedDataCollector:
     """Combines Binance WebSocket data collection with automatic GCS upload."""
-    
+
     def __init__(
         self,
         # Binance WebSocket settings
@@ -24,7 +23,7 @@ class IntegratedDataCollector:
         # GCS settings
         bucket_name: str = "btc-orderbook-data",
         project_id: str = "my-project-779482",
-        credentials_path: Optional[str] = None,
+        credentials_path: str | None = None,
         cleanup_after_upload: bool = True,
         upload_workers: int = 2,
     ):
@@ -43,7 +42,7 @@ class IntegratedDataCollector:
         """
         self.local_data_dir = local_data_dir
         self.upload_workers = upload_workers
-        
+
         # Initialize collectors
         self.websocket_collector = BinanceWebSocketCollector(
             symbol=symbol,
@@ -51,7 +50,7 @@ class IntegratedDataCollector:
             buffer_size=buffer_size,
             output_dir=local_data_dir,
         )
-        
+
         self.gcs_uploader = GCSUploader(
             bucket_name=bucket_name,
             project_id=project_id,
@@ -59,47 +58,47 @@ class IntegratedDataCollector:
             local_data_dir=local_data_dir,
             cleanup_after_upload=cleanup_after_upload,
         )
-        
-        self._tasks: List[asyncio.Task] = []
+
+        self._tasks: list[asyncio.Task] = []
         self._running = False
-        
+
     async def start(self) -> None:
         """Start integrated data collection and upload."""
         self._running = True
         logger.info("Starting integrated data collection system...")
-        
+
         # Start WebSocket collector
         websocket_task = asyncio.create_task(self.websocket_collector.start())
         self._tasks.append(websocket_task)
-        
+
         # Wait a bit for initial data collection
         await asyncio.sleep(5)
-        
+
         # Start GCS uploader
         uploader_task = asyncio.create_task(
             self.gcs_uploader.start(num_workers=self.upload_workers)
         )
         self._tasks.append(uploader_task)
-        
+
         # Wait for all tasks
         try:
             await asyncio.gather(*self._tasks)
         except asyncio.CancelledError:
             logger.info("Integrated collection cancelled")
-            
+
     async def stop(self) -> None:
         """Stop integrated data collection and upload."""
         logger.info("Stopping integrated data collection system...")
         self._running = False
-        
+
         # Stop collectors in order
         await self.websocket_collector.stop()
         await self.gcs_uploader.stop()
-        
+
         # Log combined statistics
         ws_stats = self.websocket_collector.get_stats()
         gcs_stats = self.gcs_uploader.get_stats()
-        
+
         logger.info(
             f"Integrated collection stopped. Combined statistics:\n"
             f"  WebSocket Collection:\n"
@@ -111,7 +110,7 @@ class IntegratedDataCollector:
             f"    Bytes uploaded: {gcs_stats['bytes_uploaded']:,}\n"
             f"    Files failed: {gcs_stats['files_failed']}"
         )
-        
+
     def get_stats(self) -> dict:
         """Get combined statistics from both collectors."""
         return {
@@ -126,7 +125,7 @@ async def main() -> None:
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    
+
     # Create integrated collector
     collector = IntegratedDataCollector(
         symbol="btcusdt",
@@ -139,20 +138,20 @@ async def main() -> None:
         cleanup_after_upload=True,
         upload_workers=2,
     )
-    
+
     # Setup signal handlers
     loop = asyncio.get_event_loop()
-    
+
     def signal_handler(sig: int) -> None:
         logger.info(f"Received signal {sig}, shutting down...")
         asyncio.create_task(collector.stop())
-        
+
     for sig in (signal.SIGTERM, signal.SIGINT):
         # Create a closure to capture the signal value
         def make_handler(s: int) -> None:
             signal_handler(s)
         loop.add_signal_handler(sig, lambda: make_handler(sig))
-    
+
     try:
         # Run collector
         await collector.start()

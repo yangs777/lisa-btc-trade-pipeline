@@ -1,13 +1,35 @@
 """Momentum indicators."""
 
+from .macd import MACD, MACDHist, MACDSignal
 from .oscillators import (
-    RSI, StochasticK, StochasticD, StochRSIK, StochRSID,
-    CCI, WilliamsR, ROC, Momentum, TSI, UltimateOscillator, AwesomeOscillator
+    CCI,
+    ROC,
+    RSI,
+    TSI,
+    AwesomeOscillator,
+    Momentum,
+    StochasticD,
+    StochasticK,
+    StochRSID,
+    StochRSIK,
+    UltimateOscillator,
+    WilliamsR,
 )
-from .macd import MACD, MACDSignal, MACDHist
 
 __all__ = [
-    "RSI", "StochasticK", "StochasticD", "StochRSIK", "StochRSID",
-    "CCI", "WilliamsR", "ROC", "Momentum", "TSI", "UltimateOscillator", 
-    "AwesomeOscillator", "MACD", "MACDSignal", "MACDHist"
+    "CCI",
+    "MACD",
+    "ROC",
+    "RSI",
+    "TSI",
+    "AwesomeOscillator",
+    "MACDHist",
+    "MACDSignal",
+    "Momentum",
+    "StochRSID",
+    "StochRSIK",
+    "StochasticD",
+    "StochasticK",
+    "UltimateOscillator",
+    "WilliamsR"
 ]

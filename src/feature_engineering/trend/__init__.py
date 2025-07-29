@@ -1,13 +1,18 @@
 """Trend following indicators."""
 
-from .moving_averages import (
-    SMA, EMA, WMA, HMA, TEMA, DEMA, KAMA
-)
-from .ichimoku import (
-    IchimokuTenkan, IchimokuKijun, IchimokuSenkouA, IchimokuSenkouB
-)
+from .ichimoku import IchimokuKijun, IchimokuSenkouA, IchimokuSenkouB, IchimokuTenkan
+from .moving_averages import DEMA, EMA, HMA, KAMA, SMA, TEMA, WMA
 
 __all__ = [
-    "SMA", "EMA", "WMA", "HMA", "TEMA", "DEMA", "KAMA",
-    "IchimokuTenkan", "IchimokuKijun", "IchimokuSenkouA", "IchimokuSenkouB"
+    "DEMA",
+    "EMA",
+    "HMA",
+    "KAMA",
+    "SMA",
+    "TEMA",
+    "WMA",
+    "IchimokuKijun",
+    "IchimokuSenkouA",
+    "IchimokuSenkouB",
+    "IchimokuTenkan"
 ]

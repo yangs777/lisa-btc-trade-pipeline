@@ -1,13 +1,18 @@
 """Trend strength indicators."""
 
-from .adx import ADX, DIPlus, DIMinus
-from .aroon import AroonUp, AroonDown, AroonOsc
-from .vortex import VortexPlus, VortexMinus
+from .adx import ADX, DIMinus, DIPlus
+from .aroon import AroonDown, AroonOsc, AroonUp
 from .trix import TRIX
+from .vortex import VortexMinus, VortexPlus
 
 __all__ = [
-    "ADX", "DIPlus", "DIMinus",
-    "AroonUp", "AroonDown", "AroonOsc",
-    "VortexPlus", "VortexMinus",
-    "TRIX"
+    "ADX",
+    "TRIX",
+    "AroonDown",
+    "AroonOsc",
+    "AroonUp",
+    "DIMinus",
+    "DIPlus",
+    "VortexMinus",
+    "VortexPlus"
 ]
