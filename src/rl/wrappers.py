@@ -46,7 +46,7 @@ class TradingEnvWrapper(gym.Wrapper):
         self.n_obs = 0
 
         # Episode tracking
-        self.episode_rewards = []
+        self.episode_rewards: list[float] = []
         self.episode_length = 0
 
     def reset(
@@ -72,11 +72,11 @@ class TradingEnvWrapper(gym.Wrapper):
         total_reward = 0.0
         terminated = False
         truncated = False
-        info = {}
+        info: dict[str, Any] = {}
 
         for _ in range(self.action_repeat):
             obs, reward, terminated, truncated, info = self.env.step(action)
-            total_reward += reward
+            total_reward += float(reward)
 
             self.episode_rewards.append(reward)
             self.episode_length += 1
@@ -123,8 +123,8 @@ class TradingEnvWrapper(gym.Wrapper):
         self.n_obs += 1
 
         if self.obs_mean is None:
-            self.obs_mean = obs.copy()
-            self.obs_std = np.zeros_like(obs)
+            self.obs_mean = obs.copy().astype(np.float64)
+            self.obs_std = np.zeros_like(obs).astype(np.float64)
         else:
             # Incremental update
             delta = obs - self.obs_mean
@@ -134,13 +134,13 @@ class TradingEnvWrapper(gym.Wrapper):
     def get_normalization_stats(self) -> dict[str, np.ndarray]:
         """Get current normalization statistics."""
         if self.n_obs > 1:
-            std = np.sqrt(self.obs_std / (self.n_obs - 1))
+            std = np.sqrt(self.obs_std / (self.n_obs - 1)) if self.obs_std is not None else None
         else:
             std = np.ones_like(self.obs_mean) if self.obs_mean is not None else None
 
         return {
-            "mean": self.obs_mean.copy() if self.obs_mean is not None else None,
-            "std": std,
+            "mean": self.obs_mean.copy() if self.obs_mean is not None else np.array([]),
+            "std": std if std is not None else np.array([]),
             "n_samples": self.n_obs,
         }
 
@@ -158,8 +158,8 @@ class EpisodeMonitor(gym.Wrapper):
         super().__init__(env)
         self.log_dir = log_dir
         self.episode_count = 0
-        self.episode_rewards = []
-        self.episode_lengths = []
+        self.episode_rewards: list[float] = []
+        self.episode_lengths: list[int] = []
         self.current_reward = 0.0
         self.current_length = 0
 
@@ -189,7 +189,7 @@ class EpisodeMonitor(gym.Wrapper):
         """Step and track rewards/length."""
         obs, reward, terminated, truncated, info = self.env.step(action)
 
-        self.current_reward += reward
+        self.current_reward += float(reward)
         self.current_length += 1
 
         # Add monitoring info
@@ -207,14 +207,14 @@ class EpisodeMonitor(gym.Wrapper):
                 "t": info.get("TimeLimit.truncated", truncated),
             }
 
-        return obs, reward, terminated, truncated, info
+        return obs, float(reward), terminated, truncated, info
 
     def _log_episode(self) -> None:
         """Log episode to file."""
         import json
         from pathlib import Path
 
-        log_path = Path(self.log_dir) / f"episode_{self.episode_count}.json"
+        log_path = Path(self.log_dir or ".") / f"episode_{self.episode_count}.json"
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(log_path, "w") as f:
@@ -295,7 +295,9 @@ class ActionNoiseWrapper(gym.Wrapper):
         noise = np.random.normal(0, self.noise_scale, size=action.shape)
         noisy_action = action + noise
 
-        # Clip to action space bounds
-        noisy_action = np.clip(noisy_action, self.action_space.low, self.action_space.high)
+        # Clip to action space bounds if Box space
+        if hasattr(self.action_space, 'low') and hasattr(self.action_space, 'high'):
+            noisy_action = np.clip(noisy_action, self.action_space.low, self.action_space.high)
 
-        return self.env.step(noisy_action)
+        obs, reward, terminated, truncated, info = self.env.step(noisy_action)
+        return obs, float(reward), terminated, truncated, info

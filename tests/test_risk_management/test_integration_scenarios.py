@@ -168,17 +168,17 @@ class TestRiskManagementIntegration:
 
         # Test Kelly
         rm_kelly = RiskManager(position_sizer=KellyPositionSizer())
-        result_kelly = rm_kelly.check_new_position(symbol="BTC/USDT", **params)
+        result_kelly = rm_kelly.check_new_position("BTC/USDT", **params)
 
         # Test Fixed Fractional
         rm_fixed = RiskManager(position_sizer=FixedFractionalPositionSizer(risk_per_trade=0.02))
-        result_fixed = rm_fixed.check_new_position(symbol="BTC/USDT", **params)
+        result_fixed = rm_fixed.check_new_position("BTC/USDT", **params)
 
         # Test Volatility Parity
         rm_vol = RiskManager(position_sizer=VolatilityParityPositionSizer(target_volatility=0.15))
         params_vol = params.copy()
         params_vol["volatility"] = 0.80  # 80% annual vol
-        result_vol = rm_vol.check_new_position(symbol="BTC/USDT", **params_vol)
+        result_vol = rm_vol.check_new_position("BTC/USDT", **params_vol)
 
         # All should approve but with different sizes
         assert result_kelly["approved"]
@@ -211,7 +211,7 @@ class TestRiskManagementIntegration:
                 position_id=pos_id,
                 exit_price=49500,  # 1% loss per position
             )
-            total_loss += pnl["net_pnl"]
+            total_loss += float(pnl["net_pnl"])
 
         # Daily P&L should reflect losses
         assert rm.daily_pnl < 0

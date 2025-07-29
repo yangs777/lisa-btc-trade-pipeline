@@ -108,7 +108,7 @@ class RBSRReward:
             if long_vol > 0:
                 vol_ratio = recent_vol / long_vol
                 if vol_ratio > 1.5:  # Recent volatility 50% higher than average
-                    volatility_penalty = (vol_ratio - 1.5) * self.volatility_penalty
+                    volatility_penalty = float((vol_ratio - 1.5) * self.volatility_penalty)
 
         # Calculate holding penalty (encourage closing positions)
         holding_penalty = 0.0

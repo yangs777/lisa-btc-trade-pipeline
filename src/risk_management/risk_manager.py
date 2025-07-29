@@ -71,7 +71,7 @@ class RiskManager:
         current_price: float,
         signal_confidence: float,
         position_type: str = "long",
-        **kwargs,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """Check if new position can be opened.
 
@@ -332,7 +332,7 @@ class RiskManager:
             holding_hours=24,  # Assume 1 day hold
         )
 
-        return max_loss + costs["total_cost"]
+        return max_loss + float(costs["total_cost"])
 
     def _check_daily_reset(self) -> None:
         """Reset daily metrics if new day."""
