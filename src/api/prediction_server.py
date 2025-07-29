@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 
-from src.features.technical_indicators import TechnicalIndicators
+from src.feature_engineering.engineer import FeatureEngineer as TechnicalIndicators
 from src.risk_management.risk_manager import RiskManager
 from src.risk_management.models.position_sizing import KellyPositionSizer
 from src.risk_management.models.cost_model import BinanceCostModel
