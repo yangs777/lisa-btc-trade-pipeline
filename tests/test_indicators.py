@@ -91,10 +91,10 @@ sys.modules['pandas'].DataFrame = MockDataFrame
 sys.modules['pandas'].concat = lambda dfs, axis=1: MockDataFrame()
 
 # Import indicators after mocking
-from src.feature_engineering.momentum.oscillators import CCI, RSI
-from src.feature_engineering.trend.moving_averages import EMA, SMA
-from src.feature_engineering.volatility.bands import BollingerLower, BollingerUpper
-from src.feature_engineering.volume.classic import OBV
+from src.feature_engineering.momentum.oscillators import CCI, RSI  # noqa: E402
+from src.feature_engineering.trend.moving_averages import EMA, SMA  # noqa: E402
+from src.feature_engineering.volatility.bands import BollingerLower, BollingerUpper  # noqa: E402
+from src.feature_engineering.volume.classic import OBV  # noqa: E402
 
 
 @pytest.fixture

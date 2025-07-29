@@ -71,7 +71,7 @@ sys.modules['pandas'].concat = lambda x: MockDataFrame() if not x else x[0]
 sys.modules['pandas'].merge = lambda *args, **kwargs: MockDataFrame()
 sys.modules['pandas'].to_datetime = lambda x, **kwargs: x
 
-from src.data_processing.daily_preprocessor import DailyPreprocessor
+from src.data_processing.daily_preprocessor import DailyPreprocessor  # noqa: E402
 
 
 @pytest.fixture

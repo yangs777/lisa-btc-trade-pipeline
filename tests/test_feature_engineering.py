@@ -147,14 +147,14 @@ mock_stats = sys.modules['scipy.stats']
 mock_stats.linregress = lambda x, y: (0.1, 30000, 0.9, 0.01, 0.1)  # slope, intercept, r, p, se
 
 # Now import the actual modules
-from src.feature_engineering import FeatureEngineer
-from src.feature_engineering.base import (
+from src.feature_engineering import FeatureEngineer  # noqa: E402
+from src.feature_engineering.base import (  # noqa: E402
     BaseIndicator,
     OHLCVIndicator,
     PriceIndicator,
     VolumeIndicator,
 )
-from src.feature_engineering.registry import IndicatorRegistry
+from src.feature_engineering.registry import IndicatorRegistry  # noqa: E402
 
 
 @pytest.fixture

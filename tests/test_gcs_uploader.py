@@ -13,7 +13,7 @@ sys.modules['google.cloud'] = MagicMock()
 sys.modules['google.cloud.storage'] = MagicMock()
 sys.modules['google.cloud.exceptions'] = MagicMock()
 
-from src.data_collection.gcs_uploader import GCSUploader
+from src.data_collection.gcs_uploader import GCSUploader  # noqa: E402
 
 
 @pytest.fixture
