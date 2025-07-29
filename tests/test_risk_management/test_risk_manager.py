@@ -9,7 +9,7 @@ from src.risk_management.risk_manager import RiskManager
 class TestRiskManager:
     """Test integrated risk management."""
 
-    def test_risk_manager_initialization(self):
+    def test_risk_manager_initialization(self) -> None:
         """Test risk manager initialization."""
         rm = RiskManager(
             max_drawdown=0.15,
@@ -22,7 +22,7 @@ class TestRiskManager:
         assert rm.max_position_count == 5
         assert len(rm.open_positions) == 0
 
-    def test_position_approval_basic(self):
+    def test_position_approval_basic(self) -> None:
         """Test basic position approval."""
         rm = RiskManager()
 
@@ -42,7 +42,7 @@ class TestRiskManager:
         assert "entry_costs" in result
         assert "risk_multiplier" in result
 
-    def test_position_rejection_max_positions(self):
+    def test_position_rejection_max_positions(self) -> None:
         """Test rejection due to max positions."""
         rm = RiskManager(max_position_count=2)
 
@@ -64,7 +64,7 @@ class TestRiskManager:
         assert not result["approved"]
         assert result["reason"] == "Maximum positions reached"
 
-    def test_position_rejection_drawdown(self):
+    def test_position_rejection_drawdown(self) -> None:
         """Test rejection due to drawdown."""
         rm = RiskManager(max_drawdown=0.10)
 
@@ -85,7 +85,7 @@ class TestRiskManager:
         assert not result["approved"]
         assert result["reason"] == "Drawdown guard triggered"
 
-    def test_position_rejection_daily_loss(self):
+    def test_position_rejection_daily_loss(self) -> None:
         """Test rejection due to daily loss limit."""
         rm = RiskManager(max_daily_loss=0.02)
 
@@ -105,7 +105,7 @@ class TestRiskManager:
         assert not result["approved"]
         assert result["reason"] == "Daily loss limit exceeded"
 
-    def test_position_size_too_small(self):
+    def test_position_size_too_small(self) -> None:
         """Test rejection due to position size too small."""
         rm = RiskManager()
 
@@ -123,7 +123,7 @@ class TestRiskManager:
         assert not result["approved"]
         assert result["reason"] == "Position size below minimum"
 
-    def test_position_recording(self):
+    def test_position_recording(self) -> None:
         """Test position recording."""
         rm = RiskManager()
 
@@ -144,7 +144,7 @@ class TestRiskManager:
         assert pos["entry_price"] == 50000
         assert pos["stop_loss"] == 48000
 
-    def test_position_close_profit(self):
+    def test_position_close_profit(self) -> None:
         """Test closing profitable position."""
         rm = RiskManager()
 
@@ -171,7 +171,7 @@ class TestRiskManager:
         # Position should be removed
         assert "test123" not in rm.open_positions
 
-    def test_position_close_loss(self):
+    def test_position_close_loss(self) -> None:
         """Test closing losing position."""
         rm = RiskManager()
 
@@ -194,7 +194,7 @@ class TestRiskManager:
         assert result["gross_pnl"] == -1000
         assert result["net_pnl"] < result["gross_pnl"]  # More negative after costs
 
-    def test_partial_position_close(self):
+    def test_partial_position_close(self) -> None:
         """Test partial position closing."""
         rm = RiskManager()
 
@@ -219,7 +219,7 @@ class TestRiskManager:
         assert "test123" in rm.open_positions
         assert rm.open_positions["test123"]["size"] == 1.0
 
-    def test_portfolio_update(self):
+    def test_portfolio_update(self) -> None:
         """Test portfolio value update."""
         rm = RiskManager()
 
@@ -234,7 +234,7 @@ class TestRiskManager:
         assert metrics["open_exposure"] == 50000
         assert abs(metrics["exposure_pct"] - 45.45) < 0.1
 
-    def test_daily_reset(self):
+    def test_daily_reset(self) -> None:
         """Test daily P&L reset."""
         rm = RiskManager()
 
@@ -256,7 +256,7 @@ class TestRiskManager:
         assert rm.daily_pnl == 0
         assert rm.last_reset_date == datetime.now().date()
 
-    def test_risk_report_generation(self):
+    def test_risk_report_generation(self) -> None:
         """Test risk report generation."""
         rm = RiskManager()
 
@@ -275,7 +275,7 @@ class TestRiskManager:
         assert report["portfolio_metrics"]["open_positions"] == 1
         assert report["portfolio_metrics"]["daily_pnl"] == 500
 
-    def test_custom_position_sizer(self):
+    def test_custom_position_sizer(self) -> None:
         """Test using custom position sizer."""
         sizer = FixedFractionalPositionSizer(risk_per_trade=0.01, stop_loss_pct=0.02)
 
@@ -292,7 +292,7 @@ class TestRiskManager:
         # Risk $1000 with 2% stop = $50k position = 1 BTC
         assert abs(result["position_size"] - 1.0) < 0.1
 
-    def test_api_capacity_check(self):
+    def test_api_capacity_check(self) -> None:
         """Test API capacity checking."""
         rm = RiskManager()
 

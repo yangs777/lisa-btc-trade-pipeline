@@ -10,10 +10,10 @@ class MetricsCollector:
     
     def __init__(self) -> None:
         """Initialize collector."""
-        self.predictions = []
-        self.trades = []
-        self.latencies = defaultdict(list)
-        self.errors = defaultdict(int)
+        self.predictions: List[Dict[str, Any]] = []
+        self.trades: List[Dict[str, Any]] = []
+        self.latencies: Dict[str, List[float]] = defaultdict(list)
+        self.errors: Dict[str, int] = defaultdict(int)
         self.start_time = datetime.now()
     
     def record_prediction(self, action: str, confidence: float, position_size: float) -> None:

@@ -12,7 +12,7 @@ from src.risk_management.models.position_sizing import (
 class TestKellyPositionSizer:
     """Test Kelly Criterion position sizing."""
 
-    def test_kelly_basic_calculation(self):
+    def test_kelly_basic_calculation(self) -> None:
         """Test basic Kelly calculation."""
         kelly = KellyPositionSizer(
             kelly_fraction=0.25, min_edge=0.005  # Lower threshold to allow this test case
@@ -34,7 +34,7 @@ class TestKellyPositionSizer:
         expected_btc = (100000 * 0.1) / 50000
         assert abs(position_size - expected_btc) < 0.01
 
-    def test_kelly_with_no_edge(self):
+    def test_kelly_with_no_edge(self) -> None:
         """Test Kelly with no edge."""
         kelly = KellyPositionSizer(min_edge=0.02)
 
@@ -52,7 +52,7 @@ class TestKellyPositionSizer:
         # Below minimum edge, should return 0
         assert position_size == 0.0
 
-    def test_kelly_confidence_scaling(self):
+    def test_kelly_confidence_scaling(self) -> None:
         """Test confidence scaling."""
         kelly = KellyPositionSizer(min_edge=0.005)  # Lower threshold
 
@@ -80,7 +80,7 @@ class TestKellyPositionSizer:
         assert size_low < size_high
         assert abs(size_low - size_high * 0.5) < 0.01
 
-    def test_kelly_max_position_limit(self):
+    def test_kelly_max_position_limit(self) -> None:
         """Test maximum position size constraint."""
         kelly = KellyPositionSizer(
             max_position_size=0.5, min_edge=0.01  # Adjust for this test's edge
@@ -105,7 +105,7 @@ class TestKellyPositionSizer:
 class TestFixedFractionalPositionSizer:
     """Test fixed fractional position sizing."""
 
-    def test_fixed_fractional_basic(self):
+    def test_fixed_fractional_basic(self) -> None:
         """Test basic fixed fractional calculation."""
         ff = FixedFractionalPositionSizer(risk_per_trade=0.02, stop_loss_pct=0.05)
 
@@ -119,7 +119,7 @@ class TestFixedFractionalPositionSizer:
         expected_btc = (100000 * 0.02) / 0.05 / 50000
         assert abs(position_size - expected_btc) < 0.01
 
-    def test_fixed_fractional_with_custom_stop(self):
+    def test_fixed_fractional_with_custom_stop(self) -> None:
         """Test with custom stop loss."""
         ff = FixedFractionalPositionSizer(risk_per_trade=0.01)
 
@@ -134,7 +134,7 @@ class TestFixedFractionalPositionSizer:
         expected_btc = (100000 * 0.01) / 0.03 / 50000
         assert abs(position_size - expected_btc) < 0.01
 
-    def test_fixed_fractional_confidence_scaling(self):
+    def test_fixed_fractional_confidence_scaling(self) -> None:
         """Test confidence scaling."""
         ff = FixedFractionalPositionSizer(
             risk_per_trade=0.01, stop_loss_pct=0.02  # Lower risk to avoid clipping
@@ -158,7 +158,7 @@ class TestFixedFractionalPositionSizer:
 class TestVolatilityParityPositionSizer:
     """Test volatility parity position sizing."""
 
-    def test_volatility_parity_basic(self):
+    def test_volatility_parity_basic(self) -> None:
         """Test basic volatility parity calculation."""
         vp = VolatilityParityPositionSizer(target_volatility=0.15, lookback_days=30)
 
@@ -181,7 +181,7 @@ class TestVolatilityParityPositionSizer:
         # Allow for randomness in returns
         assert 0.5 < position_size < 2.5
 
-    def test_volatility_parity_high_vol(self):
+    def test_volatility_parity_high_vol(self) -> None:
         """Test with high volatility."""
         vp = VolatilityParityPositionSizer(target_volatility=0.10)
 
@@ -200,7 +200,7 @@ class TestVolatilityParityPositionSizer:
         # Should result in small position
         assert position_size < 1.0  # Less than 1 BTC
 
-    def test_volatility_parity_insufficient_data(self):
+    def test_volatility_parity_insufficient_data(self) -> None:
         """Test with insufficient data."""
         vp = VolatilityParityPositionSizer(lookback_days=30)
 
@@ -219,7 +219,7 @@ class TestVolatilityParityPositionSizer:
         assert position_size > 0
         assert position_size < 1.0  # Conservative
 
-    def test_position_sizer_max_limit(self):
+    def test_position_sizer_max_limit(self) -> None:
         """Test all sizers respect max position limit."""
         sizers = [
             KellyPositionSizer(max_position_size=0.2, min_edge=0.01),
