@@ -84,3 +84,44 @@ def calculate_percentage_change(old_value: float, new_value: float) -> float:
     if old_value == 0:
         return 0.0
     return ((new_value - old_value) / old_value) * 100
+
+
+def get_project_root() -> Path:
+    """Get project root directory.
+    
+    Returns:
+        Path to project root
+    """
+    current = Path(__file__).resolve()
+    # Go up from src/utils.py to project root
+    return current.parent.parent
+
+
+def load_yaml_config(path: str) -> dict[str, Any]:
+    """Load YAML configuration file.
+    
+    Args:
+        path: Path to YAML file
+        
+    Returns:
+        Configuration dictionary
+    """
+    import yaml
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def validate_data(data: Any) -> bool:
+    """Validate data is not None and not empty.
+    
+    Args:
+        data: Data to validate
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if data is None:
+        return False
+    if hasattr(data, '__len__') and len(data) == 0:
+        return False
+    return True
