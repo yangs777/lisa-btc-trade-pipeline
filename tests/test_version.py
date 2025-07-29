@@ -1,7 +1,6 @@
 """Test version and basic imports."""
 
 
-
 def test_version() -> None:
     """Test that version is accessible."""
     from src import __version__
