@@ -24,11 +24,11 @@ class OBV(VolumeIndicator):
         """Calculate OBV."""
         volume = self._get_volume(df)
 
-        if 'close' not in df.columns:
+        if "close" not in df.columns:
             raise ValueError("OBV requires 'close' column")
 
         # Calculate price direction
-        price_diff = df['close'].diff()
+        price_diff = df["close"].diff()
 
         # Calculate OBV
         obv = pd.Series(index=df.index, dtype=float)
@@ -36,11 +36,11 @@ class OBV(VolumeIndicator):
 
         for i in range(1, len(df)):
             if price_diff.iloc[i] > 0:
-                obv.iloc[i] = obv.iloc[i-1] + volume.iloc[i]
+                obv.iloc[i] = obv.iloc[i - 1] + volume.iloc[i]
             elif price_diff.iloc[i] < 0:
-                obv.iloc[i] = obv.iloc[i-1] - volume.iloc[i]
+                obv.iloc[i] = obv.iloc[i - 1] - volume.iloc[i]
             else:
-                obv.iloc[i] = obv.iloc[i-1]
+                obv.iloc[i] = obv.iloc[i - 1]
 
         return self._handle_nan(obv)
 
@@ -65,11 +65,11 @@ class AD(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate CLV (Close Location Value)
-        clv = ((df['close'] - df['low']) - (df['high'] - df['close'])) / (df['high'] - df['low'])
+        clv = ((df["close"] - df["low"]) - (df["high"] - df["close"])) / (df["high"] - df["low"])
         clv = clv.fillna(0)  # Handle division by zero
 
         # Calculate A/D
-        ad = (clv * df['volume']).cumsum()
+        ad = (clv * df["volume"]).cumsum()
 
         return self._handle_nan(ad)
 
@@ -117,14 +117,17 @@ class CMF(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate Money Flow Multiplier
-        mfm = ((df['close'] - df['low']) - (df['high'] - df['close'])) / (df['high'] - df['low'])
+        mfm = ((df["close"] - df["low"]) - (df["high"] - df["close"])) / (df["high"] - df["low"])
         mfm = mfm.fillna(0)
 
         # Calculate Money Flow Volume
-        mfv = mfm * df['volume']
+        mfv = mfm * df["volume"]
 
         # Calculate CMF
-        cmf = mfv.rolling(window=self.window_size).sum() / df['volume'].rolling(window=self.window_size).sum()
+        cmf = (
+            mfv.rolling(window=self.window_size).sum()
+            / df["volume"].rolling(window=self.window_size).sum()
+        )
 
         return self._handle_nan(cmf)
 
@@ -150,10 +153,10 @@ class EMV(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Distance Moved
-        dm = ((df['high'] + df['low']) / 2) - ((df['high'].shift(1) + df['low'].shift(1)) / 2)
+        dm = ((df["high"] + df["low"]) / 2) - ((df["high"].shift(1) + df["low"].shift(1)) / 2)
 
         # Box Ratio
-        box_ratio = (df['volume'] / 1000000) / (df['high'] - df['low'])
+        box_ratio = (df["volume"] / 1000000) / (df["high"] - df["low"])
 
         # EMV
         emv = dm / box_ratio
@@ -185,7 +188,7 @@ class ForceIndex(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Raw Force Index = (Close - Previous Close) * Volume
-        raw_fi = df['close'].diff() * df['volume']
+        raw_fi = df["close"].diff() * df["volume"]
 
         # Smooth with EMA
         fi = raw_fi.ewm(span=self.window_size, adjust=False).mean()
@@ -212,23 +215,23 @@ class NVI(VolumeIndicator):
         """Calculate NVI."""
         volume = self._get_volume(df)
 
-        if 'close' not in df.columns:
+        if "close" not in df.columns:
             raise ValueError("NVI requires 'close' column")
 
         # Calculate returns
-        returns = df['close'].pct_change()
+        returns = df["close"].pct_change()
 
         # Initialize NVI
         nvi = pd.Series(index=df.index, dtype=float)
         nvi.iloc[0] = 1000  # Starting value
 
         for i in range(1, len(df)):
-            if volume.iloc[i] < volume.iloc[i-1]:
+            if volume.iloc[i] < volume.iloc[i - 1]:
                 # Volume decreased, update NVI
-                nvi.iloc[i] = nvi.iloc[i-1] * (1 + returns.iloc[i])
+                nvi.iloc[i] = nvi.iloc[i - 1] * (1 + returns.iloc[i])
             else:
                 # Volume increased or stayed same, NVI unchanged
-                nvi.iloc[i] = nvi.iloc[i-1]
+                nvi.iloc[i] = nvi.iloc[i - 1]
 
         return self._handle_nan(nvi)
 
@@ -252,23 +255,23 @@ class PVI(VolumeIndicator):
         """Calculate PVI."""
         volume = self._get_volume(df)
 
-        if 'close' not in df.columns:
+        if "close" not in df.columns:
             raise ValueError("PVI requires 'close' column")
 
         # Calculate returns
-        returns = df['close'].pct_change()
+        returns = df["close"].pct_change()
 
         # Initialize PVI
         pvi = pd.Series(index=df.index, dtype=float)
         pvi.iloc[0] = 1000  # Starting value
 
         for i in range(1, len(df)):
-            if volume.iloc[i] > volume.iloc[i-1]:
+            if volume.iloc[i] > volume.iloc[i - 1]:
                 # Volume increased, update PVI
-                pvi.iloc[i] = pvi.iloc[i-1] * (1 + returns.iloc[i])
+                pvi.iloc[i] = pvi.iloc[i - 1] * (1 + returns.iloc[i])
             else:
                 # Volume decreased or stayed same, PVI unchanged
-                pvi.iloc[i] = pvi.iloc[i-1]
+                pvi.iloc[i] = pvi.iloc[i - 1]
 
         return self._handle_nan(pvi)
 
@@ -293,9 +296,9 @@ class VPT(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate price change percentage
-        price_change_pct = df['close'].pct_change()
+        price_change_pct = df["close"].pct_change()
 
         # VPT = Previous VPT + Volume * Price Change %
-        vpt = (df['volume'] * price_change_pct).cumsum()
+        vpt = (df["volume"] * price_change_pct).cumsum()
 
         return self._handle_nan(vpt)

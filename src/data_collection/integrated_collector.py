@@ -123,19 +123,26 @@ class IntegratedDataCollector:
 async def main() -> None:
     """Run integrated data collection with signal handling."""
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Create integrated collector with config
     import sys
     from pathlib import Path
+
     sys.path.append(str(Path(__file__).parent.parent.parent))
     from src.config import (  # noqa: I001
-        BINANCE_SYMBOL, BINANCE_DEPTH_LEVELS, BINANCE_BUFFER_SIZE,
-        GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH,
-        RAW_DATA_DIR, UPLOAD_WORKERS, CLEANUP_AFTER_UPLOAD
+        BINANCE_SYMBOL,
+        BINANCE_DEPTH_LEVELS,
+        BINANCE_BUFFER_SIZE,
+        GCP_PROJECT_ID,
+        GCS_BUCKET,
+        GCP_CREDENTIALS_PATH,
+        RAW_DATA_DIR,
+        UPLOAD_WORKERS,
+        CLEANUP_AFTER_UPLOAD,
     )
+
     collector = IntegratedDataCollector(
         symbol=BINANCE_SYMBOL,
         depth_levels=BINANCE_DEPTH_LEVELS,
@@ -161,7 +168,9 @@ async def main() -> None:
         def make_handler(s: int) -> Callable[[], None]:
             def handler() -> None:
                 signal_handler(s)
+
             return handler
+
         loop.add_signal_handler(sig, make_handler(sig))
 
     try:

@@ -21,7 +21,9 @@ class FeatureEngineer:
         Args:
             config_path: Path to indicators YAML config file
         """
-        self.config_path = config_path or str(Path(__file__).parent.parent.parent / "indicators.yaml")
+        self.config_path = config_path or str(
+            Path(__file__).parent.parent.parent / "indicators.yaml"
+        )
         self._register_all_indicators()
 
         # Load configuration

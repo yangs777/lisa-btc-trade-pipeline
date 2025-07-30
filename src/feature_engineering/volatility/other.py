@@ -34,7 +34,7 @@ class UlcerIndex(PriceIndicator):
         drawdown = ((price - rolling_max) / rolling_max) * 100
 
         # Square the drawdowns
-        squared_dd = drawdown ** 2
+        squared_dd = drawdown**2
 
         # Calculate mean of squared drawdowns
         mean_squared_dd = squared_dd.rolling(window=self.window_size).mean()
@@ -66,11 +66,11 @@ class MassIndex(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Mass Index."""
         # This indicator requires high and low prices
-        if 'high' not in df.columns or 'low' not in df.columns:
+        if "high" not in df.columns or "low" not in df.columns:
             raise ValueError("Mass Index requires 'high' and 'low' columns")
 
         # Calculate high-low range
-        high_low = df['high'] - df['low']
+        high_low = df["high"] - df["low"]
 
         # Calculate single EMA of range
         ema1 = high_low.ewm(span=self.ema_period, adjust=False).mean()

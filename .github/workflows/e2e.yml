@@ -1,0 +1,175 @@
+name: 🧪 E2E & Heavy Tests
+
+on:
+  schedule:
+    # Weekly on Monday at 4 AM UTC
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - e2e
+          - heavy
+          - integration
+
+env:
+  PYTHON_VERSION: '3.10'
+  COV_FAIL_UNDER: 0  # No fail threshold for E2E tests
+
+jobs:
+  e2e-tests:
+    name: E2E & Heavy Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # 2 hour timeout for heavy tests
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: 📦 Install full dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-xdist  # For parallel test execution
+    
+    - name: 💾 Fetch test data from Google Drive
+      if: env.GDRIVE_FILE_ID != ''
+      env:
+        GDRIVE_FILE_ID: ${{ secrets.GDRIVE_FILE_ID }}
+        GDRIVE_SHA256: ${{ secrets.GDRIVE_SHA256 }}
+      run: |
+        bash scripts/fetch_gdrive_data.sh || echo "⚠️ Google Drive data fetch failed"
+    
+    - name: 📊 Cache test data
+      uses: actions/cache@v3
+      with:
+        path: tests/_data
+        key: test-data-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-${{ secrets.GDRIVE_SHA256 }}
+        restore-keys: |
+          test-data-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-
+          test-data-
+    
+    - name: 🧪 Run E2E tests
+      if: inputs.test_scope == 'e2e' || inputs.test_scope == 'all'
+      run: |
+        echo "🔍 Running E2E tests..."
+        pytest tests/ -m "e2e" \
+          --cov=src --cov-branch \
+          --cov-report=xml:coverage-e2e.xml \
+          --cov-report=term-missing \
+          -v --tb=short \
+          --maxfail=5 \
+          -n auto  # Use all CPU cores
+    
+    - name: 🏋️ Run heavy tests
+      if: inputs.test_scope == 'heavy' || inputs.test_scope == 'all'
+      run: |
+        echo "🔍 Running heavy tests..."
+        pytest tests/ -m "heavy" \
+          --cov=src --cov-branch \
+          --cov-report=xml:coverage-heavy.xml \
+          --cov-report=term-missing \
+          -v --tb=short \
+          --maxfail=5 \
+          --timeout=300  # 5 min timeout per test
+    
+    - name: 🔗 Run integration tests
+      if: inputs.test_scope == 'integration' || inputs.test_scope == 'all'
+      run: |
+        echo "🔍 Running integration tests..."
+        pytest tests/ -m "integration and not e2e and not heavy" \
+          --cov=src --cov-branch \
+          --cov-report=xml:coverage-integration.xml \
+          --cov-report=term-missing \
+          -v --tb=short \
+          --maxfail=10
+    
+    - name: 📈 Merge coverage reports
+      if: always()
+      run: |
+        pip install coverage
+        
+        # Combine all coverage files
+        coverage combine || true
+        
+        # Generate final report
+        coverage xml -o coverage-combined.xml
+        coverage report --show-missing
+    
+    - name: 📤 Upload coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage-combined.xml,./coverage-e2e.xml,./coverage-heavy.xml,./coverage-integration.xml
+        flags: e2e,heavy,integration
+        fail_ci_if_error: false
+    
+    - name: 📊 Generate test report
+      if: always()
+      run: |
+        echo "### 🧪 E2E & Heavy Test Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f coverage-combined.xml ]; then
+          COV=$(python -c "import xml.etree.ElementTree as ET; print(f\"{float(ET.parse('coverage-combined.xml').getroot().get('line-rate', 0)) * 100:.2f}\")")
+          echo "- **Combined Coverage**: ${COV}%" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Test scope: ${{ inputs.test_scope || 'all' }}" >> $GITHUB_STEP_SUMMARY
+        echo "Completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+    
+    - name: 💾 Upload test artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-results
+        path: |
+          coverage*.xml
+          htmlcov/
+          reports/
+        retention-days: 30
+
+  notify-results:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always() && github.event_name == 'schedule'
+    
+    steps:
+    - name: 📢 Send Slack notification
+      if: env.SLACK_WEBHOOK != ''
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_E2E_WEBHOOK }}
+      run: |
+        STATUS="${{ needs.e2e-tests.result }}"
+        COLOR="good"
+        EMOJI="✅"
+        
+        if [ "$STATUS" != "success" ]; then
+          COLOR="danger"
+          EMOJI="❌"
+        fi
+        
+        curl -X POST $SLACK_WEBHOOK \
+          -H 'Content-type: application/json' \
+          --data "{
+            \"attachments\": [{
+              \"color\": \"$COLOR\",
+              \"title\": \"$EMOJI Weekly E2E Tests: $STATUS\",
+              \"text\": \"View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }]
+          }"

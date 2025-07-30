@@ -56,10 +56,10 @@ class IndicatorRegistry:
         # Store configurations by indicator name
         for category, indicators in config.items():
             for indicator in indicators:
-                self._configs[indicator['name']] = {
-                    'class': indicator['class'],
-                    'params': indicator.get('params', {}),
-                    'category': category
+                self._configs[indicator["name"]] = {
+                    "class": indicator["class"],
+                    "params": indicator.get("params", {}),
+                    "category": category,
                 }
 
         logger.info(f"Loaded {len(self._configs)} indicator configurations")
@@ -78,8 +78,8 @@ class IndicatorRegistry:
             return None
 
         config = self._configs[name]
-        class_name = config['class']
-        params = config['params']
+        class_name = config["class"]
+        params = config["params"]
 
         indicator_class = self._indicators.get(class_name)
         if not indicator_class:

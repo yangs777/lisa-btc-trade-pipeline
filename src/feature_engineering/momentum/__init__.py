@@ -31,5 +31,5 @@ __all__ = [
     "StochasticD",
     "StochasticK",
     "UltimateOscillator",
-    "WilliamsR"
+    "WilliamsR",
 ]

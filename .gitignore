@@ -101,3 +101,6 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+# Test data from Google Drive
+tests/_data/
+*.zip

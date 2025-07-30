@@ -12,9 +12,19 @@ safety>=2.3.0
 # Core dependencies for tests
 pandas>=2.0.0
 numpy>=1.24.0
+scipy>=1.11.0  # Required for some indicators
 websockets>=12.0
 aiofiles>=23.0.0
 google-cloud-storage>=2.10.0
+pyyaml>=6.0.1  # Required for YAML parsing
+click>=8.1.7  # Required for CLI utilities
+gymnasium>=0.28.0  # Required for RL environment tests
+torch>=2.0.0  # Required for RL models
+stable-baselines3>=2.1.0  # Required for τ-SAC implementation
 
 # Type stubs
 types-pyyaml>=6.0.0
+pandas-stubs>=2.0.3
+
+# Google Drive data fetching
+gdown>=4.7.0

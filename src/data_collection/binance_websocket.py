@@ -225,13 +225,13 @@ class BinanceWebSocketCollector:
                 logger.warning(f"Connection closed for {stream_name}")
                 retry_count += 1
                 if retry_count < max_retries:
-                    await asyncio.sleep(2 ** retry_count)  # Exponential backoff
+                    await asyncio.sleep(2**retry_count)  # Exponential backoff
 
             except WebSocketException as e:
                 logger.error(f"WebSocket error for {stream_name}: {e}")
                 retry_count += 1
                 if retry_count < max_retries:
-                    await asyncio.sleep(2 ** retry_count)
+                    await asyncio.sleep(2**retry_count)
 
             except Exception as e:
                 logger.error(f"Unexpected error in {stream_name}: {e}")
@@ -240,7 +240,7 @@ class BinanceWebSocketCollector:
                     self.stats["errors"] = errors + 1
                 retry_count += 1
                 if retry_count < max_retries:
-                    await asyncio.sleep(2 ** retry_count)
+                    await asyncio.sleep(2**retry_count)
 
     async def start(self) -> None:
         """Start collecting data from Binance WebSocket."""
@@ -251,6 +251,7 @@ class BinanceWebSocketCollector:
 
         # Create output directory if it doesn't exist
         import os
+
         os.makedirs(self.output_dir, exist_ok=True)
 
         # Start WebSocket handlers
@@ -318,15 +319,11 @@ class BinanceWebSocketCollector:
 async def main() -> None:
     """Example usage of BinanceWebSocketCollector."""
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     collector = BinanceWebSocketCollector(
-        symbol="btcusdt",
-        depth_levels=20,
-        buffer_size=1000,
-        output_dir="./data/raw"
+        symbol="btcusdt", depth_levels=20, buffer_size=1000, output_dir="./data/raw"
     )
 
     try:

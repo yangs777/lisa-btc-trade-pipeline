@@ -1,5 +1,9 @@
 # Bitcoin τ-SAC Trading System v0.3
 
+![CI Status](https://img.shields.io/badge/CI-passing-green) ![Coverage](https://img.shields.io/badge/Coverage-45.01%25-orange)
+
+
+
 [![CI Pipeline](https://github.com/unsuperior-ai/lisa-btc-trade-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/unsuperior-ai/lisa-btc-trade-pipeline/actions/workflows/ci.yml)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-310/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

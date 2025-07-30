@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# Quick start script for coverage bot
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${YELLOW}🤖 Coverage Bot Quick Start${NC}"
+echo "================================"
+
+# Check if gh CLI is installed
+if ! command -v gh &> /dev/null; then
+    echo -e "${RED}❌ GitHub CLI (gh) not installed${NC}"
+    echo "Install: https://cli.github.com/"
+    exit 1
+fi
+
+# Check if authenticated
+if ! gh auth status &> /dev/null; then
+    echo -e "${RED}❌ Not authenticated with GitHub${NC}"
+    echo "Run: gh auth login"
+    exit 1
+fi
+
+# Get current branch
+CURRENT_BRANCH=$(git branch --show-current)
+echo -e "📍 Current branch: ${YELLOW}$CURRENT_BRANCH${NC}"
+
+# Check if PR needs merging
+if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo -e "\n${YELLOW}📋 Checking PR status...${NC}"
+    PR_NUMBER=$(gh pr view --json number -q .number 2>/dev/null || echo "")
+    
+    if [ -n "$PR_NUMBER" ]; then
+        echo -e "Found PR #$PR_NUMBER"
+        echo -e "${YELLOW}Merge this PR first? (y/n)${NC}"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            gh pr merge "$PR_NUMBER" --squash
+            git checkout main
+            git pull
+        fi
+    fi
+fi
+
+# Show current coverage
+echo -e "\n${YELLOW}📊 Current Coverage Status${NC}"
+if [ -f coverage.xml ]; then
+    COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; print(f\"{float(ET.parse('coverage.xml').getroot().get('line-rate', 0)) * 100:.2f}%\")" 2>/dev/null || echo "Unknown")
+    echo -e "Coverage: ${GREEN}$COVERAGE${NC}"
+else
+    echo -e "Coverage: ${RED}No data${NC}"
+fi
+
+# Check secrets
+echo -e "\n${YELLOW}🔐 Checking GitHub Secrets...${NC}"
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+
+# List of required secrets
+REQUIRED_SECRETS=(
+    "GH_PAT_COVERAGE_BOT"
+    "COV_TARGET"
+)
+
+OPTIONAL_SECRETS=(
+    "COV_GAIN_MIN"
+    "GDRIVE_FILE_ID"
+    "GDRIVE_SHA256"
+    "SLACK_COV_WEBHOOK"
+)
+
+echo -e "Repository: ${GREEN}$REPO${NC}"
+echo -e "\nRequired secrets:"
+for secret in "${REQUIRED_SECRETS[@]}"; do
+    echo -e "  - $secret"
+done
+
+echo -e "\nOptional secrets:"
+for secret in "${OPTIONAL_SECRETS[@]}"; do
+    echo -e "  - $secret"
+done
+
+echo -e "\n${YELLOW}⚠️  Make sure these are set in:${NC}"
+echo -e "https://github.com/$REPO/settings/secrets/actions"
+
+# Prompt to run workflow
+echo -e "\n${YELLOW}🚀 Ready to start coverage bot?${NC}"
+echo -e "This will:"
+echo -e "  1. Check current coverage"
+echo -e "  2. Generate new tests if < target"
+echo -e "  3. Create PR if improvement found"
+echo -e "\n${GREEN}Run workflow? (y/n)${NC}"
+read -r response
+
+if [[ "$response" =~ ^[Yy]$ ]]; then
+    echo -e "\n${YELLOW}🤖 Starting coverage bot...${NC}"
+    gh workflow run coverage-bot.yml
+    
+    echo -e "\n${GREEN}✅ Workflow started!${NC}"
+    echo -e "View progress at: https://github.com/$REPO/actions"
+    
+    # Wait and show status
+    echo -e "\n${YELLOW}⏳ Waiting for workflow to start...${NC}"
+    sleep 5
+    
+    # Show latest runs
+    echo -e "\n${YELLOW}📋 Latest workflow runs:${NC}"
+    gh run list --workflow=coverage-bot.yml --limit 3
+else
+    echo -e "\n${YELLOW}Skipped workflow run${NC}"
+    echo -e "You can run it manually later with:"
+    echo -e "  ${GREEN}gh workflow run coverage-bot.yml${NC}"
+fi
+
+echo -e "\n${GREEN}🎯 Next steps:${NC}"
+echo -e "1. Wait ~5-10 minutes for bot to complete"
+echo -e "2. Check for new PR at: https://github.com/$REPO/pulls"
+echo -e "3. Review and merge the PR"
+echo -e "4. Bot will run again tomorrow at 3:30 AM UTC"
+
+echo -e "\n${YELLOW}💡 Pro tip:${NC}"
+echo -e "Watch live logs with: ${GREEN}gh run watch${NC}"

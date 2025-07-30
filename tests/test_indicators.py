@@ -1,4 +1,5 @@
 """Tests for specific indicator implementations."""
+
 # mypy: ignore-errors
 
 import sys
@@ -7,19 +8,20 @@ from unittest.mock import MagicMock
 import pytest
 
 # Mock external dependencies
-sys.modules['numpy'] = MagicMock()
-sys.modules['pandas'] = MagicMock()
-sys.modules['scipy'] = MagicMock()
-sys.modules['scipy.stats'] = MagicMock()
+sys.modules["numpy"] = MagicMock()
+sys.modules["pandas"] = MagicMock()
+sys.modules["scipy"] = MagicMock()
+sys.modules["scipy.stats"] = MagicMock()
 
 # Setup mocks
-mock_numpy = sys.modules['numpy']
-mock_numpy.nan = float('nan')
-mock_numpy.sqrt = lambda x: x ** 0.5
+mock_numpy = sys.modules["numpy"]
+mock_numpy.nan = float("nan")
+mock_numpy.sqrt = lambda x: x**0.5
 mock_numpy.arange = lambda n: list(range(n))
 mock_numpy.sum = sum
 mock_numpy.arctan = lambda x: x
 mock_numpy.pi = 3.14159265359
+
 
 # Mock pandas Series
 class MockSeries:
@@ -52,7 +54,7 @@ class MockSeries:
     def diff(self):
         result = [None]
         for i in range(1, len(self.data)):
-            result.append(self.data[i] - self.data[i-1])
+            result.append(self.data[i] - self.data[i - 1])
         return MockSeries(result)
 
     def shift(self, periods=1):
@@ -60,7 +62,8 @@ class MockSeries:
         return MockSeries(result)
 
     def where(self, cond, other):
-        return self
+        # Simple mock implementation
+        return MockSeries([50] * len(self.data))
 
     def __len__(self):
         return len(self.data)
@@ -71,11 +74,71 @@ class MockSeries:
     def min(self):
         return MockSeries([30000] * len(self.data))
 
+    def __gt__(self, other):
+        # Simple mock for > comparison
+        return MockSeries([True] * len(self.data))
+
+    def __lt__(self, other):
+        # Simple mock for < comparison
+        return MockSeries([True] * len(self.data))
+
+    def __add__(self, other):
+        # Mock addition
+        return MockSeries([30100] * len(self.data))
+
+    def __sub__(self, other):
+        # Mock subtraction
+        return MockSeries([100] * len(self.data))
+
+    def __mul__(self, other):
+        # Mock multiplication
+        return MockSeries([30100] * len(self.data))
+
+    def __truediv__(self, other):
+        # Mock division
+        return MockSeries([30100] * len(self.data))
+
+    def __neg__(self):
+        # Mock negation
+        return MockSeries([-50] * len(self.data))
+
+    def apply(self, func, raw=True):
+        # Mock apply
+        return MockSeries([100] * len(self.data))
+
+    def abs(self):
+        # Mock absolute value
+        return MockSeries([100] * len(self.data))
+
+    def __setitem__(self, key, value):
+        # Mock setitem for OBV
+        if isinstance(key, int) and key < len(self.data):
+            self.data[key] = value
+
+    def __rmul__(self, other):
+        # Mock reverse multiplication (for float * MockSeries)
+        return MockSeries([30100] * len(self.data))
+
+    def __radd__(self, other):
+        # Mock reverse addition (for int + MockSeries)
+        return MockSeries([30100] * len(self.data))
+
+    def __rtruediv__(self, other):
+        # Mock reverse division (for int / MockSeries)
+        return MockSeries([50] * len(self.data))
+
+    def __rsub__(self, other):
+        # Mock reverse subtraction (for int - MockSeries)
+        return MockSeries([50] * len(self.data))
+
 
 class MockDataFrame:
     def __init__(self, data=None):
         self.data = data or {}
         self.columns = list(self.data.keys())
+        # Get the length from the first column if available
+        first_col = list(self.data.values())[0] if self.data else []
+        self.index = list(range(len(first_col)))
 
     def __getitem__(self, key):
         if key in self.data:
@@ -85,10 +148,49 @@ class MockDataFrame:
     def copy(self):
         return MockDataFrame(self.data.copy())
 
+    def __len__(self):
+        # Return length based on the first column
+        if self.data:
+            first_col = list(self.data.values())[0]
+            return len(first_col)
+        return 0
 
-sys.modules['pandas'].Series = MockSeries
-sys.modules['pandas'].DataFrame = MockDataFrame
-sys.modules['pandas'].concat = lambda dfs, axis=1: MockDataFrame()
+    def max(self, axis=1):
+        # Mock max method for DataFrame
+        if self.data:
+            first_col = list(self.data.values())[0]
+            return MockSeries([100] * len(first_col))
+        return MockSeries()
+
+
+# Create a callable class for Series that can handle both constructor calls and isinstance
+class SeriesMock:
+    def __new__(cls, *args, **kwargs):
+        if args:
+            return MockSeries(args[0])
+        elif 'index' in kwargs:
+            return MockSeries([0] * len(kwargs['index']), index=kwargs['index'])
+        return MockSeries()
+    
+    @classmethod
+    def __instancecheck__(cls, instance):
+        return isinstance(instance, MockSeries)
+
+sys.modules["pandas"].Series = SeriesMock
+sys.modules["pandas"].DataFrame = MockDataFrame
+
+# Mock concat that returns a proper DataFrame with data
+def mock_concat(dfs, axis=1):
+    # Just return a DataFrame with mock data
+    result_data = {}
+    if dfs:
+        # Use the length from the first series
+        length = len(dfs[0]) if hasattr(dfs[0], '__len__') else 5
+        for i, df in enumerate(dfs):
+            result_data[f"col_{i}"] = [100] * length
+    return MockDataFrame(result_data)
+
+sys.modules["pandas"].concat = mock_concat
 
 # Import indicators after mocking
 from src.feature_engineering.momentum.oscillators import CCI, RSI  # noqa: E402
@@ -100,13 +202,15 @@ from src.feature_engineering.volume.classic import OBV  # noqa: E402
 @pytest.fixture
 def sample_df():
     """Create a sample OHLCV dataframe."""
-    return MockDataFrame({
-        'open': [30000, 30100, 30200, 30150, 30250],
-        'high': [30100, 30200, 30300, 30250, 30350],
-        'low': [29900, 30000, 30100, 30050, 30150],
-        'close': [30050, 30150, 30250, 30200, 30300],
-        'volume': [100, 150, 200, 120, 180]
-    })
+    return MockDataFrame(
+        {
+            "open": [30000, 30100, 30200, 30150, 30250],
+            "high": [30100, 30200, 30300, 30250, 30350],
+            "low": [29900, 30000, 30100, 30050, 30150],
+            "close": [30050, 30150, 30250, 30200, 30300],
+            "volume": [100, 150, 200, 120, 180],
+        }
+    )
 
 
 def test_sma_indicator(sample_df):
@@ -116,7 +220,7 @@ def test_sma_indicator(sample_df):
 
     result = sma.transform(sample_df)
     assert isinstance(result, MockSeries)
-    assert len(result) == len(sample_df)
+    assert len(result) == len(sample_df["close"].data)
 
 
 def test_ema_indicator(sample_df):
@@ -126,7 +230,7 @@ def test_ema_indicator(sample_df):
 
     result = ema.transform(sample_df)
     assert isinstance(result, MockSeries)
-    assert len(result) == len(sample_df)
+    assert len(result) == len(sample_df["close"].data)
 
 
 def test_rsi_indicator(sample_df):
@@ -136,7 +240,7 @@ def test_rsi_indicator(sample_df):
 
     result = rsi.transform(sample_df)
     assert isinstance(result, MockSeries)
-    assert len(result) == len(sample_df)
+    assert len(result) == len(sample_df["close"].data)
 
 
 def test_rsi_price_column_validation(sample_df):
@@ -179,7 +283,7 @@ def test_obv_indicator(sample_df):
 
     result = obv.transform(sample_df)
     assert isinstance(result, MockSeries)
-    assert len(result) == len(sample_df)
+    assert len(result) == len(sample_df["close"].data)
 
 
 def test_obv_missing_columns():
@@ -187,12 +291,12 @@ def test_obv_missing_columns():
     obv = OBV()
 
     # Missing close column
-    df_no_close = MockDataFrame({'volume': [100, 200]})
+    df_no_close = MockDataFrame({"volume": [100, 200]})
     with pytest.raises(ValueError, match="close"):
         obv.transform(df_no_close)
 
     # Missing volume column
-    df_no_volume = MockDataFrame({'close': [100, 200]})
+    df_no_volume = MockDataFrame({"close": [100, 200]})
     with pytest.raises(ValueError, match="volume"):
         obv.transform(df_no_volume)
 
@@ -230,18 +334,13 @@ def test_ohlcv_validation_detailed():
     atr = ATR(window=14)
 
     # Complete OHLCV data
-    df_complete = MockDataFrame({
-        'open': [100], 'high': [110], 'low': [90],
-        'close': [105], 'volume': [1000]
-    })
+    df_complete = MockDataFrame(
+        {"open": [100], "high": [110], "low": [90], "close": [105], "volume": [1000]}
+    )
     result = atr.transform(df_complete)
     assert isinstance(result, MockSeries)
 
     # Missing required columns
-    df_missing_high = MockDataFrame({
-        'open': [100], 'low': [90],
-        'close': [105], 'volume': [1000]
-    })
+    df_missing_high = MockDataFrame({"open": [100], "low": [90], "close": [105], "volume": [1000]})
     with pytest.raises(ValueError, match="Missing required columns"):
         atr.transform(df_missing_high)
-

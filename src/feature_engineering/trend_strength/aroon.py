@@ -29,7 +29,7 @@ class AroonUp(OHLCVIndicator):
         aroon_up = pd.Series(index=df.index, dtype=float)
 
         for i in range(self.window_size - 1, len(df)):
-            window_data = df['high'].iloc[i - self.window_size + 1:i + 1]
+            window_data = df["high"].iloc[i - self.window_size + 1 : i + 1]
             periods_since_high = self.window_size - 1 - window_data.values.argmax()
             aroon_up.iloc[i] = ((self.window_size - periods_since_high) / self.window_size) * 100
 
@@ -60,7 +60,7 @@ class AroonDown(OHLCVIndicator):
         aroon_down = pd.Series(index=df.index, dtype=float)
 
         for i in range(self.window_size - 1, len(df)):
-            window_data = df['low'].iloc[i - self.window_size + 1:i + 1]
+            window_data = df["low"].iloc[i - self.window_size + 1 : i + 1]
             periods_since_low = self.window_size - 1 - window_data.values.argmin()
             aroon_down.iloc[i] = ((self.window_size - periods_since_low) / self.window_size) * 100
 
