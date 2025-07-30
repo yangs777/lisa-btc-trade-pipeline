@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Momentum oscillator indicators."""
 
 import numpy as np
@@ -68,11 +70,11 @@ class StochasticK(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate highest high and lowest low
-        high_max = df['high'].rolling(window=self.window_size).max()
-        low_min = df['low'].rolling(window=self.window_size).min()
+        high_max = df["high"].rolling(window=self.window_size).max()
+        low_min = df["low"].rolling(window=self.window_size).min()
 
         # Calculate %K
-        k_percent = 100 * ((df['close'] - low_min) / (high_max - low_min))
+        k_percent = 100 * ((df["close"] - low_min) / (high_max - low_min))
 
         # Smooth %K
         k_smooth = k_percent.rolling(window=self.smooth).mean()
@@ -115,7 +117,9 @@ class StochasticD(OHLCVIndicator):
 class StochRSIK(PriceIndicator):
     """Stochastic RSI %K."""
 
-    def __init__(self, window: int = 14, smooth: int = 3, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, window: int = 14, smooth: int = 3, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize StochRSI K.
 
         Args:
@@ -150,8 +154,14 @@ class StochRSIK(PriceIndicator):
 class StochRSID(PriceIndicator):
     """Stochastic RSI %D."""
 
-    def __init__(self, window: int = 14, smooth_k: int = 3, smooth_d: int = 3,
-                 price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        window: int = 14,
+        smooth_k: int = 3,
+        smooth_d: int = 3,
+        price_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize StochRSI D.
 
         Args:
@@ -172,8 +182,9 @@ class StochRSID(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate StochRSI %D."""
         # First calculate StochRSI %K
-        stoch_rsi_k = StochRSIK(window=self.window_size, smooth=self.smooth_k,
-                                price_col=self.price_col, fillna=False)
+        stoch_rsi_k = StochRSIK(
+            window=self.window_size, smooth=self.smooth_k, price_col=self.price_col, fillna=False
+        )
         k_values = stoch_rsi_k.transform(df)
 
         # %D is smoothed %K
@@ -203,7 +214,7 @@ class CCI(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate Typical Price
-        typical_price = (df['high'] + df['low'] + df['close']) / 3
+        typical_price = (df["high"] + df["low"] + df["close"]) / 3
 
         # Calculate SMA of Typical Price
         sma_tp = typical_price.rolling(window=self.window_size).mean()
@@ -240,11 +251,11 @@ class WilliamsR(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate highest high and lowest low
-        high_max = df['high'].rolling(window=self.window_size).max()
-        low_min = df['low'].rolling(window=self.window_size).min()
+        high_max = df["high"].rolling(window=self.window_size).max()
+        low_min = df["low"].rolling(window=self.window_size).min()
 
         # Calculate Williams %R
-        williams_r = -100 * ((high_max - df['close']) / (high_max - low_min))
+        williams_r = -100 * ((high_max - df["close"]) / (high_max - low_min))
 
         return self._handle_nan(williams_r)
 
@@ -306,7 +317,9 @@ class Momentum(PriceIndicator):
 class TSI(PriceIndicator):
     """True Strength Index."""
 
-    def __init__(self, slow: int = 25, fast: int = 13, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, slow: int = 25, fast: int = 13, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize TSI.
 
         Args:
@@ -370,13 +383,13 @@ class UltimateOscillator(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate True Low and Buying Pressure
-        true_low = df['low'].combine(df['close'].shift(1), min)
-        buying_pressure = df['close'] - true_low
+        true_low = df["low"].combine(df["close"].shift(1), min)
+        buying_pressure = df["close"] - true_low
 
         # Calculate True Range
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
         true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
         # Calculate averages for each period
@@ -422,7 +435,7 @@ class AwesomeOscillator(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate median price
-        median_price = (df['high'] + df['low']) / 2
+        median_price = (df["high"] + df["low"]) / 2
 
         # Calculate SMAs
         sma_fast = median_price.rolling(window=self.fast).mean()

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """ADX (Average Directional Index) indicators."""
 
 import pandas as pd
@@ -26,12 +28,14 @@ class DIPlus(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate directional movements
-        high_diff = df['high'].diff()
-        low_diff = -df['low'].diff()
+        high_diff = df["high"].diff()
+        low_diff = -df["low"].diff()
 
         # Positive directional movement
         pos_dm = pd.Series(0, index=df.index)
-        pos_dm[(high_diff > low_diff) & (high_diff > 0)] = high_diff[(high_diff > low_diff) & (high_diff > 0)]
+        pos_dm[(high_diff > low_diff) & (high_diff > 0)] = high_diff[
+            (high_diff > low_diff) & (high_diff > 0)
+        ]
 
         # Calculate True Range
         true_range = self._calculate_true_range(df)
@@ -47,9 +51,9 @@ class DIPlus(OHLCVIndicator):
 
     def _calculate_true_range(self, df: pd.DataFrame) -> pd.Series:
         """Calculate True Range."""
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
 
         return pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
@@ -75,12 +79,14 @@ class DIMinus(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate directional movements
-        high_diff = df['high'].diff()
-        low_diff = -df['low'].diff()
+        high_diff = df["high"].diff()
+        low_diff = -df["low"].diff()
 
         # Negative directional movement
         neg_dm = pd.Series(0, index=df.index)
-        neg_dm[(low_diff > high_diff) & (low_diff > 0)] = low_diff[(low_diff > high_diff) & (low_diff > 0)]
+        neg_dm[(low_diff > high_diff) & (low_diff > 0)] = low_diff[
+            (low_diff > high_diff) & (low_diff > 0)
+        ]
 
         # Calculate True Range
         true_range = self._calculate_true_range(df)
@@ -96,9 +102,9 @@ class DIMinus(OHLCVIndicator):
 
     def _calculate_true_range(self, df: pd.DataFrame) -> pd.Series:
         """Calculate True Range."""
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
 
         return pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 

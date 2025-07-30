@@ -1,5 +1,6 @@
-"""Moving average indicators."""
+from typing import Dict, List, Any, Optional, Union, Tuple
 
+"""Moving average indicators."""
 
 import numpy as np
 import pandas as pd
@@ -78,7 +79,7 @@ class WMA(PriceIndicator):
         weights = np.arange(1, self.window_size + 1)
 
         def weighted_mean(x: np.ndarray) -> float:
-            return float(np.sum(weights[-len(x):] * x) / np.sum(weights[-len(x):]))
+            return float(np.sum(weights[-len(x) :] * x) / np.sum(weights[-len(x) :]))
 
         wma = price.rolling(window=self.window_size).apply(weighted_mean, raw=True)
         return self._handle_nan(wma)
@@ -125,7 +126,7 @@ class HMA(PriceIndicator):
 
         def weighted_mean(x: np.ndarray) -> float:
             if len(x) < period:
-                return float('nan')
+                return float("nan")
             return float(np.sum(weights * x[-period:]) / np.sum(weights))
 
         return series.rolling(window=period).apply(weighted_mean, raw=True)
@@ -197,8 +198,14 @@ class DEMA(PriceIndicator):
 class KAMA(PriceIndicator):
     """Kaufman's Adaptive Moving Average."""
 
-    def __init__(self, window: int = 10, fast: int = 2, slow: int = 30,
-                 price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        window: int = 10,
+        fast: int = 2,
+        slow: int = 30,
+        price_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize KAMA.
 
         Args:

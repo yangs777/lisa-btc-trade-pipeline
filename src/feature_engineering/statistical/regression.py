@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Regression-based statistical indicators."""
 
 import numpy as np
@@ -10,8 +12,13 @@ from ..base import PriceIndicator
 class Correlation(PriceIndicator):
     """Rolling Correlation."""
 
-    def __init__(self, window: int = 20, price_col: str = "close",
-                 benchmark_col: str = "volume", fillna: bool = True):
+    def __init__(
+        self,
+        window: int = 20,
+        price_col: str = "close",
+        benchmark_col: str = "volume",
+        fillna: bool = True,
+    ):
         """Initialize Correlation.
 
         Args:
@@ -43,8 +50,13 @@ class Correlation(PriceIndicator):
 class Beta(PriceIndicator):
     """Beta coefficient."""
 
-    def __init__(self, window: int = 20, price_col: str = "close",
-                 market_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        window: int = 20,
+        price_col: str = "close",
+        market_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize Beta.
 
         Args:
@@ -100,7 +112,7 @@ class LinearReg(PriceIndicator):
 
         def linear_regression_value(y: np.ndarray) -> float:
             if len(y) < 2:
-                return float('nan')
+                return float("nan")
             x = np.arange(len(y))
             slope, intercept, _, _, _ = stats.linregress(x, y)
             return float(slope * (len(y) - 1) + intercept)
@@ -133,7 +145,7 @@ class LinearRegSlope(PriceIndicator):
 
         def calculate_slope(y: np.ndarray) -> float:
             if len(y) < 2:
-                return float('nan')
+                return float("nan")
             x = np.arange(len(y))
             slope, _, _, _, _ = stats.linregress(x, y)
             return float(slope)
@@ -163,7 +175,9 @@ class LinearRegAngle(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Linear Regression Angle in degrees."""
         # First get the slope
-        slope_indicator = LinearRegSlope(window=self.window_size, price_col=self.price_col, fillna=False)
+        slope_indicator = LinearRegSlope(
+            window=self.window_size, price_col=self.price_col, fillna=False
+        )
         slope = slope_indicator.transform(df)
 
         # Convert slope to angle in degrees
@@ -195,7 +209,7 @@ class TSF(PriceIndicator):
 
         def forecast_next(y: np.ndarray) -> float:
             if len(y) < 2:
-                return float('nan')
+                return float("nan")
             x = np.arange(len(y))
             slope, intercept, _, _, _ = stats.linregress(x, y)
             # Project one period ahead

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Vortex indicators."""
 
 import pandas as pd
@@ -26,7 +28,7 @@ class VortexPlus(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate Vortex Movements
-        vm_plus = (df['high'] - df['low'].shift(1)).abs()
+        vm_plus = (df["high"] - df["low"].shift(1)).abs()
 
         # Calculate True Range
         true_range = self._calculate_true_range(df)
@@ -42,9 +44,9 @@ class VortexPlus(OHLCVIndicator):
 
     def _calculate_true_range(self, df: pd.DataFrame) -> pd.Series:
         """Calculate True Range."""
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
 
         return pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
@@ -70,7 +72,7 @@ class VortexMinus(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate Vortex Movements
-        vm_minus = (df['low'] - df['high'].shift(1)).abs()
+        vm_minus = (df["low"] - df["high"].shift(1)).abs()
 
         # Calculate True Range
         true_range = self._calculate_true_range(df)
@@ -86,8 +88,8 @@ class VortexMinus(OHLCVIndicator):
 
     def _calculate_true_range(self, df: pd.DataFrame) -> pd.Series:
         """Calculate True Range."""
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
 
         return pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)

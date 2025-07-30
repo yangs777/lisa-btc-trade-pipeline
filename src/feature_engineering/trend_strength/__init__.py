@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Trend strength indicators."""
 
 from .adx import ADX, DIMinus, DIPlus
@@ -14,5 +16,5 @@ __all__ = [
     "DIMinus",
     "DIPlus",
     "VortexMinus",
-    "VortexPlus"
+    "VortexPlus",
 ]

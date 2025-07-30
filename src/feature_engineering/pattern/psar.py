@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Parabolic SAR indicators."""
 
 import pandas as pd
@@ -28,8 +30,8 @@ class PSAR(OHLCVIndicator):
         """Calculate PSAR."""
         self._validate_ohlcv(df)
 
-        high = df['high'].values
-        low = df['low'].values
+        high = df["high"].values
+        low = df["low"].values
 
         psar = pd.Series(index=df.index, dtype=float)
 
@@ -57,7 +59,7 @@ class PSAR(OHLCVIndicator):
 
                     # Make sure SAR is not above prior period's low
                     if i >= 2:
-                        sar = min(sar, low[i-1], low[i-2])
+                        sar = min(sar, low[i - 1], low[i - 2])
             else:
                 sar = sar + af * (ep - sar)
 
@@ -73,7 +75,7 @@ class PSAR(OHLCVIndicator):
 
                     # Make sure SAR is not below prior period's high
                     if i >= 2:
-                        sar = max(sar, high[i-1], high[i-2])
+                        sar = max(sar, high[i - 1], high[i - 2])
 
             psar.iloc[i] = sar
 
@@ -107,7 +109,7 @@ class PSARTrend(OHLCVIndicator):
 
         # Determine trend
         trend = pd.Series(index=df.index, dtype=float)
-        trend[df['close'] > psar] = 1.0
-        trend[df['close'] <= psar] = -1.0
+        trend[df["close"] > psar] = 1.0
+        trend[df["close"] <= psar] = -1.0
 
         return self._handle_nan(trend)

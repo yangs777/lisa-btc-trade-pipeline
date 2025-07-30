@@ -1,4 +1,5 @@
 """Tests for Binance WebSocket data collector."""
+
 # mypy: ignore-errors
 
 from datetime import datetime, timezone
@@ -14,10 +15,7 @@ from src.data_collection.binance_websocket import BinanceWebSocketCollector
 def collector():
     """Create a BinanceWebSocketCollector instance for testing."""
     return BinanceWebSocketCollector(
-        symbol="btcusdt",
-        depth_levels=20,
-        buffer_size=10,
-        output_dir="./test_data"
+        symbol="btcusdt", depth_levels=20, buffer_size=10, output_dir="./test_data"
     )
 
 
@@ -26,11 +24,11 @@ def sample_orderbook_message():
     """Sample orderbook message from Binance."""
     return {
         "E": 1234567890123,  # Event time
-        "s": "BTCUSDT",      # Symbol
-        "U": 1234567890,     # First update ID
-        "u": 1234567899,     # Final update ID
+        "s": "BTCUSDT",  # Symbol
+        "U": 1234567890,  # First update ID
+        "u": 1234567899,  # Final update ID
         "b": [["30000.00", "0.5"], ["29999.00", "1.0"]],  # Bids
-        "a": [["30001.00", "0.5"], ["30002.00", "1.0"]]   # Asks
+        "a": [["30001.00", "0.5"], ["30002.00", "1.0"]],  # Asks
     }
 
 
@@ -39,14 +37,14 @@ def sample_trade_message():
     """Sample trade message from Binance."""
     return {
         "E": 1234567890123,  # Event time
-        "s": "BTCUSDT",      # Symbol
-        "t": 123456789,      # Trade ID
-        "p": "30000.00",     # Price
-        "q": "0.1",          # Quantity
-        "b": 88888888,       # Buyer order ID
-        "a": 99999999,       # Seller order ID
+        "s": "BTCUSDT",  # Symbol
+        "t": 123456789,  # Trade ID
+        "p": "30000.00",  # Price
+        "q": "0.1",  # Quantity
+        "b": 88888888,  # Buyer order ID
+        "a": 99999999,  # Seller order ID
         "T": 1234567890122,  # Trade time
-        "m": False           # Is buyer maker?
+        "m": False,  # Is buyer maker?
     }
 
 
@@ -55,14 +53,14 @@ def sample_agg_trade_message():
     """Sample aggregated trade message from Binance."""
     return {
         "E": 1234567890123,  # Event time
-        "s": "BTCUSDT",      # Symbol
-        "a": 123456789,      # Aggregate trade ID
-        "p": "30000.00",     # Price
-        "q": "1.5",          # Quantity
-        "f": 100,            # First trade ID
-        "l": 105,            # Last trade ID
+        "s": "BTCUSDT",  # Symbol
+        "a": 123456789,  # Aggregate trade ID
+        "p": "30000.00",  # Price
+        "q": "1.5",  # Quantity
+        "f": 100,  # First trade ID
+        "l": 105,  # Last trade ID
         "T": 1234567890122,  # Trade time
-        "m": True            # Is buyer maker?
+        "m": True,  # Is buyer maker?
     }
 
 
@@ -136,7 +134,7 @@ async def test_buffer_flush_on_size_limit(collector, sample_orderbook_message) -
     mock_open.return_value.__aenter__ = AsyncMock(return_value=mock_file)
     mock_open.return_value.__aexit__ = AsyncMock(return_value=None)
 
-    with patch('aiofiles.open', mock_open):
+    with patch("aiofiles.open", mock_open):
         # Fill buffer to trigger flush (buffer_size=10)
         for _ in range(10):
             await collector._handle_orderbook_message(sample_orderbook_message)
@@ -151,10 +149,12 @@ async def test_buffer_flush_on_size_limit(collector, sample_orderbook_message) -
 async def test_error_handling_in_message_processing(collector) -> None:
     """Test error handling when processing invalid messages."""
     # Mock the buffer flush to raise an exception
-    with patch.object(collector, '_flush_orderbook_buffer', side_effect=Exception("Mock error")):
+    with patch.object(collector, "_flush_orderbook_buffer", side_effect=Exception("Mock error")):
         # Fill buffer to trigger flush which will raise exception
         for _ in range(10):
-            await collector._handle_orderbook_message({"E": 1234567890123, "s": "BTCUSDT", "b": [], "a": []})
+            await collector._handle_orderbook_message(
+                {"E": 1234567890123, "s": "BTCUSDT", "b": [], "a": []}
+            )
 
     # Error count should have increased
     assert collector.stats["errors"] >= 1
@@ -178,13 +178,20 @@ async def test_websocket_reconnection() -> None:
     """Test WebSocket reconnection logic."""
     collector = BinanceWebSocketCollector()
 
-
     # Patch the websockets.connect function
-    with patch('src.data_collection.binance_websocket.websockets.connect') as mock_connect:
+    with patch("src.data_collection.binance_websocket.websockets.connect") as mock_connect:
         # First call raises ConnectionClosed, second call succeeds but immediately ends
         mock_connect.side_effect = [
             ConnectionClosed(None, None),
-            AsyncMock(__aenter__=AsyncMock(return_value=AsyncMock(__aiter__=lambda self: self, __anext__=AsyncMock(side_effect=StopAsyncIteration))), __aexit__=AsyncMock())
+            AsyncMock(
+                __aenter__=AsyncMock(
+                    return_value=AsyncMock(
+                        __aiter__=lambda self: self,
+                        __anext__=AsyncMock(side_effect=StopAsyncIteration),
+                    )
+                ),
+                __aexit__=AsyncMock(),
+            ),
         ]
 
         collector._running = True
@@ -214,8 +221,8 @@ async def test_stop_collector() -> None:
     collector._running = True
 
     # Mock gather and _flush_all_buffers to avoid issues
-    with patch('asyncio.gather', new=AsyncMock()):
-        with patch.object(collector, '_flush_all_buffers', new=AsyncMock()):
+    with patch("asyncio.gather", new=AsyncMock()):
+        with patch.object(collector, "_flush_all_buffers", new=AsyncMock()):
             await collector.stop()
 
     assert collector._running is False
@@ -224,7 +231,9 @@ async def test_stop_collector() -> None:
 
 
 @pytest.mark.asyncio
-async def test_flush_all_buffers(collector, sample_orderbook_message, sample_trade_message, sample_agg_trade_message) -> None:
+async def test_flush_all_buffers(
+    collector, sample_orderbook_message, sample_trade_message, sample_agg_trade_message
+) -> None:
     """Test flushing all buffers."""
     # Create a mock that properly simulates aiofiles context manager
     mock_file = AsyncMock()
@@ -234,7 +243,7 @@ async def test_flush_all_buffers(collector, sample_orderbook_message, sample_tra
     mock_open.return_value.__aenter__ = AsyncMock(return_value=mock_file)
     mock_open.return_value.__aexit__ = AsyncMock(return_value=None)
 
-    with patch('aiofiles.open', mock_open):
+    with patch("aiofiles.open", mock_open):
         # Add data to all buffers
         await collector._handle_orderbook_message(sample_orderbook_message)
         await collector._handle_trade_message(sample_trade_message)
@@ -250,4 +259,3 @@ async def test_flush_all_buffers(collector, sample_orderbook_message, sample_tra
 
         # Should have written to 3 files
         assert mock_open.call_count == 3
-

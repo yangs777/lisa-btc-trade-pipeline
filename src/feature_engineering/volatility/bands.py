@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Band-based volatility indicators."""
 
 import pandas as pd
@@ -33,7 +35,9 @@ class BollingerMiddle(PriceIndicator):
 class BollingerUpper(PriceIndicator):
     """Bollinger Band Upper."""
 
-    def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize Bollinger Upper.
 
         Args:
@@ -61,7 +65,9 @@ class BollingerUpper(PriceIndicator):
 class BollingerLower(PriceIndicator):
     """Bollinger Band Lower."""
 
-    def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize Bollinger Lower.
 
         Args:
@@ -89,7 +95,9 @@ class BollingerLower(PriceIndicator):
 class BollingerWidth(PriceIndicator):
     """Bollinger Band Width."""
 
-    def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize Bollinger Width.
 
         Args:
@@ -108,10 +116,12 @@ class BollingerWidth(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Bollinger Width."""
         # Calculate upper and lower bands
-        upper_indicator = BollingerUpper(window=self.window_size, std=self.std,
-                                       price_col=self.price_col, fillna=False)
-        lower_indicator = BollingerLower(window=self.window_size, std=self.std,
-                                       price_col=self.price_col, fillna=False)
+        upper_indicator = BollingerUpper(
+            window=self.window_size, std=self.std, price_col=self.price_col, fillna=False
+        )
+        lower_indicator = BollingerLower(
+            window=self.window_size, std=self.std, price_col=self.price_col, fillna=False
+        )
 
         upper = upper_indicator.transform(df)
         lower = lower_indicator.transform(df)
@@ -124,7 +134,9 @@ class BollingerWidth(PriceIndicator):
 class BollingerPercent(PriceIndicator):
     """Bollinger Band %B."""
 
-    def __init__(self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self, window: int = 20, std: float = 2.0, price_col: str = "close", fillna: bool = True
+    ):
         """Initialize Bollinger %B.
 
         Args:
@@ -145,10 +157,12 @@ class BollingerPercent(PriceIndicator):
         price = self._get_price(df)
 
         # Calculate bands
-        upper_indicator = BollingerUpper(window=self.window_size, std=self.std,
-                                       price_col=self.price_col, fillna=False)
-        lower_indicator = BollingerLower(window=self.window_size, std=self.std,
-                                       price_col=self.price_col, fillna=False)
+        upper_indicator = BollingerUpper(
+            window=self.window_size, std=self.std, price_col=self.price_col, fillna=False
+        )
+        lower_indicator = BollingerLower(
+            window=self.window_size, std=self.std, price_col=self.price_col, fillna=False
+        )
 
         upper = upper_indicator.transform(df)
         lower = lower_indicator.transform(df)
@@ -185,7 +199,9 @@ class KeltnerMiddle(PriceIndicator):
 class KeltnerUpper(OHLCVIndicator):
     """Keltner Channel Upper."""
 
-    def __init__(self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True):
+    def __init__(
+        self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True
+    ):
         """Initialize Keltner Upper.
 
         Args:
@@ -207,7 +223,7 @@ class KeltnerUpper(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate middle line (EMA)
-        middle = df['close'].ewm(span=self.window_size, adjust=False).mean()
+        middle = df["close"].ewm(span=self.window_size, adjust=False).mean()
 
         # Calculate ATR
         atr_indicator = ATR(window=self.atr_window, fillna=False)
@@ -221,7 +237,9 @@ class KeltnerUpper(OHLCVIndicator):
 class KeltnerLower(OHLCVIndicator):
     """Keltner Channel Lower."""
 
-    def __init__(self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True):
+    def __init__(
+        self, window: int = 20, atr_window: int = 10, mult: float = 2.0, fillna: bool = True
+    ):
         """Initialize Keltner Lower.
 
         Args:
@@ -243,7 +261,7 @@ class KeltnerLower(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate middle line (EMA)
-        middle = df['close'].ewm(span=self.window_size, adjust=False).mean()
+        middle = df["close"].ewm(span=self.window_size, adjust=False).mean()
 
         # Calculate ATR
         atr_indicator = ATR(window=self.atr_window, fillna=False)
@@ -273,7 +291,7 @@ class DonchianUpper(OHLCVIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Donchian Upper."""
         self._validate_ohlcv(df)
-        upper = df['high'].rolling(window=self.window_size).max()
+        upper = df["high"].rolling(window=self.window_size).max()
         return self._handle_nan(upper)
 
 
@@ -296,5 +314,5 @@ class DonchianLower(OHLCVIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate Donchian Lower."""
         self._validate_ohlcv(df)
-        lower = df['low'].rolling(window=self.window_size).min()
+        lower = df["low"].rolling(window=self.window_size).min()
         return self._handle_nan(lower)

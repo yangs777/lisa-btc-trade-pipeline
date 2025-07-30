@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """ATR (Average True Range) indicators."""
 
 import pandas as pd
@@ -26,9 +28,9 @@ class ATR(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate True Range
-        high_low = df['high'] - df['low']
-        high_close = (df['high'] - df['close'].shift(1)).abs()
-        low_close = (df['low'] - df['close'].shift(1)).abs()
+        high_low = df["high"] - df["low"]
+        high_close = (df["high"] - df["close"].shift(1)).abs()
+        low_close = (df["low"] - df["close"].shift(1)).abs()
 
         true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
 
@@ -61,6 +63,6 @@ class NATR(OHLCVIndicator):
         atr = atr_indicator.transform(df)
 
         # Normalize by close price
-        natr = (atr / df['close']) * 100
+        natr = (atr / df["close"]) * 100
 
         return self._handle_nan(natr)

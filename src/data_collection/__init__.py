@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Data collection module for BTC/USDT trading system."""
 
 from .binance_websocket import BinanceWebSocketCollector
