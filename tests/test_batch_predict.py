@@ -9,14 +9,14 @@ from src.pipeline.batch_predict import BatchPredictor, main
 class TestBatchPredictor:
     """Test BatchPredictor class."""
     
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         """Test predictor initialization."""
         predictor = BatchPredictor(model_path="gs://bucket/model.pkl")
         
         assert predictor.model_path == "gs://bucket/model.pkl"
         assert predictor.model is None
     
-    def test_load_model(self):
+    def test_load_model(self) -> None:
         """Test model loading."""
         predictor = BatchPredictor(model_path="gs://bucket/model.pkl")
         
@@ -32,7 +32,7 @@ class TestBatchPredictor:
             # Verify logging
             mock_logger.info.assert_called_with("Loading model from gs://bucket/model.pkl")
     
-    def test_load_data(self):
+    def test_load_data(self) -> None:
         """Test data loading."""
         predictor = BatchPredictor(model_path="test.pkl")
         
@@ -49,7 +49,7 @@ class TestBatchPredictor:
             # Verify logging
             mock_logger.info.assert_called_with("Loading data from gs://bucket/input.json")
     
-    def test_predict(self):
+    def test_predict(self) -> None:
         """Test prediction generation."""
         predictor = BatchPredictor(model_path="test.pkl")
         predictor.model = {"type": "TauSAC", "loaded": True}
@@ -71,7 +71,7 @@ class TestBatchPredictor:
             assert isinstance(pred["expected_return"], float)
             assert 0 <= pred["risk_score"] <= 1
     
-    def test_save_predictions(self):
+    def test_save_predictions(self) -> None:
         """Test saving predictions."""
         predictor = BatchPredictor(model_path="test.pkl")
         
@@ -92,47 +92,45 @@ class TestBatchPredictor:
             assert mock_logger.info.call_count == 2
             mock_logger.info.assert_any_call("Saving 1 predictions to gs://bucket/output.json")
     
-    def test_run_success(self):
+    def test_run_success(self) -> None:
         """Test successful batch prediction run."""
         predictor = BatchPredictor(model_path="gs://bucket/model.pkl")
         
-        # Mock methods
-        predictor.load_model = Mock()
-        predictor.load_data = Mock(return_value=[{"timestamp": "2024-01-01", "features": [1, 2, 3]}])
-        predictor.predict = Mock(return_value=[{"timestamp": "2024-01-01", "action": 1}])
-        predictor.save_predictions = Mock()
-        
-        result = predictor.run("input.json", "output.json")
-        
-        # Verify result
-        assert result["status"] == "success"
-        assert result["input_path"] == "input.json"
-        assert result["output_path"] == "output.json"
-        assert result["num_predictions"] == 1
-        assert result["model_path"] == "gs://bucket/model.pkl"
-        
-        # Verify method calls
-        predictor.load_model.assert_called_once()
-        predictor.load_data.assert_called_once_with("input.json")
-        predictor.predict.assert_called_once()
-        predictor.save_predictions.assert_called_once()
+        # Mock methods using patch.object
+        with patch.object(predictor, 'load_model') as mock_load:
+            with patch.object(predictor, 'load_data', return_value=[{"timestamp": "2024-01-01", "features": [1, 2, 3]}]) as mock_load_data:
+                with patch.object(predictor, 'predict', return_value=[{"timestamp": "2024-01-01", "action": 1}]) as mock_predict:
+                    with patch.object(predictor, 'save_predictions') as mock_save:
+                        result = predictor.run("input.json", "output.json")
+                        
+                        # Verify result
+                        assert result["status"] == "success"
+                        assert result["input_path"] == "input.json"
+                        assert result["output_path"] == "output.json"
+                        assert result["num_predictions"] == 1
+                        assert result["model_path"] == "gs://bucket/model.pkl"
+                        
+                        # Verify method calls
+                        mock_load.assert_called_once()
+                        mock_load_data.assert_called_once_with("input.json")
+                        mock_predict.assert_called_once()
+                        mock_save.assert_called_once()
     
-    def test_run_failure(self):
+    def test_run_failure(self) -> None:
         """Test batch prediction run with failure."""
         predictor = BatchPredictor(model_path="gs://bucket/model.pkl")
         
         # Mock load_model to raise exception
-        predictor.load_model = Mock(side_effect=Exception("Model not found"))
-        
-        result = predictor.run("input.json", "output.json")
-        
-        # Verify failure result
-        assert result["status"] == "failed"
-        assert result["error"] == "Model not found"
-        assert result["input_path"] == "input.json"
-        assert result["output_path"] == "output.json"
+        with patch.object(predictor, 'load_model', side_effect=Exception("Model not found")):
+            result = predictor.run("input.json", "output.json")
+            
+            # Verify failure result
+            assert result["status"] == "failed"
+            assert result["error"] == "Model not found"
+            assert result["input_path"] == "input.json"
+            assert result["output_path"] == "output.json"
     
-    def test_run_with_logging(self):
+    def test_run_with_logging(self) -> None:
         """Test run with proper logging."""
         predictor = BatchPredictor(model_path="test.pkl")
         
@@ -153,7 +151,7 @@ class TestBatchPredictor:
 class TestBatchPredictMain:
     """Test main entry point."""
     
-    def test_main_success(self):
+    def test_main_success(self) -> None:
         """Test successful main execution."""
         test_args = [
             "batch_predict.py",
@@ -189,7 +187,7 @@ class TestBatchPredictMain:
                         # Verify success exit
                         mock_exit.assert_called_once_with(0)
     
-    def test_main_failure(self):
+    def test_main_failure(self) -> None:
         """Test main execution with failure."""
         test_args = [
             "batch_predict.py",
@@ -216,7 +214,7 @@ class TestBatchPredictMain:
                         # Verify failure exit
                         mock_exit.assert_called_once_with(1)
     
-    def test_main_with_log_level(self):
+    def test_main_with_log_level(self) -> None:
         """Test main with custom log level."""
         test_args = [
             "batch_predict.py",
@@ -243,7 +241,7 @@ class TestBatchPredictMain:
                             mock_logging.assert_called_once()
                             assert mock_logging.call_args[1]["level"] == logging.DEBUG
     
-    def test_main_missing_args(self):
+    def test_main_missing_args(self) -> None:
         """Test main with missing required arguments."""
         test_args = ["batch_predict.py", "--model", "model.pkl"]
         
