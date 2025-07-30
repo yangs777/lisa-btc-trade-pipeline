@@ -8,8 +8,14 @@ from ..base import PriceIndicator
 class MACD(PriceIndicator):
     """MACD Line."""
 
-    def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
-                 price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        fast: int = 12,
+        slow: int = 26,
+        signal: int = 9,
+        price_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize MACD.
 
         Args:
@@ -45,8 +51,14 @@ class MACD(PriceIndicator):
 class MACDSignal(PriceIndicator):
     """MACD Signal Line."""
 
-    def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
-                 price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        fast: int = 12,
+        slow: int = 26,
+        signal: int = 9,
+        price_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize MACD Signal.
 
         Args:
@@ -68,8 +80,13 @@ class MACDSignal(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate MACD signal line."""
         # First calculate MACD line
-        macd_indicator = MACD(fast=self.fast, slow=self.slow, signal=self.signal,
-                             price_col=self.price_col, fillna=False)
+        macd_indicator = MACD(
+            fast=self.fast,
+            slow=self.slow,
+            signal=self.signal,
+            price_col=self.price_col,
+            fillna=False,
+        )
         macd = macd_indicator.transform(df)
 
         # Signal line is EMA of MACD
@@ -81,8 +98,14 @@ class MACDSignal(PriceIndicator):
 class MACDHist(PriceIndicator):
     """MACD Histogram."""
 
-    def __init__(self, fast: int = 12, slow: int = 26, signal: int = 9,
-                 price_col: str = "close", fillna: bool = True):
+    def __init__(
+        self,
+        fast: int = 12,
+        slow: int = 26,
+        signal: int = 9,
+        price_col: str = "close",
+        fillna: bool = True,
+    ):
         """Initialize MACD Histogram.
 
         Args:
@@ -104,13 +127,23 @@ class MACDHist(PriceIndicator):
     def transform(self, df: pd.DataFrame) -> pd.Series:
         """Calculate MACD histogram."""
         # Calculate MACD line
-        macd_indicator = MACD(fast=self.fast, slow=self.slow, signal=self.signal,
-                             price_col=self.price_col, fillna=False)
+        macd_indicator = MACD(
+            fast=self.fast,
+            slow=self.slow,
+            signal=self.signal,
+            price_col=self.price_col,
+            fillna=False,
+        )
         macd = macd_indicator.transform(df)
 
         # Calculate signal line
-        signal_indicator = MACDSignal(fast=self.fast, slow=self.slow, signal=self.signal,
-                                     price_col=self.price_col, fillna=False)
+        signal_indicator = MACDSignal(
+            fast=self.fast,
+            slow=self.slow,
+            signal=self.signal,
+            price_col=self.price_col,
+            fillna=False,
+        )
         signal = signal_indicator.transform(df)
 
         # Histogram is MACD - Signal

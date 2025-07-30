@@ -29,5 +29,5 @@ __all__ = [
     "KeltnerMiddle",
     "KeltnerUpper",
     "MassIndex",
-    "UlcerIndex"
+    "UlcerIndex",
 ]

@@ -4,6 +4,7 @@ import asyncio
 import logging
 import signal
 from collections.abc import Callable
+from typing import Dict, Any
 
 from .binance_websocket import BinanceWebSocketCollector
 from .gcs_uploader import GCSUploader
@@ -60,7 +61,7 @@ class IntegratedDataCollector:
             cleanup_after_upload=cleanup_after_upload,
         )
 
-        self._tasks: list[asyncio.Task] = []
+        self._tasks: list[asyncio.Task[Any]] = []
         self._running = False
 
     async def start(self) -> None:
@@ -112,7 +113,7 @@ class IntegratedDataCollector:
             f"    Files failed: {gcs_stats['files_failed']}"
         )
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> Dict[str, Any]:
         """Get combined statistics from both collectors."""
         return {
             "websocket": self.websocket_collector.get_stats(),
@@ -123,19 +124,26 @@ class IntegratedDataCollector:
 async def main() -> None:
     """Run integrated data collection with signal handling."""
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Create integrated collector with config
     import sys
     from pathlib import Path
+
     sys.path.append(str(Path(__file__).parent.parent.parent))
     from src.config import (  # noqa: I001
-        BINANCE_SYMBOL, BINANCE_DEPTH_LEVELS, BINANCE_BUFFER_SIZE,
-        GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH,
-        RAW_DATA_DIR, UPLOAD_WORKERS, CLEANUP_AFTER_UPLOAD
+        BINANCE_SYMBOL,
+        BINANCE_DEPTH_LEVELS,
+        BINANCE_BUFFER_SIZE,
+        GCP_PROJECT_ID,
+        GCS_BUCKET,
+        GCP_CREDENTIALS_PATH,
+        RAW_DATA_DIR,
+        UPLOAD_WORKERS,
+        CLEANUP_AFTER_UPLOAD,
     )
+
     collector = IntegratedDataCollector(
         symbol=BINANCE_SYMBOL,
         depth_levels=BINANCE_DEPTH_LEVELS,
@@ -161,7 +169,9 @@ async def main() -> None:
         def make_handler(s: int) -> Callable[[], None]:
             def handler() -> None:
                 signal_handler(s)
+
             return handler
+
         loop.add_signal_handler(sig, make_handler(sig))
 
     try:

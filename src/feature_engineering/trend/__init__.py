@@ -14,5 +14,5 @@ __all__ = [
     "IchimokuKijun",
     "IchimokuSenkouA",
     "IchimokuSenkouB",
-    "IchimokuTenkan"
+    "IchimokuTenkan",
 ]

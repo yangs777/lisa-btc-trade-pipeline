@@ -46,6 +46,7 @@ class DailyPreprocessor:
         # Initialize GCS client
         if credentials_path:
             import os
+
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credentials_path
 
         try:
@@ -89,8 +90,8 @@ class DailyPreprocessor:
                     data = json.loads(line.strip())
 
                     # Calculate orderbook features
-                    bids = data.get('bids', [])
-                    asks = data.get('asks', [])
+                    bids = data.get("bids", [])
+                    asks = data.get("asks", [])
 
                     if bids and asks:
                         best_bid = float(bids[0][0]) if bids else 0
@@ -108,21 +109,25 @@ class DailyPreprocessor:
                         # Order imbalance
                         total_bid_vol = bid_volume_10
                         total_ask_vol = ask_volume_10
-                        order_imbalance = (total_bid_vol - total_ask_vol) / (total_bid_vol + total_ask_vol) if (total_bid_vol + total_ask_vol) > 0 else 0
+                        order_imbalance = (
+                            (total_bid_vol - total_ask_vol) / (total_bid_vol + total_ask_vol)
+                            if (total_bid_vol + total_ask_vol) > 0
+                            else 0
+                        )
 
                         record = {
-                            'timestamp': data['timestamp'],
-                            'event_time': data['event_time'],
-                            'mid_price': mid_price,
-                            'best_bid': best_bid,
-                            'best_ask': best_ask,
-                            'spread': spread,
-                            'spread_pct': spread_pct,
-                            'bid_volume_5': bid_volume_5,
-                            'ask_volume_5': ask_volume_5,
-                            'bid_volume_10': bid_volume_10,
-                            'ask_volume_10': ask_volume_10,
-                            'order_imbalance': order_imbalance,
+                            "timestamp": data["timestamp"],
+                            "event_time": data["event_time"],
+                            "mid_price": mid_price,
+                            "best_bid": best_bid,
+                            "best_ask": best_ask,
+                            "spread": spread,
+                            "spread_pct": spread_pct,
+                            "bid_volume_5": bid_volume_5,
+                            "ask_volume_5": ask_volume_5,
+                            "bid_volume_10": bid_volume_10,
+                            "ask_volume_10": ask_volume_10,
+                            "order_imbalance": order_imbalance,
                         }
                         records.append(record)
 
@@ -132,8 +137,8 @@ class DailyPreprocessor:
 
         df = pd.DataFrame(records)
         if not df.empty:
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df = df.set_index('timestamp').sort_index()
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+            df = df.set_index("timestamp").sort_index()
 
         return df
 
@@ -147,12 +152,12 @@ class DailyPreprocessor:
                     data = json.loads(line.strip())
 
                     record = {
-                        'timestamp': data['timestamp'],
-                        'event_time': data['event_time'],
-                        'trade_id': data['trade_id'],
-                        'price': float(data['price']),
-                        'quantity': float(data['quantity']),
-                        'is_buyer_maker': data['is_buyer_maker'],
+                        "timestamp": data["timestamp"],
+                        "event_time": data["event_time"],
+                        "trade_id": data["trade_id"],
+                        "price": float(data["price"]),
+                        "quantity": float(data["quantity"]),
+                        "is_buyer_maker": data["is_buyer_maker"],
                     }
                     records.append(record)
 
@@ -162,75 +167,76 @@ class DailyPreprocessor:
 
         df = pd.DataFrame(records)
         if not df.empty:
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            df = df.set_index('timestamp').sort_index()
+            df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+            df = df.set_index("timestamp").sort_index()
 
         return df
 
-    def _aggregate_trade_features(self, trades_df: pd.DataFrame, freq: str = '1min') -> pd.DataFrame:
+    def _aggregate_trade_features(
+        self, trades_df: pd.DataFrame, freq: str = "1min"
+    ) -> pd.DataFrame:
         """Aggregate trade data into features."""
         if trades_df.empty:
             return pd.DataFrame()
 
         # Separate buy and sell trades
-        buy_trades = trades_df[~trades_df['is_buyer_maker']]
-        sell_trades = trades_df[trades_df['is_buyer_maker']]
+        buy_trades = trades_df[~trades_df["is_buyer_maker"]]
+        sell_trades = trades_df[trades_df["is_buyer_maker"]]
 
         # Aggregate features
         agg_features = pd.DataFrame()
 
         # OHLCV
-        ohlc = trades_df['price'].resample(freq).ohlc()
-        volume = trades_df['quantity'].resample(freq).sum()
+        ohlc = trades_df["price"].resample(freq).ohlc()
+        volume = trades_df["quantity"].resample(freq).sum()
 
-        agg_features['open'] = ohlc['open']
-        agg_features['high'] = ohlc['high']
-        agg_features['low'] = ohlc['low']
-        agg_features['close'] = ohlc['close']
-        agg_features['volume'] = volume
+        agg_features["open"] = ohlc["open"]
+        agg_features["high"] = ohlc["high"]
+        agg_features["low"] = ohlc["low"]
+        agg_features["close"] = ohlc["close"]
+        agg_features["volume"] = volume
 
         # Trade count
-        agg_features['trade_count'] = trades_df['trade_id'].resample(freq).count()
+        agg_features["trade_count"] = trades_df["trade_id"].resample(freq).count()
 
         # Buy/Sell volumes
-        agg_features['buy_volume'] = buy_trades['quantity'].resample(freq).sum()
-        agg_features['sell_volume'] = sell_trades['quantity'].resample(freq).sum()
+        agg_features["buy_volume"] = buy_trades["quantity"].resample(freq).sum()
+        agg_features["sell_volume"] = sell_trades["quantity"].resample(freq).sum()
 
         # Buy/Sell trade counts
-        agg_features['buy_count'] = buy_trades['trade_id'].resample(freq).count()
-        agg_features['sell_count'] = sell_trades['trade_id'].resample(freq).count()
+        agg_features["buy_count"] = buy_trades["trade_id"].resample(freq).count()
+        agg_features["sell_count"] = sell_trades["trade_id"].resample(freq).count()
 
         # VWAP
-        trades_df['value'] = trades_df['price'] * trades_df['quantity']
-        vwap = trades_df['value'].resample(freq).sum() / trades_df['quantity'].resample(freq).sum()
-        agg_features['vwap'] = vwap
+        trades_df["value"] = trades_df["price"] * trades_df["quantity"]
+        vwap = trades_df["value"].resample(freq).sum() / trades_df["quantity"].resample(freq).sum()
+        agg_features["vwap"] = vwap
 
         # Fill NaN values
-        agg_features = agg_features.fillna(method='ffill').fillna(0)
+        agg_features = agg_features.fillna(method="ffill").fillna(0)
 
         return agg_features
 
     def _merge_data(
-        self,
-        orderbook_df: pd.DataFrame,
-        trade_features_df: pd.DataFrame,
-        freq: str = '1min'
+        self, orderbook_df: pd.DataFrame, trade_features_df: pd.DataFrame, freq: str = "1min"
     ) -> pd.DataFrame:
         """Merge orderbook and trade data."""
         # Resample orderbook data
         if not orderbook_df.empty:
-            orderbook_resampled = orderbook_df.resample(freq).agg({
-                'mid_price': 'last',
-                'best_bid': 'last',
-                'best_ask': 'last',
-                'spread': 'mean',
-                'spread_pct': 'mean',
-                'bid_volume_5': 'mean',
-                'ask_volume_5': 'mean',
-                'bid_volume_10': 'mean',
-                'ask_volume_10': 'mean',
-                'order_imbalance': 'mean',
-            })
+            orderbook_resampled = orderbook_df.resample(freq).agg(
+                {
+                    "mid_price": "last",
+                    "best_bid": "last",
+                    "best_ask": "last",
+                    "spread": "mean",
+                    "spread_pct": "mean",
+                    "bid_volume_5": "mean",
+                    "ask_volume_5": "mean",
+                    "bid_volume_10": "mean",
+                    "ask_volume_10": "mean",
+                    "order_imbalance": "mean",
+                }
+            )
         else:
             orderbook_resampled = pd.DataFrame()
 
@@ -241,7 +247,7 @@ class DailyPreprocessor:
                 orderbook_resampled,
                 left_index=True,
                 right_index=True,
-                how='outer'
+                how="outer",
             )
         elif not trade_features_df.empty:
             merged = trade_features_df
@@ -252,7 +258,7 @@ class DailyPreprocessor:
 
         # Forward fill missing values
         if not merged.empty:
-            merged = merged.fillna(method='ffill').fillna(0)
+            merged = merged.fillna(method="ffill").fillna(0)
 
         return merged
 
@@ -283,11 +289,11 @@ class DailyPreprocessor:
                 self._download_blob(blob_name, local_path)
 
                 try:
-                    if 'orderbook' in blob_name:
+                    if "orderbook" in blob_name:
                         df = self._parse_orderbook_data(local_path)
                         if not df.empty:
                             orderbook_dfs.append(df)
-                    elif 'trades' in blob_name or 'trade' in blob_name:
+                    elif "trades" in blob_name or "trade" in blob_name:
                         df = self._parse_trade_data(local_path)
                         if not df.empty:
                             trade_dfs.append(df)
@@ -319,7 +325,7 @@ class DailyPreprocessor:
             # Save processed data
             output_filename = f"btcusdt_{date.strftime('%Y%m%d')}_1min.parquet"
             local_output = self.local_work_dir / output_filename
-            merged_df.to_parquet(local_output, compression='snappy')
+            merged_df.to_parquet(local_output, compression="snappy")
 
             # Upload to GCS
             date_str = date.strftime("%Y/%m/%d")
@@ -329,18 +335,16 @@ class DailyPreprocessor:
             # Clean up local file
             local_output.unlink()
 
-            logger.info(f"Successfully processed {len(merged_df)} records for {date.strftime('%Y-%m-%d')}")
+            logger.info(
+                f"Successfully processed {len(merged_df)} records for {date.strftime('%Y-%m-%d')}"
+            )
             return gcs_path
 
         except Exception as e:
             logger.error(f"Error processing date {date.strftime('%Y-%m-%d')}: {e}")
             return None
 
-    async def process_date_range(
-        self,
-        start_date: datetime,
-        end_date: datetime
-    ) -> list[str]:
+    async def process_date_range(self, start_date: datetime, end_date: datetime) -> list[str]:
         """Process data for a date range.
 
         Args:
@@ -366,14 +370,19 @@ class DailyPreprocessor:
 async def main() -> None:
     """Example usage of DailyPreprocessor."""
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Use configuration settings
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, PROCESSED_DATA_DIR  # noqa: I001
+    from src.config import (
+        GCP_CREDENTIALS_PATH,
+        GCP_PROJECT_ID,
+        GCS_BUCKET,
+        PROCESSED_DATA_DIR,
+    )
 
     # Create preprocessor
     preprocessor = DailyPreprocessor(

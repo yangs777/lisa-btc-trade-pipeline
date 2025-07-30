@@ -5,8 +5,9 @@ import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Dict, Any
 
-import aiofiles
+import aiofiles  # type: ignore[import]
 from google.cloud import storage
 
 logger = logging.getLogger(__name__)
@@ -87,9 +88,7 @@ class GCSUploader:
                 content = await f.read()
 
             # Upload to GCS (synchronous operation)
-            await asyncio.get_event_loop().run_in_executor(
-                None, blob.upload_from_string, content
-            )
+            await asyncio.get_event_loop().run_in_executor(None, blob.upload_from_string, content)
 
             file_size = len(content)
             files_uploaded = self.stats.get("files_uploaded", 0)
@@ -135,9 +134,7 @@ class GCSUploader:
         while self._running:
             try:
                 # Wait for file with timeout
-                file_path = await asyncio.wait_for(
-                    self._upload_queue.get(), timeout=1.0
-                )
+                file_path = await asyncio.wait_for(self._upload_queue.get(), timeout=1.0)
 
                 # Upload the file
                 success = await self._upload_file(file_path)
@@ -189,10 +186,7 @@ class GCSUploader:
         logger.info(f"Starting GCS uploader with {num_workers} workers")
 
         # Create upload workers
-        workers = [
-            asyncio.create_task(self._upload_worker())
-            for _ in range(num_workers)
-        ]
+        workers = [asyncio.create_task(self._upload_worker()) for _ in range(num_workers)]
 
         # Create directory scanner
         scanner = asyncio.create_task(self._scan_directory())
@@ -238,7 +232,7 @@ class GCSUploader:
         """
         return await self._upload_file(Path(file_path))
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> Dict[str, Any]:
         """Get current upload statistics."""
         return self.stats.copy()
 
@@ -246,14 +240,20 @@ class GCSUploader:
 async def main() -> None:
     """Example usage of GCSUploader."""
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # Use configuration settings
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent.parent))
-    from src.config import GCP_PROJECT_ID, GCS_BUCKET, GCP_CREDENTIALS_PATH, RAW_DATA_DIR  # noqa: I001
+    from src.config import (
+        GCP_CREDENTIALS_PATH,
+        GCP_PROJECT_ID,
+        GCS_BUCKET,
+        RAW_DATA_DIR,
+    )
+
     uploader = GCSUploader(
         bucket_name=GCS_BUCKET,
         project_id=GCP_PROJECT_ID,

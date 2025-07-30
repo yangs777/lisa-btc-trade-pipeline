@@ -26,8 +26,8 @@ class IchimokuTenkan(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Tenkan-sen = (Highest High + Lowest Low) / 2
-        high_max = df['high'].rolling(window=self.window_size).max()
-        low_min = df['low'].rolling(window=self.window_size).min()
+        high_max = df["high"].rolling(window=self.window_size).max()
+        low_min = df["low"].rolling(window=self.window_size).min()
         tenkan = (high_max + low_min) / 2
 
         return self._handle_nan(tenkan)
@@ -54,8 +54,8 @@ class IchimokuKijun(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Kijun-sen = (Highest High + Lowest Low) / 2
-        high_max = df['high'].rolling(window=self.window_size).max()
-        low_min = df['low'].rolling(window=self.window_size).min()
+        high_max = df["high"].rolling(window=self.window_size).max()
+        low_min = df["low"].rolling(window=self.window_size).min()
         kijun = (high_max + low_min) / 2
 
         return self._handle_nan(kijun)
@@ -85,13 +85,13 @@ class IchimokuSenkouA(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Calculate Tenkan-sen
-        high_max_tenkan = df['high'].rolling(window=self.tenkan_period).max()
-        low_min_tenkan = df['low'].rolling(window=self.tenkan_period).min()
+        high_max_tenkan = df["high"].rolling(window=self.tenkan_period).max()
+        low_min_tenkan = df["low"].rolling(window=self.tenkan_period).min()
         tenkan = (high_max_tenkan + low_min_tenkan) / 2
 
         # Calculate Kijun-sen
-        high_max_kijun = df['high'].rolling(window=self.kijun_period).max()
-        low_min_kijun = df['low'].rolling(window=self.kijun_period).min()
+        high_max_kijun = df["high"].rolling(window=self.kijun_period).max()
+        low_min_kijun = df["low"].rolling(window=self.kijun_period).min()
         kijun = (high_max_kijun + low_min_kijun) / 2
 
         # Senkou Span A = (Tenkan-sen + Kijun-sen) / 2, shifted 26 periods ahead
@@ -122,8 +122,8 @@ class IchimokuSenkouB(OHLCVIndicator):
         self._validate_ohlcv(df)
 
         # Senkou Span B = (Highest High + Lowest Low) / 2, shifted 26 periods ahead
-        high_max = df['high'].rolling(window=self.window_size).max()
-        low_min = df['low'].rolling(window=self.window_size).min()
+        high_max = df["high"].rolling(window=self.window_size).max()
+        low_min = df["low"].rolling(window=self.window_size).min()
         senkou_b = (high_max + low_min) / 2
         senkou_b = senkou_b.shift(26)
 

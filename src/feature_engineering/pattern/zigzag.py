@@ -27,8 +27,8 @@ class ZigZag(OHLCVIndicator):
         """Calculate ZigZag."""
         self._validate_ohlcv(df)
 
-        high = df['high'].values
-        low = df['low'].values
+        high = df["high"].values
+        low = df["low"].values
 
         zigzag = pd.Series(index=df.index, dtype=float)
         zigzag[:] = np.nan
@@ -85,6 +85,6 @@ class ZigZag(OHLCVIndicator):
                     zigzag.iloc[i] = high[i]
 
         # Forward fill to connect zigzag points
-        zigzag = zigzag.fillna(method='ffill')
+        zigzag = zigzag.fillna(method="ffill")
 
         return self._handle_nan(zigzag)
