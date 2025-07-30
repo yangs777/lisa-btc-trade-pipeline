@@ -5,8 +5,9 @@ import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Dict, Any
 
-import aiofiles
+import aiofiles  # type: ignore[import]
 from google.cloud import storage
 
 logger = logging.getLogger(__name__)
@@ -231,7 +232,7 @@ class GCSUploader:
         """
         return await self._upload_file(Path(file_path))
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> Dict[str, Any]:
         """Get current upload statistics."""
         return self.stats.copy()
 

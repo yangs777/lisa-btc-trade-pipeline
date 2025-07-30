@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-import aiofiles
+import aiofiles  # type: ignore[import]
 import websockets
 from websockets.exceptions import ConnectionClosed, WebSocketException
 
@@ -60,7 +60,7 @@ class BinanceWebSocketCollector:
         }
 
         self._running = False
-        self._tasks: list[asyncio.Task] = []
+        self._tasks: list[asyncio.Task[Any]] = []
 
     async def _handle_orderbook_message(self, message: dict[str, Any]) -> None:
         """Process orderbook depth update message."""

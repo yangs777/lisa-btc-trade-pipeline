@@ -4,6 +4,7 @@ import asyncio
 import logging
 import signal
 from collections.abc import Callable
+from typing import Dict, Any
 
 from .binance_websocket import BinanceWebSocketCollector
 from .gcs_uploader import GCSUploader
@@ -60,7 +61,7 @@ class IntegratedDataCollector:
             cleanup_after_upload=cleanup_after_upload,
         )
 
-        self._tasks: list[asyncio.Task] = []
+        self._tasks: list[asyncio.Task[Any]] = []
         self._running = False
 
     async def start(self) -> None:
@@ -112,7 +113,7 @@ class IntegratedDataCollector:
             f"    Files failed: {gcs_stats['files_failed']}"
         )
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> Dict[str, Any]:
         """Get combined statistics from both collectors."""
         return {
             "websocket": self.websocket_collector.get_stats(),
