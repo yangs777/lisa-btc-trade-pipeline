@@ -48,9 +48,11 @@ jobs:
         bandit -r src tests -ll
     
     - name: Run tests with coverage
+      env:
+        COV_FAIL_UNDER: 35
       run: |
         # TODO: Fix mock issues in indicator tests
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v -k "not test_sma_indicator and not test_ema_indicator and not test_rsi_indicator and not test_cci_indicator and not test_bollinger_bands and not test_obv_indicator and not test_ohlcv_validation_detailed and not test_process_date_with_data" || true
+        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v --cov-fail-under=$COV_FAIL_UNDER -k "not test_sma_indicator and not test_ema_indicator and not test_rsi_indicator and not test_cci_indicator and not test_bollinger_bands and not test_obv_indicator and not test_ohlcv_validation_detailed and not test_process_date_with_data"
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
