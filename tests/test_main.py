@@ -214,4 +214,3 @@ n_epochs: 10
                     
                     assert exc_info.value.code == 1
                     mock_logger.error.assert_called_with("Error: Test error")
-EOF < /dev/null

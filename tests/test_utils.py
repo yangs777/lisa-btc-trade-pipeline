@@ -329,4 +329,3 @@ class TestDataValidation:
                 return 0
         
         assert validate_data(EmptyObj()) == False
-EOF < /dev/null
