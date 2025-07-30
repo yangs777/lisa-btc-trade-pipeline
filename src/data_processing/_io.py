@@ -2,7 +2,6 @@
 
 from typing import List, Dict, Any, Optional, Protocol
 from datetime import datetime
-import pandas as pd
 
 
 class StorageClient(Protocol):

@@ -68,9 +68,9 @@ def generate_coverage_report(coverage: float, output_path: Path) -> Dict[str, An
             "threshold": 35
         },
         "trend": {
-            "previous": 32.66,  # From Phase 1
+            "previous": 48.83,  # Previous run
             "current": coverage,
-            "change": round(coverage - 32.66, 2)
+            "change": round(coverage - 48.83, 2)
         },
         "milestones": {
             "phase1": {
@@ -82,6 +82,11 @@ def generate_coverage_report(coverage: float, output_path: Path) -> Dict[str, An
                 "target": 50,
                 "achieved": coverage,
                 "status": "completed" if coverage >= 50 else "in_progress"
+            },
+            "phase3": {
+                "target": 60,
+                "achieved": coverage,
+                "status": "planned"
             }
         }
     }
