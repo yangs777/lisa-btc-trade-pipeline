@@ -48,8 +48,10 @@ jobs:
         bandit -r src tests -ll
     
     - name: Run tests with coverage
+      env:
+        COV_FAIL_UNDER: 20
       run: |
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v --cov-fail-under=85 || true
+        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing -v --cov-fail-under=$COV_FAIL_UNDER
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
