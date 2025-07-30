@@ -1,6 +1,6 @@
 """Trading environment implementation for τ-SAC reinforcement learning."""
 
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Union
 
 import gymnasium as gym
 import numpy as np
@@ -20,7 +20,7 @@ class BTCTradingEnvironment(gym.Env):
     - Margin requirements
     """
 
-    metadata: ClassVar[dict[str, list[str]]] = {"render_modes": ["human"]}
+    metadata = {"render_modes": ["human"]}
 
     def __init__(
         self,
@@ -105,7 +105,7 @@ class BTCTradingEnvironment(gym.Env):
         self.holding_period = 0
 
         # Reset tracking
-        self.trades = []
+        self.trades: list[dict[str, Any]] = []
         self.equity_curve = [self.balance]
         self.reward_calculator.reset()
 
@@ -284,7 +284,7 @@ class BTCTradingEnvironment(gym.Env):
             "n_trades": len(self.trades),
         }
 
-    def render(self) -> str | None:
+    def render(self) -> Union[np.ndarray, list[np.ndarray], None]:
         """Render current state."""
         if self.render_mode == "human":
             info = self._get_info()

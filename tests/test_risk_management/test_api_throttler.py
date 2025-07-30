@@ -104,7 +104,7 @@ class TestBinanceAPIThrottler:
         usage = throttler.get_current_usage()
         assert usage["order_10s"]["current_weight"] == 10
 
-    def test_capacity_estimation(self):
+    def test_capacity_estimation(self) -> None:
         """Test capacity estimation."""
         throttler = BinanceAPIThrottler(safety_margin=0.8)
 
@@ -136,7 +136,7 @@ class TestBinanceAPIThrottler:
         usage = throttler.get_current_usage()
         assert usage["1m"]["current_weight"] == 1
 
-    def test_metrics_tracking(self):
+    def test_metrics_tracking(self) -> None:
         """Test metrics tracking."""
         throttler = BinanceAPIThrottler()
 
@@ -158,7 +158,7 @@ class TestBinanceAPIThrottler:
         assert usage["1m"]["current_weight"] == 1
         assert usage["order_10s"]["current_weight"] == 0  # Not incremented
 
-    def test_reset_functionality(self):
+    def test_reset_functionality(self) -> None:
         """Test throttler reset."""
         throttler = BinanceAPIThrottler()
 
@@ -189,7 +189,7 @@ class TestBinanceAPIThrottler:
         usage = throttler.get_current_usage()
         assert usage["1m"]["current_weight"] == 1  # Reset + new request
 
-    def test_usage_percentage_calculation(self):
+    def test_usage_percentage_calculation(self) -> None:
         """Test usage percentage calculation."""
         throttler = BinanceAPIThrottler()
 

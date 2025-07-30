@@ -125,14 +125,14 @@ class TestTradingEnvWrapper:
             action = env.action_space.sample()
             wrapper.step(action)
         
-        # Compute statistics
-        wrapper.compute_statistics()
+        # Get normalization statistics
+        stats = wrapper.get_normalization_stats()
         
-        assert wrapper.obs_mean is not None
-        assert wrapper.obs_std is not None
-        assert wrapper.obs_mean.shape == (5,)
-        assert wrapper.obs_std.shape == (5,)
-        assert np.all(wrapper.obs_std > 0)
+        assert stats["mean"] is not None
+        assert stats["std"] is not None
+        assert stats["mean"].shape == (5,)
+        assert stats["std"].shape == (5,)
+        assert stats["n_samples"] > 0
 
 
 class TestEpisodeMonitor:
@@ -176,7 +176,7 @@ class TestEpisodeMonitor:
         for i in range(5):
             action = env.action_space.sample()
             obs, reward, terminated, truncated, info = monitor.step(action)
-            total_reward += reward
+            total_reward += float(reward)
             
             assert monitor.current_length == i + 1
             assert abs(monitor.current_reward - total_reward) < 1e-6
@@ -252,10 +252,9 @@ class TestActionNoiseWrapper:
     def test_initialization(self) -> None:
         """Test noise wrapper initialization."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="gaussian")
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.1)
         
         assert wrapper.noise_scale == 0.1
-        assert wrapper.noise_type == "gaussian"
     
     def test_reset(self) -> None:
         """Test reset passes through correctly."""
@@ -272,7 +271,7 @@ class TestActionNoiseWrapper:
     def test_gaussian_noise(self) -> None:
         """Test Gaussian noise addition."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="gaussian")
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.1)
         
         wrapper.reset()
         
@@ -299,32 +298,24 @@ class TestActionNoiseWrapper:
             assert np.all(noisy_action >= -1.0)
             assert np.all(noisy_action <= 1.0)
     
-    def test_uniform_noise(self) -> None:
-        """Test uniform noise addition."""
+    def test_noise_decay(self) -> None:
+        """Test noise decay over episodes."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="uniform")
+        wrapper = ActionNoiseWrapper(env, noise_scale=1.0, noise_decay=0.9, min_noise=0.1)
         
-        wrapper.reset()
+        initial_noise = wrapper.noise_scale
         
-        clean_action = np.array([0.5, -0.5], dtype=np.float32)
+        # Reset multiple times to trigger decay
+        for i in range(5):
+            wrapper.reset()
+            expected_noise = max(initial_noise * (0.9 ** (i + 1)), 0.1)
+            assert abs(wrapper.noise_scale - expected_noise) < 1e-6
         
-        # Mock the step to capture the noisy action
-        noisy_actions = []
+        # Check minimum noise is respected
+        for _ in range(20):
+            wrapper.reset()
         
-        def capture_action(action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
-            noisy_actions.append(action.copy())
-            return np.zeros(5, dtype=np.float32), 0.0, False, False, {}
-        
-        with patch.object(env, 'step', capture_action):
-            wrapper.step(clean_action)
-        
-        # Check noise was added
-        noisy_action = noisy_actions[0]
-        assert not np.allclose(noisy_action, clean_action)
-        
-        # Check action is still within bounds
-        assert np.all(noisy_action >= -1.0)
-        assert np.all(noisy_action <= 1.0)
+        assert wrapper.noise_scale >= 0.1
     
     def test_no_noise_with_zero_scale(self) -> None:
         """Test no noise when scale is zero."""

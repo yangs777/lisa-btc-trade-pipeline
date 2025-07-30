@@ -12,7 +12,7 @@ import pytest
 class TestMetricsCollector:
     """Test metrics collector."""
 
-    def test_metrics_collector_initialization(self):
+    def test_metrics_collector_initialization(self) -> None:
         """Test metrics collector initialization."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -22,7 +22,7 @@ class TestMetricsCollector:
         assert hasattr(collector, "record_latency")
         assert hasattr(collector, "get_metrics")
 
-    def test_record_prediction(self):
+    def test_record_prediction(self) -> None:
         """Test recording predictions."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -39,7 +39,7 @@ class TestMetricsCollector:
         assert metrics["predictions_by_action"]["sell"] == 1
         assert metrics["predictions_by_action"]["hold"] == 1
 
-    def test_record_trade(self):
+    def test_record_trade(self) -> None:
         """Test recording trades."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -53,7 +53,7 @@ class TestMetricsCollector:
         assert metrics["total_trades"] == 2
         assert metrics["total_pnl"] == 150  # 150 profit from sell
 
-    def test_record_latency(self):
+    def test_record_latency(self) -> None:
         """Test recording latency."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -68,7 +68,7 @@ class TestMetricsCollector:
         assert metrics["avg_latency"]["prediction"] == 0.15
         assert metrics["avg_latency"]["data_fetch"] == 0.5
 
-    def test_record_error(self):
+    def test_record_error(self) -> None:
         """Test recording errors."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -83,7 +83,7 @@ class TestMetricsCollector:
         assert metrics["errors"]["prediction"] == 2
         assert metrics["errors"]["data_fetch"] == 1
 
-    def test_get_metrics_summary(self):
+    def test_get_metrics_summary(self) -> None:
         """Test getting metrics summary."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -102,7 +102,7 @@ class TestMetricsCollector:
         assert summary["total_pnl"] == 500
         assert summary["avg_latency_ms"]["prediction"] == 100  # 0.1s = 100ms
 
-    def test_reset_metrics(self):
+    def test_reset_metrics(self) -> None:
         """Test resetting metrics."""
         from src.monitoring.metrics_collector import MetricsCollector
         
@@ -119,7 +119,7 @@ class TestMetricsCollector:
 class TestPerformanceMonitor:
     """Test performance monitor."""
 
-    def test_performance_monitor_initialization(self):
+    def test_performance_monitor_initialization(self) -> None:
         """Test performance monitor initialization."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -128,7 +128,7 @@ class TestPerformanceMonitor:
         assert hasattr(monitor, "update")
         assert hasattr(monitor, "get_performance")
 
-    def test_update_returns(self):
+    def test_update_returns(self) -> None:
         """Test updating returns."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -144,7 +144,7 @@ class TestPerformanceMonitor:
         assert abs(perf["cumulative_return"] - 0.0494) < 0.001  # Compound return
         assert perf["win_rate"] == 0.625  # 5/8 positive returns
 
-    def test_calculate_sharpe_ratio(self):
+    def test_calculate_sharpe_ratio(self) -> None:
         """Test Sharpe ratio calculation."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -157,7 +157,7 @@ class TestPerformanceMonitor:
         perf = monitor.get_performance()
         assert perf["sharpe_ratio"] > 10  # Very high due to no volatility
 
-    def test_calculate_max_drawdown(self):
+    def test_calculate_max_drawdown(self) -> None:
         """Test max drawdown calculation."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -171,7 +171,7 @@ class TestPerformanceMonitor:
         perf = monitor.get_performance()
         assert perf["max_drawdown"] < -0.10  # Should show significant drawdown
 
-    def test_rolling_window(self):
+    def test_rolling_window(self) -> None:
         """Test rolling window behavior."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -184,7 +184,7 @@ class TestPerformanceMonitor:
         perf = monitor.get_performance()
         assert perf["total_returns"] == 5  # Only last 5 returns
 
-    def test_empty_performance(self):
+    def test_empty_performance(self) -> None:
         """Test performance with no data."""
         from src.monitoring.performance_monitor import PerformanceMonitor
         
@@ -200,7 +200,7 @@ class TestPerformanceMonitor:
 class TestAlertManager:
     """Test alert manager."""
 
-    def test_alert_manager_initialization(self):
+    def test_alert_manager_initialization(self) -> None:
         """Test alert manager initialization."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -208,7 +208,7 @@ class TestAlertManager:
         assert hasattr(manager, "check_alerts")
         assert hasattr(manager, "send_alert")
 
-    def test_drawdown_alert(self):
+    def test_drawdown_alert(self) -> None:
         """Test drawdown alert."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -223,7 +223,7 @@ class TestAlertManager:
         assert len(alerts) > 0
         assert any("drawdown" in alert["message"].lower() for alert in alerts)
 
-    def test_loss_streak_alert(self):
+    def test_loss_streak_alert(self) -> None:
         """Test loss streak alert."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -238,7 +238,7 @@ class TestAlertManager:
         assert len(alerts) > 0
         assert any("loss" in alert["message"].lower() for alert in alerts)
 
-    def test_api_error_alert(self):
+    def test_api_error_alert(self) -> None:
         """Test API error rate alert."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -256,7 +256,7 @@ class TestAlertManager:
 
     @patch("src.monitoring.alert_manager.send_email")
     @patch("src.monitoring.alert_manager.send_slack")
-    def test_send_alert(self, mock_slack, mock_email):
+    def test_send_alert(self, mock_slack, mock_email) -> None:
         """Test sending alerts."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -274,7 +274,7 @@ class TestAlertManager:
         mock_email.assert_called_once()
         mock_slack.assert_called_once()
 
-    def test_alert_throttling(self):
+    def test_alert_throttling(self) -> None:
         """Test alert throttling."""
         from src.monitoring.alert_manager import AlertManager
         

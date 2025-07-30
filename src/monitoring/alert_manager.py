@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class AlertManager:
     """Manage system alerts."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize alert manager."""
         self.alert_thresholds = {
             "max_drawdown": -0.10,
@@ -71,7 +71,7 @@ class AlertManager:
         self.last_alert_time[alert_type] = datetime.now()
         return True
     
-    def send_alert(self, alert: Dict[str, Any], channels: List[str] = None):
+    def send_alert(self, alert: Dict[str, Any], channels: List[str] | None = None) -> None:
         """Send alert through specified channels."""
         if channels is None:
             channels = ["log"]
@@ -90,11 +90,11 @@ class AlertManager:
                 send_slack(alert)
 
 
-def send_email(alert: Dict[str, Any]):
+def send_email(alert: Dict[str, Any]) -> None:
     """Send email alert (placeholder)."""
     pass
 
 
-def send_slack(alert: Dict[str, Any]):
+def send_slack(alert: Dict[str, Any]) -> None:
     """Send Slack alert (placeholder)."""
     pass
