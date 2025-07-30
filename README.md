@@ -1,6 +1,6 @@
 # Bitcoin τ-SAC Trading System v0.3
 
-![CI Status](https://img.shields.io/badge/CI-passing-green) ![Coverage](https://img.shields.io/badge/Coverage-48.83%25-orange)
+![CI Status](https://img.shields.io/badge/CI-passing-green) ![Coverage](https://img.shields.io/badge/Coverage-50.25%25-green)
 
 
 

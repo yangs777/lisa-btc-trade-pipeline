@@ -7,7 +7,7 @@ import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 def parse_coverage_xml(coverage_file: Path) -> float:
@@ -21,6 +21,28 @@ def parse_coverage_xml(coverage_file: Path) -> float:
         return round(coverage, 2)
     except Exception as e:
         print(f"Error parsing coverage.xml: {e}")
+        return 0.0
+
+
+def get_previous_coverage(reports_dir: Path) -> float:
+    """Get previous coverage from latest JSON report."""
+    if not reports_dir.exists():
+        return 0.0
+    
+    # Find all coverage report JSON files
+    json_files = list(reports_dir.glob("coverage_report_*.json"))
+    if not json_files:
+        return 0.0
+    
+    # Sort by modification time to get the latest
+    latest_json = max(json_files, key=lambda p: p.stat().st_mtime)
+    
+    try:
+        with open(latest_json, 'r') as f:
+            data = json.load(f)
+            return data.get('coverage', {}).get('percentage', 0.0)
+    except Exception as e:
+        print(f"Error reading previous report: {e}")
         return 0.0
 
 
@@ -58,37 +80,54 @@ def update_readme_badges(readme_path: Path, coverage: float, ci_status: str = "p
     print(f"Updated README badges: CI={ci_status}, Coverage={coverage}%")
 
 
-def generate_coverage_report(coverage: float, output_path: Path) -> Dict[str, Any]:
+def get_phase_info(coverage: float) -> Dict[str, Any]:
+    """Determine phase information based on coverage."""
+    phases = {
+        "phase1": {
+            "name": "Foundation",
+            "target": 25,
+            "achieved": 32.66,  # Historical value
+            "status": "completed"
+        },
+        "phase2": {
+            "name": "Business Logic", 
+            "target": 50,
+            "achieved": coverage if coverage >= 32.66 else 32.66,
+            "status": "completed" if coverage >= 50 else "in_progress" if coverage >= 32.66 else "planned"
+        },
+        "phase3": {
+            "name": "Integration & E2E",
+            "target": 60,
+            "achieved": coverage if coverage >= 50 else 0,
+            "status": "completed" if coverage >= 60 else "in_progress" if coverage >= 50 else "planned"
+        },
+        "phase4": {
+            "name": "Advanced Testing",
+            "target": 75,
+            "achieved": coverage if coverage >= 60 else 0,
+            "status": "completed" if coverage >= 75 else "in_progress" if coverage >= 60 else "planned"
+        }
+    }
+    return phases
+
+
+def generate_coverage_report(coverage: float, output_path: Path, previous_coverage: float) -> Dict[str, Any]:
     """Generate coverage report in JSON format."""
+    ci_threshold = 35  # From CI configuration
+    
     report = {
         "timestamp": datetime.now().isoformat(),
         "coverage": {
             "percentage": coverage,
-            "status": "passing" if coverage >= 35 else "failing",
-            "threshold": 35
+            "status": "passing" if coverage >= ci_threshold else "failing",
+            "threshold": ci_threshold
         },
         "trend": {
-            "previous": 48.83,  # Previous run
+            "previous": previous_coverage,
             "current": coverage,
-            "change": round(coverage - 48.83, 2)
+            "change": round(coverage - previous_coverage, 2)
         },
-        "milestones": {
-            "phase1": {
-                "target": 25,
-                "achieved": 32.66,
-                "status": "completed"
-            },
-            "phase2": {
-                "target": 50,
-                "achieved": coverage,
-                "status": "completed" if coverage >= 50 else "in_progress"
-            },
-            "phase3": {
-                "target": 60,
-                "achieved": coverage,
-                "status": "planned"
-            }
-        }
+        "milestones": get_phase_info(coverage)
     }
     
     output_path.write_text(json.dumps(report, indent=2))
@@ -106,7 +145,7 @@ Generated: {report['timestamp']}
 
 ## Coverage Summary
 
-- **Current Coverage**: {coverage}% {':white_check_mark:' if coverage >= 35 else ':x:'}
+- **Current Coverage**: {coverage}% {':white_check_mark:' if coverage >= report['coverage']['threshold'] else ':x:'}
 - **CI Threshold**: {report['coverage']['threshold']}%
 - **Status**: {report['coverage']['status'].upper()}
 
@@ -117,29 +156,55 @@ Generated: {report['timestamp']}
 - Change: {'+' if trend['change'] >= 0 else ''}{trend['change']}%
 
 ## Milestones Progress
-
-### Phase 1: Foundation (Target: 25%)
-- Achieved: {report['milestones']['phase1']['achieved']}%
-- Status: ✅ Completed
-
-### Phase 2: Business Logic (Target: 50%)
-- Achieved: {report['milestones']['phase2']['achieved']}%
-- Status: {'✅ Completed' if report['milestones']['phase2']['status'] == 'completed' else '🚧 In Progress'}
-
-## Next Steps
-
 """
     
-    if coverage < 50:
-        content += """- Continue writing tests for remaining business logic modules
+    # Add phase information
+    for phase_key, phase_data in report['milestones'].items():
+        phase_num = phase_key.replace('phase', '')
+        status_emoji = '✅' if phase_data['status'] == 'completed' else '🚧' if phase_data['status'] == 'in_progress' else '🔜'
+        
+        content += f"""
+### Phase {phase_num}: {phase_data['name']} (Target: {phase_data['target']}%)
+- Achieved: {phase_data['achieved']}%
+- Status: {status_emoji} {phase_data['status'].replace('_', ' ').title()}
+"""
+    
+    content += "\n## Next Steps\n\n"
+    
+    current_phase = None
+    for phase_key, phase_data in report['milestones'].items():
+        if phase_data['status'] == 'in_progress':
+            current_phase = phase_data
+            break
+    
+    if current_phase:
+        if current_phase['target'] == 50:
+            content += """- Continue writing tests for remaining business logic modules
 - Focus on untested modules with high complexity
 - Consider adding integration tests
 """
+        elif current_phase['target'] == 60:
+            content += """- Add integration tests for API endpoints
+- Create end-to-end test scenarios
+- Test risk manager and trading loop integration
+"""
+        elif current_phase['target'] == 75:
+            content += """- Add comprehensive E2E tests
+- Performance and stress testing
+- Mock external dependencies properly
+"""
     else:
-        content += """- Phase 2 target achieved! 🎉
-- Consider moving to Phase 3 (60% coverage)
-- Add end-to-end tests
-- Improve test quality and assertions
+        # All phases completed or none started
+        if coverage >= 75:
+            content += """- Excellent coverage achieved! 🎉
+- Focus on maintaining coverage levels
+- Add tests for new features
+- Consider property-based testing
+"""
+        else:
+            content += """- Begin with Phase 1 foundation tests
+- Focus on critical path coverage
+- Set up test infrastructure
 """
     
     output_path.write_text(content)
@@ -156,20 +221,28 @@ def main():
         sys.exit(1)
     
     coverage = parse_coverage_xml(coverage_xml)
-    ci_status = "passing" if coverage >= 35 else "failing"
+    
+    # Get previous coverage
+    reports_dir = project_root / "reports"
+    reports_dir.mkdir(exist_ok=True)
+    previous_coverage = get_previous_coverage(reports_dir)
+    
+    # Determine CI status
+    ci_threshold = 35  # From CI configuration
+    ci_status = "passing" if coverage >= ci_threshold else "failing"
     
     # Update README
     readme_path = project_root / "README.md"
     update_readme_badges(readme_path, coverage, ci_status)
     
     # Generate reports
-    reports_dir = project_root / "reports"
-    reports_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
     # JSON report
     json_report = generate_coverage_report(
         coverage, 
-        reports_dir / f"coverage_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        reports_dir / f"coverage_report_{timestamp}.json",
+        previous_coverage
     )
     
     # Markdown report
@@ -181,8 +254,19 @@ def main():
     # Print summary
     print(f"\n{'='*50}")
     print(f"Coverage: {coverage}%")
+    print(f"Previous: {previous_coverage}%")
+    print(f"Change: {'+' if coverage >= previous_coverage else ''}{coverage - previous_coverage:.2f}%")
     print(f"CI Status: {ci_status}")
-    print(f"Phase 2 Target: 50% - {'ACHIEVED' if coverage >= 50 else f'Need {50 - coverage:.2f}% more'}")
+    
+    # Show current phase progress
+    phases = get_phase_info(coverage)
+    for phase_key, phase_data in phases.items():
+        if phase_data['status'] == 'in_progress':
+            remaining = phase_data['target'] - coverage
+            print(f"\nPhase {phase_key[-1]} Target: {phase_data['target']}% - " + 
+                  (f"Need {remaining:.2f}% more" if remaining > 0 else "ACHIEVED"))
+            break
+    
     print(f"{'='*50}\n")
     
     # Exit with appropriate code
