@@ -457,3 +457,302 @@ def test_feature_engineer_error_handling(sample_ohlcv_df, indicators_yaml):
     assert "ERROR_IND" in result.columns
     # Value should be pandas.NA (mocked as None)
     assert result.data.get("ERROR_IND") is None
+
+
+def test_feature_engineer_get_indicator_info(indicators_yaml):
+    """Test getting indicator information."""
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value=indicators_yaml)
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+
+                engineer = FeatureEngineer(str(indicators_yaml))
+
+                # Create mock indicators
+                class MockIndicator:
+                    def __init__(self, window_size=None):
+                        self.window_size = window_size
+
+                mock_ind1 = MockIndicator(window_size=20)
+                mock_ind2 = MockIndicator()  # No window_size
+                
+                engineer.indicators = {
+                    "IND1": mock_ind1,
+                    "IND2": mock_ind2
+                }
+
+                info = engineer.get_indicator_info()
+
+    assert "IND1" in info
+    assert "IND2" in info
+    assert info["IND1"]["window_size"] == 20
+    assert info["IND2"]["window_size"] is None
+    assert info["IND1"]["class"] == "MockIndicator"
+    assert info["IND2"]["class"] == "MockIndicator"
+
+
+def test_all_indicators_registered():
+    """Test that all expected indicators are registered."""
+    # Clear registry first
+    from src.feature_engineering.registry import registry
+    registry._indicators = {}
+    registry._configs = {}
+    
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value="dummy.yaml")
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+                
+                engineer = FeatureEngineer()
+    
+    # Check key indicators from each category
+    expected_indicators = [
+        # Trend
+        "SMA", "EMA", "WMA", "HMA", "TEMA", "DEMA", "KAMA",
+        # Momentum
+        "RSI", "MACD", "CCI", "StochasticK",
+        # Volatility
+        "ATR", "BollingerUpper", "BollingerLower",
+        # Volume
+        "OBV", "AD", "CMF", "VWAP",
+        # Trend strength
+        "ADX", "AroonUp", "AroonDown",
+        # Pattern
+        "PSAR", "SuperTrend",
+        # Statistical
+        "StdDev", "Variance", "Skew"
+    ]
+    
+    registered = registry._indicators.keys()
+    for indicator in expected_indicators:
+        assert indicator in registered, f"{indicator} not registered"
+
+
+def test_transform_preserves_original_columns(sample_ohlcv_df, indicators_yaml):
+    """Test that transform preserves original DataFrame columns."""
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value=indicators_yaml)
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+
+                engineer = FeatureEngineer(str(indicators_yaml))
+                
+                # Mock indicator
+                mock_indicator = MagicMock()
+                mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
+                engineer.indicators = {"NEW_IND": mock_indicator}
+                
+                # Transform
+                result = engineer.transform(sample_ohlcv_df)
+    
+    # Check original columns preserved
+    for col in ["open", "high", "low", "close", "volume"]:
+        assert col in result.columns
+    
+    # Check new indicator added
+    assert "NEW_IND" in result.columns
+
+
+def test_selective_transform_with_missing_indicator(sample_ohlcv_df, indicators_yaml):
+    """Test selective transform when requested indicator doesn't exist."""
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value=indicators_yaml)
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+
+                engineer = FeatureEngineer(str(indicators_yaml))
+                
+                # Only one indicator available
+                mock_indicator = MagicMock()
+                mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
+                engineer.indicators = {"AVAILABLE": mock_indicator}
+                
+                # Request both available and missing
+                with patch("src.feature_engineering.engineer.logger") as mock_logger:
+                    result = engineer.transform_selective(
+                        sample_ohlcv_df, 
+                        ["AVAILABLE", "MISSING"]
+                    )
+                
+                # Should log warning about missing
+                mock_logger.warning.assert_called()
+                assert "MISSING" in str(mock_logger.warning.call_args)
+    
+    # Should still have available indicator
+    assert "AVAILABLE" in result.columns
+    assert "MISSING" not in result.columns
+
+
+def test_empty_dataframe_handling(indicators_yaml):
+    """Test handling of empty DataFrame."""
+    empty_df = MockDataFrame()
+    
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value=indicators_yaml)
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+
+                engineer = FeatureEngineer(str(indicators_yaml))
+                
+                # Mock indicator
+                mock_indicator = MagicMock()
+                mock_indicator.transform.return_value = MockSeries()
+                engineer.indicators = {"TEST": mock_indicator}
+                
+                # Should handle empty DataFrame
+                result = engineer.transform(empty_df)
+                
+                assert result.empty
+
+
+def test_config_loading_error_handling():
+    """Test that FeatureEngineer handles config loading errors gracefully."""
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value="bad_config.yaml")
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            # Simulate file error
+            mock_open.side_effect = IOError("File not found")
+            
+            # Should still initialize
+            engineer = FeatureEngineer()
+            
+            # Should have registered indicators even if config failed
+            assert hasattr(engineer, "indicators")
+
+
+def test_transform_does_not_modify_original(sample_ohlcv_df, indicators_yaml):
+    """Test that transform doesn't modify the original DataFrame."""
+    with patch("src.feature_engineering.engineer.Path") as mock_path:
+        # Create a mock path chain
+        mock_parent_parent_parent = MagicMock()
+        mock_parent_parent_parent.__truediv__ = MagicMock(return_value=indicators_yaml)
+
+        mock_parent_parent = MagicMock()
+        mock_parent_parent.parent = mock_parent_parent_parent
+
+        mock_parent = MagicMock()
+        mock_parent.parent = mock_parent_parent
+
+        mock_path_instance = MagicMock()
+        mock_path_instance.parent = mock_parent
+
+        mock_path.return_value = mock_path_instance
+
+        with patch("builtins.open", create=True) as mock_open:
+            mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
+            with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
+                mock_yaml.return_value = {}
+
+                engineer = FeatureEngineer(str(indicators_yaml))
+                
+                # Track original columns
+                original_columns = list(sample_ohlcv_df.columns)
+                
+                # Mock indicator
+                mock_indicator = MagicMock()
+                mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
+                engineer.indicators = {"NEW": mock_indicator}
+                
+                # Transform
+                result = engineer.transform(sample_ohlcv_df)
+    
+    # Original should be unchanged
+    assert list(sample_ohlcv_df.columns) == original_columns
+    assert "NEW" not in sample_ohlcv_df.columns
+    
+    # Result should have new column
+    assert "NEW" in result.columns
