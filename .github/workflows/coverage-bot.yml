@@ -25,6 +25,8 @@ jobs:
       GDRIVE_FILE_ID: ${{ secrets.GDRIVE_FILE_ID }}
       GDRIVE_SHA256: ${{ secrets.GDRIVE_SHA256 }}
       COV_FAIL_UNDER: 35
+      COV_TARGET: ${{ secrets.COV_TARGET || '60' }}
+      COV_GAIN_MIN: ${{ secrets.COV_GAIN_MIN || '0.5' }}
       PYTHONPATH: ${{ github.workspace }}
     
     steps:
@@ -50,7 +52,7 @@ jobs:
       id: check_coverage
       run: |
         # Run light tests first to get baseline
-        pytest -m "not heavy" --cov=src --cov-report=xml --cov-report=term -q || true
+        pytest -m "not heavy" --cov=src --cov-branch --cov-report=xml --cov-report=term -q || true
         
         # Extract coverage percentage
         if [ -f coverage.xml ]; then
@@ -61,6 +63,15 @@ jobs:
           echo "current_coverage=0" >> $GITHUB_OUTPUT
           echo "❌ No coverage data found"
         fi
+    
+    - name: 📊 Cache test data
+      uses: actions/cache@v3
+      with:
+        path: tests/_data
+        key: gdrive-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-${{ secrets.GDRIVE_SHA256 }}
+        restore-keys: |
+          gdrive-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-
+          gdrive-
     
     - name: 💾 Fetch test data from Google Drive
       if: env.GDRIVE_FILE_ID != ''

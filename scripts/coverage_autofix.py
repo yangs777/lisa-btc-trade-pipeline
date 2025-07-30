@@ -23,9 +23,14 @@ import shlex
 import pathlib
 import xml.etree.ElementTree as ET
 from datetime import datetime
+try:
+    import requests
+except ImportError:
+    requests = None  # Optional dependency
 
 PROJECT = pathlib.Path(__file__).resolve().parent.parent
-TARGET = 60.0  # Phase 3 target
+TARGET = float(os.environ.get("COV_TARGET", "60"))  # Configurable target
+GAIN_MIN = float(os.environ.get("COV_GAIN_MIN", "0.5"))  # Minimum gain to create PR
 BRANCH = f"feature/auto-coverage-{datetime.utcnow():%Y%m%d}"
 
 
@@ -50,6 +55,26 @@ def current_coverage() -> float:
     return float(tree.getroot().get("line-rate", 0)) * 100
 
 
+def notify_slack(message: str, color: str = "good") -> None:
+    """Send notification to Slack if webhook is configured."""
+    webhook = os.environ.get("SLACK_COV_WEBHOOK")
+    if not webhook or not requests:
+        return
+    
+    try:
+        payload = {
+            "attachments": [{
+                "color": color,
+                "title": "🤖 Coverage Bot Update",
+                "text": message,
+                "footer": f"btc-trade-pipeline | {datetime.utcnow():%Y-%m-%d %H:%M} UTC"
+            }]
+        }
+        requests.post(webhook, json=payload, timeout=5)
+    except Exception as e:
+        print(f"[bot] Slack notification failed: {e}")
+
+
 def main():
     """Main bot logic."""
     # Check current coverage
@@ -58,6 +83,7 @@ def main():
     
     if base_cov >= TARGET:
         print(f"[bot] Target {TARGET}% already met, nothing to do 🟢")
+        notify_slack(f"✅ Coverage target met: {base_cov:.2f}% ≥ {TARGET}%")
         return
     
     print(f"[bot] Coverage below target {TARGET}%, starting auto-fix...")
@@ -72,16 +98,17 @@ def main():
     
     # Run tests and measure new coverage
     print("[bot] Running tests with new stubs...")
-    shell("pytest -m 'not heavy' --cov=src --cov-report=xml --cov-report=term-missing -q", check=False)
+    shell("pytest -m 'not heavy' --cov=src --cov-branch --cov-report=xml --cov-report=term-missing -q", check=False)
     
     new_cov = current_coverage()
     print(f"[bot] New coverage: {new_cov:.2f}%")
     
     # Check if improvement is meaningful
     improvement = new_cov - base_cov
-    if improvement < 0.5:
-        print(f"[bot] Coverage gain too small ({improvement:.2f}%), aborting ⚪")
+    if improvement < GAIN_MIN:
+        print(f"[bot] Coverage gain too small ({improvement:.2f}% < {GAIN_MIN}%), aborting ⚪")
         shell("git checkout -")  # Return to previous branch
+        notify_slack(f"⚪ Coverage gain too small: {base_cov:.2f}% → {new_cov:.2f}% (+{improvement:.2f}%)", "warning")
         return
     
     print(f"[bot] Coverage improved by {improvement:.2f}% ✅")
@@ -143,8 +170,19 @@ def main():
     try:
         shell(pr_cmd, check=False)
         print("[bot] Pull request created successfully ✅")
+        
+        # Send success notification
+        pr_url = f"https://github.com/{repo}/pulls"
+        notify_slack(
+            f"🎉 New coverage PR created!\n"
+            f"Coverage: {base_cov:.2f}% → {new_cov:.2f}% (🔺 +{improvement:.2f}%)\n"
+            f"Branch: {BRANCH}\n"
+            f"View PRs: {pr_url}",
+            "good"
+        )
     except Exception as e:
         print(f"[bot] Failed to create PR (may already exist): {e}")
+        notify_slack(f"⚠️ PR creation failed: {str(e)}", "danger")
     
     print(f"[bot] Done! Coverage improved from {base_cov:.2f}% to {new_cov:.2f}%")
 
