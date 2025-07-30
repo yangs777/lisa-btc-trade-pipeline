@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 # Quick start script for coverage bot
+# 
+# This script can use either:
+# 1. GitHub CLI (gh) - default method
+# 2. GitHub API with PAT token - if GH_PAT_COVERAGE_BOT env var is set
+#
+# Usage:
+#   bash scripts/quick_bot_start.sh                    # Use gh CLI
+#   GH_PAT_COVERAGE_BOT=token bash scripts/quick_bot_start.sh  # Use API
+#
 set -euo pipefail
 
 # Colors
@@ -86,6 +95,43 @@ done
 echo -e "\n${YELLOW}⚠️  Make sure these are set in:${NC}"
 echo -e "https://github.com/$REPO/settings/secrets/actions"
 
+# Check if PAT token is available
+if [ -n "${GH_PAT_COVERAGE_BOT:-}" ]; then
+    echo -e "\n${GREEN}✅ Using PAT token for API calls${NC}"
+    USE_PAT=true
+else
+    echo -e "\n${YELLOW}⚠️  PAT token not found in environment${NC}"
+    echo -e "Using gh CLI authentication instead"
+    USE_PAT=false
+fi
+
+# Function to trigger workflow via API
+trigger_workflow_api() {
+    local owner=$(echo "$REPO" | cut -d'/' -f1)
+    local repo_name=$(echo "$REPO" | cut -d'/' -f2)
+    
+    echo -e "\n${YELLOW}🔧 Triggering workflow via API...${NC}"
+    
+    local response=$(curl -s -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $GH_PAT_COVERAGE_BOT" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "https://api.github.com/repos/$owner/$repo_name/actions/workflows/coverage-bot.yml/dispatches" \
+        -d '{"ref":"main"}' \
+        -w "\n%{http_code}")
+    
+    local http_code=$(echo "$response" | tail -n1)
+    
+    if [ "$http_code" = "204" ]; then
+        echo -e "${GREEN}✅ Workflow triggered successfully!${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ Failed to trigger workflow (HTTP $http_code)${NC}"
+        echo -e "Response: $(echo "$response" | head -n-1)"
+        return 1
+    fi
+}
+
 # Prompt to run workflow
 echo -e "\n${YELLOW}🚀 Ready to start coverage bot?${NC}"
 echo -e "This will:"
@@ -97,9 +143,21 @@ read -r response
 
 if [[ "$response" =~ ^[Yy]$ ]]; then
     echo -e "\n${YELLOW}🤖 Starting coverage bot...${NC}"
-    gh workflow run coverage-bot.yml
     
-    echo -e "\n${GREEN}✅ Workflow started!${NC}"
+    if [ "$USE_PAT" = true ] && [ -n "${GH_PAT_COVERAGE_BOT:-}" ]; then
+        # Use API with PAT token
+        if trigger_workflow_api; then
+            echo -e "\n${GREEN}✅ Workflow started via API!${NC}"
+        else
+            echo -e "${YELLOW}Falling back to gh CLI...${NC}"
+            gh workflow run coverage-bot.yml
+        fi
+    else
+        # Use gh CLI
+        gh workflow run coverage-bot.yml
+        echo -e "\n${GREEN}✅ Workflow started!${NC}"
+    fi
+    
     echo -e "View progress at: https://github.com/$REPO/actions"
     
     # Wait and show status
@@ -113,6 +171,9 @@ else
     echo -e "\n${YELLOW}Skipped workflow run${NC}"
     echo -e "You can run it manually later with:"
     echo -e "  ${GREEN}gh workflow run coverage-bot.yml${NC}"
+    echo -e "Or with PAT token:"
+    echo -e "  ${GREEN}export GH_PAT_COVERAGE_BOT=your_token${NC}"
+    echo -e "  ${GREEN}bash $0${NC}"
 fi
 
 echo -e "\n${GREEN}🎯 Next steps:${NC}"
