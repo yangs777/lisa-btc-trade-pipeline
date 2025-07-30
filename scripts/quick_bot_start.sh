@@ -116,6 +116,7 @@ trigger_workflow_api() {
         -H "Accept: application/vnd.github+json" \
         -H "Authorization: Bearer $GH_PAT_COVERAGE_BOT" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
+        -H "User-Agent: coverage-bot" \
         "https://api.github.com/repos/$owner/$repo_name/actions/workflows/coverage-bot.yml/dispatches" \
         -d '{"ref":"main"}' \
         -w "\n%{http_code}")
@@ -150,11 +151,11 @@ if [[ "$response" =~ ^[Yy]$ ]]; then
             echo -e "\n${GREEN}✅ Workflow started via API!${NC}"
         else
             echo -e "${YELLOW}Falling back to gh CLI...${NC}"
-            gh workflow run coverage-bot.yml
+            gh workflow run coverage-bot.yml --ref main
         fi
     else
         # Use gh CLI
-        gh workflow run coverage-bot.yml
+        gh workflow run coverage-bot.yml --ref main
         echo -e "\n${GREEN}✅ Workflow started!${NC}"
     fi
     
@@ -170,7 +171,7 @@ if [[ "$response" =~ ^[Yy]$ ]]; then
 else
     echo -e "\n${YELLOW}Skipped workflow run${NC}"
     echo -e "You can run it manually later with:"
-    echo -e "  ${GREEN}gh workflow run coverage-bot.yml${NC}"
+    echo -e "  ${GREEN}gh workflow run coverage-bot.yml --ref main${NC}"
     echo -e "Or with PAT token:"
     echo -e "  ${GREEN}export GH_PAT_COVERAGE_BOT=your_token${NC}"
     echo -e "  ${GREEN}bash $0${NC}"
