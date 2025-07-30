@@ -2,6 +2,11 @@
 import sys
 from unittest.mock import MagicMock
 
+# Import numpy first to avoid conflicts
+import numpy as np
+# Ensure numpy.typing is available
+import numpy.typing  # noqa
+
 # Pre-mock problematic modules before any imports
 def setup_module_mocks():
     """Setup mocks for modules that cause import errors."""
