@@ -9,7 +9,6 @@ from .position_sizing import (
     PositionSizer,
     FixedFractionalPositionSizer,
     KellyPositionSizer,
-    VolatilityBasedPositionSizer,
     VolatilityParityPositionSizer
 )
 
@@ -22,6 +21,5 @@ __all__ = [
     'PositionSizer',
     'FixedFractionalPositionSizer',
     'KellyPositionSizer',
-    'VolatilityBasedPositionSizer',
     'VolatilityParityPositionSizer'
 ]
