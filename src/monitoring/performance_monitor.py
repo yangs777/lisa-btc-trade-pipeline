@@ -2,7 +2,7 @@
 
 from collections import deque
 import numpy as np
-from typing import Dict, Any, List, Deque
+from typing import Dict, Any
 
 
 class PerformanceMonitor:
@@ -11,10 +11,10 @@ class PerformanceMonitor:
     def __init__(self, window_size: int = 1000):
         """Initialize monitor."""
         self.window_size = window_size
-        self.returns: Deque[float] = deque(maxlen=window_size)
-        self.equity_curve: List[float] = [1.0]
+        self.returns = deque(maxlen=window_size)
+        self.equity_curve = [1.0]
     
-    def update(self, return_pct: float) -> None:
+    def update(self, return_pct: float):
         """Update with new return."""
         self.returns.append(return_pct)
         

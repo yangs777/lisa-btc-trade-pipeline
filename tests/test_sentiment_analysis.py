@@ -296,7 +296,7 @@ class TestSentimentAnalyzer:
         assert "fomo_score" not in features  # Missing volume
         
         # Only volatility
-        metrics = {"volatility": float(0.5)}
+        metrics = {"volatility": 0.5}
         features = analyzer.analyze_crowd_behavior(metrics)
         assert "panic_score" not in features  # Missing price change
     

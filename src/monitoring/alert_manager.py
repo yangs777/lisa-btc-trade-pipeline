@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class AlertManager:
     """Manage system alerts."""
     
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize alert manager."""
         self.alert_thresholds = {
             "max_drawdown": -0.10,
@@ -18,7 +18,7 @@ class AlertManager:
             "error_rate": 0.10,
             "latency_ms": 1000
         }
-        self.last_alert_time: Dict[str, datetime] = {}
+        self.last_alert_time = {}
         self.alert_throttle_minutes = 60
     
     def check_alerts(self, metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -71,7 +71,7 @@ class AlertManager:
         self.last_alert_time[alert_type] = datetime.now()
         return True
     
-    def send_alert(self, alert: Dict[str, Any], channels: List[str] | None = None) -> None:
+    def send_alert(self, alert: Dict[str, Any], channels: List[str] = None):
         """Send alert through specified channels."""
         if channels is None:
             channels = ["log"]
@@ -90,11 +90,11 @@ class AlertManager:
                 send_slack(alert)
 
 
-def send_email(alert: Dict[str, Any]) -> None:
+def send_email(alert: Dict[str, Any]):
     """Send email alert (placeholder)."""
     pass
 
 
-def send_slack(alert: Dict[str, Any]) -> None:
+def send_slack(alert: Dict[str, Any]):
     """Send Slack alert (placeholder)."""
     pass

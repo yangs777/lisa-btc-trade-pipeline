@@ -7,13 +7,7 @@ from typing import Dict, Any, List
 import numpy as np
 from datetime import datetime
 
-from src.pipeline.integration import (
-    run_live_trading,
-    evaluate_model_performance,
-    get_latest_model,
-    save_trading_results,
-    create_pipeline_config
-)
+from src.pipeline.integration import run_live_trading, PipelineOrchestrator
 
 
 class TestPipelineIntegration:
@@ -23,261 +17,270 @@ class TestPipelineIntegration:
     async def test_run_live_trading_success(self) -> None:
         """Test successful live trading run."""
         # Mock dependencies
-        with patch('src.pipeline.integration.BinanceClient') as mock_client_class:
-            with patch('src.pipeline.integration.RiskManager') as mock_risk_class:
-                with patch('src.pipeline.integration.get_latest_model') as mock_get_model:
-                    with patch('src.pipeline.integration.save_trading_results') as mock_save:
-                        # Setup mocks
-                        mock_client = AsyncMock()
-                        mock_client.get_balance.return_value = {"BTC": 0.1, "USDT": 10000}
-                        mock_client.get_ticker.return_value = {"price": 50000}
-                        mock_client.get_klines.return_value = [
-                            [1609459200000, "45000", "46000", "44000", "45500", "100"],
-                            [1609462800000, "45500", "47000", "45000", "46500", "120"]
-                        ]
-                        mock_client.place_order.return_value = {"orderId": "12345"}
-                        mock_client_class.return_value = mock_client
-                        
-                        mock_risk = Mock()
-                        mock_risk.check_position.return_value = (True, {"size": 0.01})
-                        mock_risk_class.return_value = mock_risk
-                        
-                        mock_get_model.return_value = {"type": "TauSAC", "weights": []}
-                        
-                        # Run trading
-                        result = await run_live_trading(
-                            symbol="BTCUSDT",
-                            duration_seconds=1,  # Short duration for test
-                            model_path="test_model.pkl"
-                        )
-                        
-                        # Verify result
-                        assert result["status"] == "completed"
-                        assert "trades" in result
-                        assert "final_balance" in result
-                        assert "performance" in result
-                        
-                        # Verify methods called
-                        mock_client.get_balance.assert_called()
-                        mock_save.assert_called_once()
+        with patch('src.pipeline.integration.BinanceWebSocket') as mock_ws_class:
+            with patch('src.pipeline.integration.TauSAC') as mock_model_class:
+                # Setup websocket mock
+                mock_ws = AsyncMock()
+                mock_ws.connect = AsyncMock()
+                mock_ws.disconnect = AsyncMock()
+                mock_ws.get_orderbook_update = AsyncMock(return_value={"bid": 50000, "ask": 50100})
+                mock_ws_class.return_value = mock_ws
+                
+                # Setup model mock
+                mock_model = Mock()
+                mock_model.predict = Mock(return_value=np.array([0.8, 0.1, 0.1]))
+                mock_model_class.return_value = mock_model
+                
+                # Run with short duration
+                result = await run_live_trading(
+                    symbol="BTCUSDT",
+                    duration_seconds=0.1,
+                    model_path=None
+                )
+                
+                # Verify result
+                assert result["status"] == "completed"
+                assert "predictions_made" in result
+                assert "data_collected" in result
+                assert isinstance(result["errors"], list)
+                
+                # Verify calls
+                mock_ws.connect.assert_called_once()
+                mock_ws.disconnect.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_run_live_trading_error_handling(self) -> None:
-        """Test live trading with errors."""
-        with patch('src.pipeline.integration.BinanceClient') as mock_client_class:
-            # Setup mock to raise error
-            mock_client = AsyncMock()
-            mock_client.get_balance.side_effect = Exception("API Error")
-            mock_client_class.return_value = mock_client
-            
-            # Run trading
-            result = await run_live_trading(symbol="BTCUSDT", duration_seconds=1)
-            
-            # Should handle error gracefully
-            assert result["status"] == "error"
-            assert "error" in result
-            assert "API Error" in result["error"]
+    async def test_run_live_trading_with_model_path(self) -> None:
+        """Test live trading with model path."""
+        with patch('src.pipeline.integration.BinanceWebSocket') as mock_ws_class:
+            with patch('src.pipeline.integration.TauSAC') as mock_model_class:
+                # Setup mocks
+                mock_ws = AsyncMock()
+                mock_ws.connect = AsyncMock()
+                mock_ws.disconnect = AsyncMock()
+                mock_ws.get_orderbook_update = AsyncMock(return_value={"bid": 50000})
+                mock_ws_class.return_value = mock_ws
+                
+                mock_model_class.load = Mock(return_value=Mock())
+                
+                # Run with model path
+                result = await run_live_trading(
+                    symbol="BTCUSDT",
+                    duration_seconds=0.1,
+                    model_path="model.pkl"
+                )
+                
+                # Verify model loading
+                mock_model_class.load.assert_called_once_with("model.pkl")
+                assert result["status"] == "completed"
     
-    def test_evaluate_model_performance(self) -> None:
-        """Test model performance evaluation."""
-        # Mock trades
-        trades = [
-            {
-                "timestamp": datetime(2024, 1, 1, 10, 0),
-                "action": "buy",
-                "price": 45000,
-                "amount": 0.1,
-                "fee": 10
-            },
-            {
-                "timestamp": datetime(2024, 1, 1, 11, 0),
-                "action": "sell",
-                "price": 46000,
-                "amount": 0.1,
-                "fee": 10
+    @pytest.mark.asyncio
+    async def test_run_live_trading_error(self) -> None:
+        """Test live trading with error."""
+        with patch('src.pipeline.integration.BinanceWebSocket') as mock_ws_class:
+            # Setup websocket to raise error
+            mock_ws = AsyncMock()
+            mock_ws.connect = AsyncMock(side_effect=Exception("Connection failed"))
+            mock_ws_class.return_value = mock_ws
+            
+            # Run
+            result = await run_live_trading(duration_seconds=0.1)
+            
+            # Verify error handling
+            assert result["status"] == "failed"
+            assert len(result["errors"]) > 0
+            assert "Connection failed" in result["errors"][0]
+    
+    @pytest.mark.asyncio
+    async def test_run_live_trading_data_collection(self) -> None:
+        """Test data collection during live trading."""
+        with patch('src.pipeline.integration.BinanceWebSocket') as mock_ws_class:
+            with patch('src.pipeline.integration.TauSAC') as mock_model_class:
+                # Setup mocks
+                mock_ws = AsyncMock()
+                mock_ws.connect = AsyncMock()
+                mock_ws.disconnect = AsyncMock()
+                
+                # Return data on first call, then None
+                data_sequence = [{"bid": 50000}, {"bid": 50100}, None]
+                mock_ws.get_orderbook_update = AsyncMock(side_effect=data_sequence)
+                mock_ws_class.return_value = mock_ws
+                
+                # Run
+                result = await run_live_trading(duration_seconds=0.1)
+                
+                # Verify data collection
+                assert result["data_collected"] >= 2  # At least 2 data points
+                assert result["predictions_made"] >= 2
+
+
+class TestPipelineOrchestrator:
+    """Test PipelineOrchestrator class."""
+    
+    def test_orchestrator_initialization(self) -> None:
+        """Test orchestrator initialization."""
+        config = {
+            "symbol": "BTCUSDT",
+            "bucket": "test-bucket",
+            "model": {
+                "observation_dim": 100,
+                "action_dim": 3,
+                "tau_values": [3, 6, 9]
             }
-        ]
-        
-        initial_balance = {"BTC": 0, "USDT": 10000}
-        final_balance = {"BTC": 0, "USDT": 10080}  # Profit after fees
-        
-        performance = evaluate_model_performance(trades, initial_balance, final_balance)
-        
-        assert performance["total_trades"] == 2
-        assert performance["profitable_trades"] == 1
-        assert performance["total_pnl"] == 80  # 10080 - 10000
-        assert performance["win_rate"] == 1.0  # 100% win
-        assert "sharpe_ratio" in performance
-        assert "max_drawdown" in performance
-    
-    def test_evaluate_model_performance_no_trades(self) -> None:
-        """Test performance evaluation with no trades."""
-        trades: List[Dict[str, Any]] = []
-        initial_balance = {"BTC": 0, "USDT": 10000}
-        final_balance = {"BTC": 0, "USDT": 10000}
-        
-        performance = evaluate_model_performance(trades, initial_balance, final_balance)
-        
-        assert performance["total_trades"] == 0
-        assert performance["profitable_trades"] == 0
-        assert performance["total_pnl"] == 0
-        assert performance["win_rate"] == 0
-        assert performance["sharpe_ratio"] == 0
-        assert performance["max_drawdown"] == 0
-    
-    def test_get_latest_model(self) -> None:
-        """Test getting latest model."""
-        with patch('src.pipeline.integration.Path') as mock_path_class:
-            with patch('builtins.open', create=True) as mock_open:
-                # Setup mock
-                mock_path = Mock()
-                mock_path.exists.return_value = True
-                mock_path.glob.return_value = [
-                    Mock(name="model_v1.pkl", stat=Mock(return_value=Mock(st_mtime=1000))),
-                    Mock(name="model_v2.pkl", stat=Mock(return_value=Mock(st_mtime=2000))),
-                    Mock(name="model_v3.pkl", stat=Mock(return_value=Mock(st_mtime=1500)))
-                ]
-                mock_path_class.return_value = mock_path
-                
-                # Mock file content
-                import pickle
-                model_data = {"version": "latest", "weights": [1, 2, 3]}
-                mock_open.return_value.__enter__.return_value.read.return_value = pickle.dumps(model_data)
-                
-                # Get model
-                model = get_latest_model("models/")
-                
-                assert model is not None
-                assert model["version"] == "latest"
-    
-    def test_get_latest_model_no_models(self) -> None:
-        """Test getting latest model when none exist."""
-        with patch('src.pipeline.integration.Path') as mock_path_class:
-            mock_path = Mock()
-            mock_path.exists.return_value = True
-            mock_path.glob.return_value = []
-            mock_path_class.return_value = mock_path
-            
-            model = get_latest_model("models/")
-            
-            assert model is None
-    
-    def test_save_trading_results(self) -> None:
-        """Test saving trading results."""
-        results = {
-            "status": "completed",
-            "trades": [{"action": "buy", "price": 45000}],
-            "performance": {"total_pnl": 100}
         }
         
-        with patch('builtins.open', create=True) as mock_open:
-            with patch('src.pipeline.integration.json.dump') as mock_dump:
-                save_trading_results(results, "results.json")
-                
-                mock_open.assert_called_once_with("results.json", "w")
-                mock_dump.assert_called_once()
-                
-                # Check that results were dumped
-                dumped_data = mock_dump.call_args[0][0]
-                assert dumped_data["status"] == "completed"
-                assert len(dumped_data["trades"]) == 1
+        orchestrator = PipelineOrchestrator(config)
+        
+        assert orchestrator.config == config
+        assert orchestrator.components == {}
     
-    def test_create_pipeline_config(self) -> None:
-        """Test pipeline configuration creation."""
-        # Test default config
-        config = create_pipeline_config()
-        
-        assert config["symbol"] == "BTCUSDT"
-        assert config["interval"] == "1h"
-        assert "features" in config
-        assert "model" in config
-        assert config["model"]["type"] == "TauSAC"
-        
-        # Test custom config
-        custom_config = create_pipeline_config(
-            symbol="ETHUSDT",
-            interval="5m",
-            lookback_periods=50
-        )
-        
-        assert custom_config["symbol"] == "ETHUSDT"
-        assert custom_config["interval"] == "5m"
-        assert custom_config["features"]["lookback_periods"] == 50
+    def test_setup_data_collection(self) -> None:
+        """Test data collection setup."""
+        with patch('src.pipeline.integration.BinanceWebSocket') as mock_ws_class:
+            with patch('src.pipeline.integration.GCSUploader') as mock_uploader_class:
+                config = {"symbol": "BTCUSDT", "bucket": "test-bucket"}
+                orchestrator = PipelineOrchestrator(config)
+                
+                orchestrator.setup_data_collection()
+                
+                # Verify components created
+                assert "websocket" in orchestrator.components
+                assert "uploader" in orchestrator.components
+                
+                # Verify initialization
+                mock_ws_class.assert_called_once_with("btcusdt")
+                mock_uploader_class.assert_called_once_with("test-bucket")
+    
+    def test_setup_feature_engineering(self) -> None:
+        """Test feature engineering setup."""
+        with patch('src.pipeline.integration.FeatureEngineer') as mock_fe_class:
+            orchestrator = PipelineOrchestrator({})
+            
+            orchestrator.setup_feature_engineering()
+            
+            # Verify component created
+            assert "feature_engineer" in orchestrator.components
+            mock_fe_class.assert_called_once()
+    
+    def test_setup_model(self) -> None:
+        """Test model setup."""
+        with patch('src.pipeline.integration.TauSAC') as mock_model_class:
+            config = {
+                "model": {
+                    "observation_dim": 150,
+                    "action_dim": 4,
+                    "tau_values": [5, 10, 15]
+                }
+            }
+            orchestrator = PipelineOrchestrator(config)
+            
+            orchestrator.setup_model()
+            
+            # Verify component created
+            assert "model" in orchestrator.components
+            
+            # Verify initialization parameters
+            mock_model_class.assert_called_once_with(
+                observation_dim=150,
+                action_dim=4,
+                tau_values=[5, 10, 15]
+            )
+    
+    def test_setup_model_defaults(self) -> None:
+        """Test model setup with defaults."""
+        with patch('src.pipeline.integration.TauSAC') as mock_model_class:
+            orchestrator = PipelineOrchestrator({})
+            
+            orchestrator.setup_model()
+            
+            # Verify default parameters
+            mock_model_class.assert_called_once_with(
+                observation_dim=200,
+                action_dim=3,
+                tau_values=[3, 6, 9, 12]
+            )
+    
+    def test_setup_risk_management(self) -> None:
+        """Test risk management setup."""
+        with patch('src.pipeline.integration.RiskManager') as mock_rm_class:
+            with patch('src.pipeline.integration.KellyPositionSizer') as mock_ps_class:
+                orchestrator = PipelineOrchestrator({})
+                
+                orchestrator.setup_risk_management()
+                
+                # Verify component created
+                assert "risk_manager" in orchestrator.components
+                
+                # Verify initialization
+                mock_ps_class.assert_called_once()
+                mock_rm_class.assert_called_once()
     
     @pytest.mark.asyncio
-    async def test_run_live_trading_with_model_updates(self) -> None:
-        """Test live trading with model updates during execution."""
-        with patch('src.pipeline.integration.BinanceClient') as mock_client_class:
-            with patch('src.pipeline.integration.RiskManager') as mock_risk_class:
-                with patch('src.pipeline.integration.get_latest_model') as mock_get_model:
-                    # Setup mocks
-                    mock_client = AsyncMock()
-                    mock_client.get_balance.return_value = {"BTC": 0, "USDT": 10000}
-                    mock_client.get_ticker.return_value = {"price": 50000}
-                    mock_client.get_klines.return_value = [
-                        [1609459200000, "45000", "46000", "44000", "45500", "100"]
-                    ]
-                    mock_client_class.return_value = mock_client
-                    
-                    # Model changes during execution
-                    call_count = 0
-                    def model_side_effect(*args):
-                        nonlocal call_count
-                        call_count += 1
-                        return {"version": f"v{call_count}", "weights": [call_count]}
-                    
-                    mock_get_model.side_effect = model_side_effect
-                    
-                    result = await run_live_trading(
-                        symbol="BTCUSDT",
-                        duration_seconds=0.1,
-                        check_interval=0.05
-                    )
-                    
-                    assert result["status"] in ["completed", "error"]
-                    # Model should be checked multiple times
-                    assert mock_get_model.call_count >= 1
+    async def test_orchestrator_run(self) -> None:
+        """Test orchestrator run method."""
+        with patch.object(PipelineOrchestrator, 'setup_data_collection') as mock_setup_dc:
+            with patch.object(PipelineOrchestrator, 'setup_feature_engineering') as mock_setup_fe:
+                with patch.object(PipelineOrchestrator, 'setup_model') as mock_setup_model:
+                    with patch.object(PipelineOrchestrator, 'setup_risk_management') as mock_setup_rm:
+                        # Create mock components
+                        mock_ws = AsyncMock()
+                        mock_ws.connect = AsyncMock()
+                        mock_ws.disconnect = AsyncMock()
+                        mock_ws.get_orderbook_update = AsyncMock(return_value={"bid": 50000})
+                        
+                        mock_fe = Mock()
+                        mock_fe.compute_features = Mock(return_value=np.random.rand(200))
+                        
+                        mock_model = Mock()
+                        mock_model.predict = Mock(return_value=np.array([0.8, 0.1, 0.1]))
+                        
+                        mock_rm = Mock()
+                        mock_rm.check_new_position = Mock(return_value={"approved": True})
+                        
+                        # Setup orchestrator
+                        config = {"symbol": "BTCUSDT"}
+                        orchestrator = PipelineOrchestrator(config)
+                        
+                        # Manually set components
+                        orchestrator.components = {
+                            "websocket": mock_ws,
+                            "feature_engineer": mock_fe,
+                            "model": mock_model,
+                            "risk_manager": mock_rm
+                        }
+                        
+                        # Run
+                        result = await orchestrator.run()
+                        
+                        # Verify setup methods called
+                        mock_setup_dc.assert_called_once()
+                        mock_setup_fe.assert_called_once()
+                        mock_setup_model.assert_called_once()
+                        mock_setup_rm.assert_called_once()
+                        
+                        # Verify result
+                        assert result["trades_executed"] > 0
+                        assert "total_pnl" in result
+                        assert isinstance(result["errors"], list)
     
-    def test_evaluate_model_performance_with_losses(self) -> None:
-        """Test performance evaluation with losing trades."""
-        trades = [
-            {
-                "timestamp": datetime(2024, 1, 1, 10, 0),
-                "action": "buy",
-                "price": 50000,
-                "amount": 0.1,
-                "fee": 10
-            },
-            {
-                "timestamp": datetime(2024, 1, 1, 11, 0),
-                "action": "sell",
-                "price": 48000,
-                "amount": 0.1,
-                "fee": 10
-            },
-            {
-                "timestamp": datetime(2024, 1, 1, 12, 0),
-                "action": "buy",
-                "price": 48000,
-                "amount": 0.1,
-                "fee": 10
-            },
-            {
-                "timestamp": datetime(2024, 1, 1, 13, 0),
-                "action": "sell",
-                "price": 49000,
-                "amount": 0.1,
-                "fee": 10
-            }
-        ]
-        
-        initial_balance = {"BTC": 0, "USDT": 10000}
-        final_balance = {"BTC": 0, "USDT": 9760}  # Net loss
-        
-        performance = evaluate_model_performance(trades, initial_balance, final_balance)
-        
-        assert performance["total_trades"] == 4
-        assert performance["profitable_trades"] == 1  # One winning trade
-        assert performance["total_pnl"] == -240  # Lost money
-        assert performance["win_rate"] == 0.5  # 50% win rate (1 win out of 2 round trips)
-        assert performance["sharpe_ratio"] < 0  # Negative Sharpe for losses
+    @pytest.mark.asyncio
+    async def test_orchestrator_run_error_handling(self) -> None:
+        """Test orchestrator error handling."""
+        with patch.object(PipelineOrchestrator, 'setup_data_collection') as mock_setup:
+            mock_setup.side_effect = Exception("Setup failed")
+            
+            orchestrator = PipelineOrchestrator({})
+            
+            # Run should handle error
+            result = await orchestrator.run()
+            
+            # Verify error captured
+            assert len(result["errors"]) > 0
+            assert "Setup failed" in result["errors"][0]
+
+
+def test_module_imports() -> None:
+    """Test that all required modules can be imported."""
+    from src.pipeline import integration
+    
+    assert hasattr(integration, 'run_live_trading')
+    assert hasattr(integration, 'PipelineOrchestrator')

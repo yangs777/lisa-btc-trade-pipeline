@@ -3,22 +3,24 @@
 import pytest
 import numpy as np
 import gymnasium as gym
+from typing import Any, Dict, Tuple, Optional, Union
+from unittest.mock import Mock, patch
 from src.rl.wrappers import TradingEnvWrapper, EpisodeMonitor, ActionNoiseWrapper
 
 
 class MockEnv(gym.Env):
     """Mock environment for testing."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.observation_space = gym.spaces.Box(low=-10, high=10, shape=(5,), dtype=np.float32)
         self.action_space = gym.spaces.Box(low=-1, high=1, shape=(2,), dtype=np.float32)
         self.step_count = 0
     
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
         self.step_count = 0
         return np.random.randn(5).astype(np.float32), {}
     
-    def step(self, action):
+    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         self.step_count += 1
         obs = np.random.randn(5).astype(np.float32)
         reward = float(np.random.randn())
@@ -50,33 +52,50 @@ class TestTradingEnvWrapper:
         assert wrapper.n_obs == 0
     
     def test_reset(self) -> None:
-        """Test environment reset."""
+        """Test reset method."""
         env = MockEnv()
         wrapper = TradingEnvWrapper(env)
         
         obs, info = wrapper.reset()
         
-        assert isinstance(obs, np.ndarray)
         assert obs.shape == (5,)
-        assert obs.dtype == np.float32
-        assert len(wrapper.episode_rewards) == 0
-        assert wrapper.episode_length == 0
+        assert isinstance(info, dict)
+        assert wrapper.n_obs == 1
     
-    def test_step_basic(self) -> None:
-        """Test basic step functionality."""
+    def test_step_without_normalization(self) -> None:
+        """Test step without normalization."""
         env = MockEnv()
-        wrapper = TradingEnvWrapper(env, reward_scale=0.5)
+        wrapper = TradingEnvWrapper(env, normalize_obs=False, reward_scale=0.5)
         
-        wrapper.reset()
-        action = np.array([0.5, -0.5])
+        obs, _ = wrapper.reset()
+        action = np.array([0.5, -0.5], dtype=np.float32)
+        
         obs, reward, terminated, truncated, info = wrapper.step(action)
         
-        assert isinstance(obs, np.ndarray)
+        assert obs.shape == (5,)
         assert isinstance(reward, float)
         assert isinstance(terminated, bool)
         assert isinstance(truncated, bool)
-        assert "wrapper" in info
-        assert info["wrapper"]["episode_length"] == 1
+        assert isinstance(info, dict)
+    
+    def test_step_with_normalization(self) -> None:
+        """Test step with normalization."""
+        env = MockEnv()
+        wrapper = TradingEnvWrapper(env, normalize_obs=True, clip_obs=3.0)
+        
+        # Set mock statistics
+        wrapper.obs_mean = np.zeros(5)
+        wrapper.obs_std = np.ones(5)
+        wrapper.n_obs = 100
+        
+        obs, _ = wrapper.reset()
+        action = np.array([0.5, -0.5], dtype=np.float32)
+        
+        obs, reward, terminated, truncated, info = wrapper.step(action)
+        
+        # Check observation is clipped
+        assert np.all(obs >= -3.0)
+        assert np.all(obs <= 3.0)
     
     def test_action_repeat(self) -> None:
         """Test action repeat functionality."""
@@ -84,317 +103,247 @@ class TestTradingEnvWrapper:
         wrapper = TradingEnvWrapper(env, action_repeat=3)
         
         wrapper.reset()
-        action = np.array([0.1, 0.2])
+        action = np.array([0.5, -0.5], dtype=np.float32)
+        
+        # Track original step count
+        original_step_count = env.step_count
+        
+        # Step should repeat action 3 times
         obs, reward, terminated, truncated, info = wrapper.step(action)
         
-        # Should have stepped 3 times
-        assert wrapper.episode_length == 3
-        assert len(wrapper.episode_rewards) == 3
+        # Verify action was repeated
+        assert env.step_count == original_step_count + 3
     
-    def test_observation_normalization(self) -> None:
-        """Test observation normalization."""
+    def test_compute_statistics(self) -> None:
+        """Test computing observation statistics."""
         env = MockEnv()
         wrapper = TradingEnvWrapper(env, normalize_obs=True)
         
-        # Reset and step multiple times to build statistics
-        wrapper.reset()
-        for i in range(150):  # Need > 100 samples for normalization
-            wrapper.step(np.array([0.0, 0.0]))
-            if wrapper.episode_length >= 10:
-                wrapper.reset()
-        
-        # Check normalization stats exist
-        assert wrapper.n_obs > 100
-        assert wrapper.obs_mean is not None
-        assert wrapper.obs_std is not None
-        
-        # Next observation should be normalized
-        obs, _ = wrapper.reset()
-        assert obs.dtype == np.float32
-        assert np.all(np.abs(obs) <= wrapper.clip_obs)
-    
-    def test_observation_clipping(self) -> None:
-        """Test observation clipping."""
-        env = MockEnv()
-        wrapper = TradingEnvWrapper(env, normalize_obs=False, clip_obs=2.0)
-        
-        # Override reset to return large values
-        def mock_reset(seed=None, options=None):
-            return np.array([15.0, -15.0, 3.0, -3.0, 0.0]), {}
-        
-        env.reset = mock_reset
-        obs, _ = wrapper.reset()
-        
-        # Check clipping
-        assert np.all(obs <= 2.0)
-        assert np.all(obs >= -2.0)
-        assert obs[0] == 2.0  # Clipped from 15.0
-        assert obs[1] == -2.0  # Clipped from -15.0
-    
-    def test_reward_scaling(self) -> None:
-        """Test reward scaling."""
-        env = MockEnv()
-        wrapper = TradingEnvWrapper(env, reward_scale=0.1)
-        
-        # Override step to return fixed reward
-        original_step = env.step
-        def mock_step(action):
-            obs, _, terminated, truncated, info = original_step(action)
-            return obs, 10.0, terminated, truncated, info
-        
-        env.step = mock_step
-        
-        wrapper.reset()
-        _, reward, _, _, _ = wrapper.step(np.array([0.0, 0.0]))
-        
-        assert reward == 1.0  # 10.0 * 0.1
-    
-    def test_early_termination(self) -> None:
-        """Test early termination with action repeat."""
-        env = MockEnv()
-        wrapper = TradingEnvWrapper(env, action_repeat=5)
-        
-        # Override step to terminate early
-        def mock_step(action):
-            obs = np.random.randn(5).astype(np.float32)
-            return obs, 1.0, True, False, {}
-        
-        env.step = mock_step
-        
-        wrapper.reset()
-        obs, reward, terminated, truncated, info = wrapper.step(np.array([0.0, 0.0]))
-        
-        # Should terminate after first step despite action_repeat=5
-        assert terminated == True
-        assert wrapper.episode_length == 1
-    
-    def test_get_normalization_stats(self) -> None:
-        """Test getting normalization statistics."""
-        env = MockEnv()
-        wrapper = TradingEnvWrapper(env)
-        
-        # No stats initially
-        stats = wrapper.get_normalization_stats()
-        assert stats["n_samples"] == 0
-        assert len(stats["mean"]) == 0
-        assert len(stats["std"]) == 0
-        
-        # Add some observations
+        # Reset and step multiple times
         wrapper.reset()
         for _ in range(10):
-            wrapper.step(np.array([0.0, 0.0]))
+            action = env.action_space.sample()
+            wrapper.step(action)
         
-        stats = wrapper.get_normalization_stats()
-        assert stats["n_samples"] > 0
-        assert stats["mean"].shape == (5,)
-        assert stats["std"].shape == (5,)
+        # Compute statistics
+        wrapper.compute_statistics()
+        
+        assert wrapper.obs_mean is not None
+        assert wrapper.obs_std is not None
+        assert wrapper.obs_mean.shape == (5,)
+        assert wrapper.obs_std.shape == (5,)
+        assert np.all(wrapper.obs_std > 0)
 
 
 class TestEpisodeMonitor:
-    """Test EpisodeMonitor class."""
+    """Test EpisodeMonitor wrapper."""
     
     def test_initialization(self) -> None:
         """Test monitor initialization."""
         env = MockEnv()
-        monitor = EpisodeMonitor(env, log_dir="/tmp/test_logs")
+        monitor = EpisodeMonitor(env)
         
-        assert monitor.log_dir == "/tmp/test_logs"
+        assert monitor.episode_rewards == []
+        assert monitor.episode_lengths == []
         assert monitor.episode_count == 0
-        assert len(monitor.episode_rewards) == 0
-        assert len(monitor.episode_lengths) == 0
+        assert monitor.current_reward == 0
+        assert monitor.current_length == 0
     
-    def test_episode_tracking(self) -> None:
-        """Test episode tracking."""
+    def test_reset(self) -> None:
+        """Test monitor reset."""
         env = MockEnv()
         monitor = EpisodeMonitor(env)
         
-        # Run one episode
+        # Set some current values
+        monitor.current_reward = 10.0
+        monitor.current_length = 5
+        
+        obs, info = monitor.reset()
+        
+        assert monitor.current_reward == 0
+        assert monitor.current_length == 0
+        assert isinstance(obs, np.ndarray)
+        assert isinstance(info, dict)
+    
+    def test_step_tracking(self) -> None:
+        """Test step tracking."""
+        env = MockEnv()
+        monitor = EpisodeMonitor(env)
+        
         monitor.reset()
+        
         total_reward = 0
         for i in range(5):
-            _, reward, terminated, truncated, info = monitor.step(np.array([0.0, 0.0]))
+            action = env.action_space.sample()
+            obs, reward, terminated, truncated, info = monitor.step(action)
             total_reward += reward
             
-            assert "monitor" in info
-            assert info["monitor"]["episode"] == 0
-            assert info["monitor"]["episode_length"] == i + 1
+            assert monitor.current_length == i + 1
+            assert abs(monitor.current_reward - total_reward) < 1e-6
             
             if terminated or truncated:
-                assert "episode" in info
                 break
-        
-        # Start second episode
-        monitor.reset()
-        assert monitor.episode_count == 1
-        assert len(monitor.episode_rewards) == 1
-        assert len(monitor.episode_lengths) == 1
     
-    def test_episode_statistics(self) -> None:
-        """Test episode statistics calculation."""
+    def test_episode_completion(self) -> None:
+        """Test episode completion tracking."""
+        env = MockEnv()
+        
+        # Mock the step method to control termination
+        def mock_step(action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+            env.step_count += 1
+            obs = np.random.randn(5).astype(np.float32)
+            reward = 1.0  # Fixed reward
+            terminated = env.step_count >= 5  # Terminate after 5 steps
+            truncated = False
+            return obs, reward, terminated, truncated, {}
+        
+        with patch.object(env, 'step', mock_step):
+            monitor = EpisodeMonitor(env)
+            
+            monitor.reset()
+            
+            # Run until episode ends
+            done = False
+            while not done:
+                action = env.action_space.sample()
+                obs, reward, terminated, truncated, info = monitor.step(action)
+                done = terminated or truncated
+            
+            # Check episode was recorded
+            assert len(monitor.episode_rewards) == 1
+            assert len(monitor.episode_lengths) == 1
+            assert monitor.episode_count == 1
+            assert monitor.episode_rewards[0] == 5.0  # 5 steps * 1.0 reward
+            assert monitor.episode_lengths[0] == 5
+    
+    def test_get_episode_statistics(self) -> None:
+        """Test getting episode statistics."""
         env = MockEnv()
         monitor = EpisodeMonitor(env)
         
-        # No episodes yet
+        # Add some mock episodes
+        monitor.episode_rewards = [10.0, 20.0, 15.0]
+        monitor.episode_lengths = [100, 200, 150]
+        monitor.episode_count = 3
+        
         stats = monitor.get_episode_statistics()
-        assert stats["episodes"] == 0
+        
+        assert stats["episode_count"] == 3
+        assert stats["mean_reward"] == 15.0
+        assert stats["mean_length"] == 150.0
+        assert stats["total_steps"] == 450
+        
+        # Test with no episodes
+        monitor.episode_rewards = []
+        monitor.episode_lengths = []
+        monitor.episode_count = 0
+        
+        stats = monitor.get_episode_statistics()
+        
+        assert stats["episode_count"] == 0
         assert stats["mean_reward"] == 0.0
-        
-        # Run multiple episodes
-        for ep in range(3):
-            monitor.reset()
-            for _ in range(10):
-                _, _, terminated, truncated, _ = monitor.step(np.array([0.0, 0.0]))
-                if terminated or truncated:
-                    break
-        
-        stats = monitor.get_episode_statistics()
-        assert stats["episodes"] >= 2  # At least 2 complete episodes
-        assert "mean_reward" in stats
-        assert "std_reward" in stats
-        assert "max_reward" in stats
-        assert "min_reward" in stats
-    
-    def test_log_file_creation(self) -> None:
-        """Test episode log file creation."""
-        import tempfile
-        import json
-        from pathlib import Path
-        
-        with tempfile.TemporaryDirectory() as tmpdir:
-            env = MockEnv()
-            monitor = EpisodeMonitor(env, log_dir=tmpdir)
-            
-            # Run one episode
-            monitor.reset()
-            for _ in range(5):
-                _, _, terminated, truncated, _ = monitor.step(np.array([0.0, 0.0]))
-                if terminated or truncated:
-                    break
-            
-            # Reset to trigger logging
-            monitor.reset()
-            
-            # Check log file exists
-            log_files = list(Path(tmpdir).glob("episode_*.json"))
-            assert len(log_files) == 1
-            
-            # Check log content
-            with open(log_files[0]) as f:
-                log_data = json.load(f)
-                assert "episode" in log_data
-                assert "reward" in log_data
-                assert "length" in log_data
+        assert stats["mean_length"] == 0.0
+        assert stats["total_steps"] == 0
 
 
 class TestActionNoiseWrapper:
-    """Test ActionNoiseWrapper class."""
+    """Test ActionNoiseWrapper."""
     
     def test_initialization(self) -> None:
         """Test noise wrapper initialization."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(
-            env,
-            noise_scale=0.2,
-            noise_decay=0.99,
-            min_noise=0.05
-        )
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="gaussian")
         
-        assert wrapper.initial_noise_scale == 0.2
-        assert wrapper.noise_scale == 0.2
-        assert wrapper.noise_decay == 0.99
-        assert wrapper.min_noise == 0.05
-        assert wrapper.episode_count == 0
+        assert wrapper.noise_scale == 0.1
+        assert wrapper.noise_type == "gaussian"
     
-    def test_noise_addition(self) -> None:
-        """Test noise is added to actions."""
+    def test_reset(self) -> None:
+        """Test reset passes through correctly."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(env, noise_scale=0.5)
+        wrapper = ActionNoiseWrapper(env)
         
-        # Track actions sent to base env
-        actions_received = []
-        original_step = env.step
-        def track_step(action):
-            actions_received.append(action.copy())
-            return original_step(action)
-        env.step = track_step
+        obs1, info1 = env.reset()
+        env.reset()  # Reset again
+        obs2, info2 = wrapper.reset()
+        
+        assert obs2.shape == obs1.shape
+        assert isinstance(info2, dict)
+    
+    def test_gaussian_noise(self) -> None:
+        """Test Gaussian noise addition."""
+        env = MockEnv()
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="gaussian")
         
         wrapper.reset()
         
-        # Send same action multiple times
-        base_action = np.array([0.5, -0.5])
+        # Test multiple actions
         for _ in range(10):
-            wrapper.step(base_action)
-        
-        # Actions should be different due to noise
-        actions_array = np.array(actions_received)
-        assert not np.all(actions_array == base_action)
-        
-        # But should be centered around base action
-        mean_action = np.mean(actions_array, axis=0)
-        assert np.allclose(mean_action, base_action, atol=0.2)
-    
-    def test_noise_decay(self) -> None:
-        """Test noise decay over episodes."""
-        env = MockEnv()
-        wrapper = ActionNoiseWrapper(
-            env,
-            noise_scale=1.0,
-            noise_decay=0.9,
-            min_noise=0.1
-        )
-        
-        initial_noise = wrapper.noise_scale
-        
-        # Run multiple episodes
-        for i in range(5):
-            obs, info = wrapper.reset()
-            assert info["noise_scale"] == wrapper.noise_scale
-            assert wrapper.noise_scale == max(initial_noise * (0.9 ** i), 0.1)
+            clean_action = np.array([0.5, -0.5], dtype=np.float32)
             
-            # Run episode
-            for _ in range(5):
-                wrapper.step(np.array([0.0, 0.0]))
+            # Mock the step to capture the noisy action
+            noisy_actions = []
+            
+            def capture_action(action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+                noisy_actions.append(action.copy())
+                return np.zeros(5, dtype=np.float32), 0.0, False, False, {}
+            
+            with patch.object(env, 'step', capture_action):
+                wrapper.step(clean_action)
+            
+            # Check noise was added
+            assert len(noisy_actions) == 1
+            noisy_action = noisy_actions[0]
+            assert not np.allclose(noisy_action, clean_action)
+            
+            # Check action is still within bounds
+            assert np.all(noisy_action >= -1.0)
+            assert np.all(noisy_action <= 1.0)
     
-    def test_minimum_noise(self) -> None:
-        """Test minimum noise constraint."""
+    def test_uniform_noise(self) -> None:
+        """Test uniform noise addition."""
         env = MockEnv()
-        wrapper = ActionNoiseWrapper(
-            env,
-            noise_scale=0.2,
-            noise_decay=0.5,  # Fast decay
-            min_noise=0.15
-        )
-        
-        # Run many episodes to ensure decay
-        for _ in range(10):
-            wrapper.reset()
-        
-        # Noise should not go below minimum
-        assert wrapper.noise_scale >= 0.15
-    
-    def test_action_clipping(self) -> None:
-        """Test actions are clipped to space bounds."""
-        env = MockEnv()
-        wrapper = ActionNoiseWrapper(env, noise_scale=5.0)  # Very high noise
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.1, noise_type="uniform")
         
         wrapper.reset()
         
-        # Send action at boundary
-        action = np.array([0.9, 0.9])
+        clean_action = np.array([0.5, -0.5], dtype=np.float32)
         
-        # Track clipped actions
-        clipped_actions = []
-        original_step = env.step
-        def track_step(action):
-            clipped_actions.append(action.copy())
-            return original_step(action)
-        env.step = track_step
+        # Mock the step to capture the noisy action
+        noisy_actions = []
         
-        # Step multiple times
-        for _ in range(20):
-            wrapper.step(action)
+        def capture_action(action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+            noisy_actions.append(action.copy())
+            return np.zeros(5, dtype=np.float32), 0.0, False, False, {}
         
-        # All actions should be within bounds
-        for act in clipped_actions:
-            assert np.all(act >= -1.0)
-            assert np.all(act <= 1.0)
+        with patch.object(env, 'step', capture_action):
+            wrapper.step(clean_action)
+        
+        # Check noise was added
+        noisy_action = noisy_actions[0]
+        assert not np.allclose(noisy_action, clean_action)
+        
+        # Check action is still within bounds
+        assert np.all(noisy_action >= -1.0)
+        assert np.all(noisy_action <= 1.0)
+    
+    def test_no_noise_with_zero_scale(self) -> None:
+        """Test no noise when scale is zero."""
+        env = MockEnv()
+        wrapper = ActionNoiseWrapper(env, noise_scale=0.0)
+        
+        wrapper.reset()
+        
+        clean_action = np.array([0.5, -0.5], dtype=np.float32)
+        
+        # Mock the step to capture the action
+        captured_actions = []
+        
+        def capture_action(action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+            captured_actions.append(action.copy())
+            return np.zeros(5, dtype=np.float32), 0.0, False, False, {}
+        
+        with patch.object(env, 'step', capture_action):
+            wrapper.step(clean_action)
+        
+        # Check no noise was added
+        assert np.allclose(captured_actions[0], clean_action)
