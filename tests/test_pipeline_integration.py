@@ -34,7 +34,7 @@ class TestPipelineIntegration:
                 # Run with short duration
                 result = await run_live_trading(
                     symbol="BTCUSDT",
-                    duration_seconds=0.1,
+                    duration_seconds=1,
                     model_path=None
                 )
                 
@@ -65,7 +65,7 @@ class TestPipelineIntegration:
                 # Run with model path
                 result = await run_live_trading(
                     symbol="BTCUSDT",
-                    duration_seconds=0.1,
+                    duration_seconds=1,
                     model_path="model.pkl"
                 )
                 
@@ -83,7 +83,7 @@ class TestPipelineIntegration:
             mock_ws_class.return_value = mock_ws
             
             # Run
-            result = await run_live_trading(duration_seconds=0.1)
+            result = await run_live_trading(duration_seconds=1)
             
             # Verify error handling
             assert result["status"] == "failed"
@@ -106,7 +106,7 @@ class TestPipelineIntegration:
                 mock_ws_class.return_value = mock_ws
                 
                 # Run
-                result = await run_live_trading(duration_seconds=0.1)
+                result = await run_live_trading(duration_seconds=1)
                 
                 # Verify data collection
                 assert result["data_collected"] >= 2  # At least 2 data points
