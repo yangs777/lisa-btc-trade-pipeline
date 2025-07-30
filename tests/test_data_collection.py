@@ -9,7 +9,7 @@ class TestBinanceConnector:
     """Test Binance WebSocket connector."""
 
     @patch("websocket.WebSocketApp")
-    def test_binance_connector_init(self, mock_ws) -> None:
+    def test_binance_connector_init(self, mock_ws: MagicMock) -> None:
         """Test connector initialization."""
         from src.data_collection.binance_connector import BinanceOrderbookCollector
 
@@ -22,7 +22,7 @@ class TestBinanceConnector:
         assert collector.output_dir == Path("/tmp")
 
     @patch("websocket.WebSocketApp")
-    def test_on_message_handling(self, mock_ws) -> None:
+    def test_on_message_handling(self, mock_ws: MagicMock) -> None:
         """Test message handling."""
         from src.data_collection.binance_connector import BinanceOrderbookCollector
 
@@ -50,7 +50,7 @@ class TestBinanceConnector:
     @patch("websocket.WebSocketApp")
     @patch("aiofiles.open", new_callable=MagicMock)
     @patch("asyncio.run")
-    def test_save_buffer(self, mock_run, mock_aiofiles, mock_ws) -> None:
+    def test_save_buffer(self, mock_run: Mock, mock_aiofiles: MagicMock, mock_ws: MagicMock) -> None:
         """Test buffer saving."""
         from src.data_collection.binance_connector import BinanceOrderbookCollector
 
@@ -73,7 +73,7 @@ class TestGCSUploader:
     """Test Google Cloud Storage uploader."""
 
     @patch("google.cloud.storage.Client")
-    def test_gcs_uploader_init(self, mock_client) -> None:
+    def test_gcs_uploader_init(self, mock_client: Mock) -> None:
         """Test uploader initialization."""
         from src.data_collection.gcs_uploader import GCSUploader
 
@@ -84,7 +84,7 @@ class TestGCSUploader:
         mock_client.assert_called_once()
 
     @patch("google.cloud.storage.Client")
-    def test_upload_file(self, mock_client) -> None:
+    def test_upload_file(self, mock_client: Mock) -> None:
         """Test file upload."""
         from src.data_collection.gcs_uploader import GCSUploader
 

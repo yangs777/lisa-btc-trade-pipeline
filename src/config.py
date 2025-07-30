@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from typing import Dict, Any
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -28,7 +29,7 @@ RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def load_config() -> dict:
+def load_config() -> Dict[str, Any]:
     """Load configuration from environment."""
     return {
         "project_id": GCP_PROJECT_ID,
@@ -47,7 +48,7 @@ def get_env_var(name: str, default: str | None = None) -> str | None:
     return os.environ.get(name, default)
 
 
-def validate_config(config: dict) -> bool:
+def validate_config(config: Dict[str, Any]) -> bool:
     """Validate configuration dictionary."""
     if not isinstance(config, dict):
         return False

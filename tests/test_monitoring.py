@@ -256,7 +256,7 @@ class TestAlertManager:
 
     @patch("src.monitoring.alert_manager.send_email")
     @patch("src.monitoring.alert_manager.send_slack")
-    def test_send_alert(self, mock_slack, mock_email) -> None:
+    def test_send_alert(self, mock_slack: Mock, mock_email: Mock) -> None:
         """Test sending alerts."""
         from src.monitoring.alert_manager import AlertManager
         
@@ -299,7 +299,7 @@ class TestAlertManager:
 
 
 # Create monitoring modules if needed
-def create_monitoring_modules():
+def create_monitoring_modules() -> None:
     """Create monitoring modules."""
     from pathlib import Path
     
@@ -589,4 +589,4 @@ def send_slack(alert: Dict[str, Any]):
     (monitoring_dir / "alert_manager.py").write_text(alert_content)
 
 
-create_monitoring_modules()
+# create_monitoring_modules()  # Commented out - modules already exist

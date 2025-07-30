@@ -18,7 +18,7 @@ class AlertManager:
             "error_rate": 0.10,
             "latency_ms": 1000
         }
-        self.last_alert_time = {}
+        self.last_alert_time: Dict[str, datetime] = {}
         self.alert_throttle_minutes = 60
     
     def check_alerts(self, metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
