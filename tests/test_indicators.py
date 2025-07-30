@@ -7,20 +7,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-# Mock external dependencies
-sys.modules["numpy"] = MagicMock()
-sys.modules["pandas"] = MagicMock()
-sys.modules["scipy"] = MagicMock()
-sys.modules["scipy.stats"] = MagicMock()
+# Import real numpy to avoid conflicts
+import numpy as np
 
-# Setup mocks
-mock_numpy = sys.modules["numpy"]
-mock_numpy.nan = float("nan")
-mock_numpy.sqrt = lambda x: x**0.5
-mock_numpy.arange = lambda n: list(range(n))
-mock_numpy.sum = sum
-mock_numpy.arctan = lambda x: x
-mock_numpy.pi = 3.14159265359
+# Setup numpy references
+mock_numpy = np
+# These are already available in numpy, no need to mock
 
 
 # Mock pandas Series
