@@ -25,3 +25,6 @@ stable-baselines3>=2.1.0  # Required for τ-SAC implementation
 # Type stubs
 types-pyyaml>=6.0.0
 pandas-stubs>=2.0.3
+
+# Google Drive data fetching
+gdown>=4.7.0
