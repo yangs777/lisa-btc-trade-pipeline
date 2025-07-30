@@ -17,7 +17,7 @@ class FeatureScaler:
     
     def fit(self, X: pd.DataFrame) -> "FeatureScaler":
         """Fit scaler on data."""
-        self.feature_names = list(X.columns)
+        self.feature_names = List[Any](X.columns)
         self.scaler.fit(X)
         return self
     
@@ -57,7 +57,7 @@ class FeatureSelector:
         
         # Get selected feature names
         mask = self.selector.get_support()
-        self.selected_features = list(X.columns[mask])
+        self.selected_features = List[Any](X.columns[mask])
         
         return self
     
@@ -73,7 +73,7 @@ class FeatureSelector:
         return self.fit(X, y).transform(X)
     
     def get_selected_features(self) -> List[str]:
-        """Get list of selected feature names."""
+        """Get List[Any] of selected feature names."""
         if self.selected_features is None:
             raise ValueError("Selector not fitted yet")
         return self.selected_features
@@ -117,6 +117,6 @@ class FeaturePipeline:
         
         # Convert to numpy array
         X = numeric_df.values
-        feature_names = list(numeric_df.columns)
+        feature_names = List[Any](numeric_df.columns)
         
         return X, feature_names

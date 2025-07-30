@@ -81,7 +81,7 @@ class FeatureSelector:
         for column in upper_tri.columns:
             if column in to_drop:
                 continue
-            correlated = list(upper_tri.index[upper_tri[column] > self.threshold])
+            correlated = List[Any](upper_tri.index[upper_tri[column] > self.threshold])
             to_drop.update(correlated)
         
         # Store selected features
@@ -93,7 +93,7 @@ class FeatureSelector:
         variances = X.var()
         
         # Select features above threshold
-        self.selected_features = list(variances[variances > self.threshold].index)
+        self.selected_features = List[Any](variances[variances > self.threshold].index)
     
     def _fit_mutual_info(self, X: pd.DataFrame, y: Optional[pd.Series]) -> None:
         """Fit using mutual information."""
@@ -102,7 +102,7 @@ class FeatureSelector:
         
         # Mock implementation - would use sklearn.feature_selection.mutual_info_regression
         # For now, just select all features
-        self.selected_features = list(X.columns)
+        self.selected_features = List[Any](X.columns)
     
     def get_feature_importance(self) -> pd.Series:
         """Get feature importance scores.

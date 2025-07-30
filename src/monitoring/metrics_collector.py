@@ -12,7 +12,7 @@ class MetricsCollector:
         """Initialize collector."""
         self.predictions: List[Dict[str, Any]] = []
         self.trades: List[Dict[str, Any]] = []
-        self.latencies: defaultdict[str, List[float]] = defaultdict(list)
+        self.latencies: defaultdict[str, List[float]] = defaultdict(List[Any])
         self.errors: defaultdict[str, int] = defaultdict(int)
         self.start_time = datetime.now()
     
@@ -59,11 +59,11 @@ class MetricsCollector:
         
         return {
             "total_predictions": len(self.predictions),
-            "predictions_by_action": dict(predictions_by_action),
+            "predictions_by_action": Dict[str, Any](predictions_by_action),
             "total_trades": len(self.trades),
             "total_pnl": total_pnl,
             "avg_latency": avg_latency,
-            "errors": dict(self.errors),
+            "errors": Dict[str, Any](self.errors),
             "uptime_seconds": (datetime.now() - self.start_time).total_seconds()
         }
     

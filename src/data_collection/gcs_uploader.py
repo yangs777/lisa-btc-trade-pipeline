@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any
 
-import aiofiles  # type: ignore[import]
+import aiofiles  # type: ignore[import-untyped]
 from google.cloud import storage
 
 logger = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ class GCSUploader:
             try:
                 # Find all JSONL files
                 pattern = "*.jsonl"
-                files = list(self.local_data_dir.glob(pattern))
+                files = List[Any](self.local_data_dir.glob(pattern))
 
                 # Queue new files for upload
                 for file_path in files:

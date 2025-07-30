@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Daily preprocessor for raw BTC/USDT data."""
 
 import asyncio
@@ -74,7 +76,7 @@ class DailyPreprocessor:
         date_str = date.strftime("%Y/%m/%d")
         prefix = f"{self.raw_prefix}/{date_str}/"
 
-        blobs = list(self.bucket.list_blobs(prefix=prefix))
+        blobs = List[Any](self.bucket.list_blobs(prefix=prefix))
         blob_names = [blob.name for blob in blobs]
 
         logger.info(f"Found {len(blob_names)} raw files for {date_str}")

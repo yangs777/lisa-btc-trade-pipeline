@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """SuperTrend indicator."""
 
 import pandas as pd

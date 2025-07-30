@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Main feature engineering class."""
 
 import logging
@@ -178,7 +180,7 @@ class FeatureEngineer:
 
         return result_df
 
-    def get_indicator_info(self) -> dict[str, dict]:
+    def get_indicator_info(self) -> dict[str, Dict[str, Any]]:
         """Get information about all indicators.
 
         Returns:

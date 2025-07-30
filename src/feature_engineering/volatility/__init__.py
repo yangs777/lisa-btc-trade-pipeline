@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Volatility indicators."""
 
 from .atr import ATR, NATR

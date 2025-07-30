@@ -52,8 +52,8 @@ class TradingEnvWrapper(gym.Wrapper):
     def reset(
         self,
         seed: int | None = None,
-        options: dict | None = None,
-    ) -> tuple[np.ndarray, dict]:
+        options: Dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, Dict[str, Any]]:
         """Reset environment and wrapper state."""
         obs, info = self.env.reset(seed=seed, options=options)
 
@@ -66,7 +66,7 @@ class TradingEnvWrapper(gym.Wrapper):
 
         return obs, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """Step through environment with action repeat and processing."""
         # Accumulate rewards over action repeat
         total_reward = 0.0
@@ -166,8 +166,8 @@ class EpisodeMonitor(gym.Wrapper):
     def reset(
         self,
         seed: int | None = None,
-        options: dict | None = None,
-    ) -> tuple[np.ndarray, dict]:
+        options: Dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, Dict[str, Any]]:
         """Reset and log previous episode if complete."""
         # Log previous episode
         if self.current_length > 0:
@@ -185,7 +185,7 @@ class EpisodeMonitor(gym.Wrapper):
 
         return self.env.reset(seed=seed, options=options)
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """Step and track rewards/length."""
         obs, reward, terminated, truncated, info = self.env.step(action)
 
@@ -277,8 +277,8 @@ class ActionNoiseWrapper(gym.Wrapper):
     def reset(
         self,
         seed: int | None = None,
-        options: dict | None = None,
-    ) -> tuple[np.ndarray, dict]:
+        options: Dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, Dict[str, Any]]:
         """Reset and decay noise."""
         # Decay noise
         self.noise_scale = max(self.noise_scale * self.noise_decay, self.min_noise)
@@ -289,7 +289,7 @@ class ActionNoiseWrapper(gym.Wrapper):
 
         return obs, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """Add noise to action before stepping."""
         # Add Gaussian noise
         noise = np.random.normal(0, self.noise_scale, size=action.shape)

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Aroon indicators."""
 
 import pandas as pd

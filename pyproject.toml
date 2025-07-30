@@ -48,6 +48,9 @@ warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
 extra_checks = true
+ignore_missing_imports = true
+exclude = ["tests/", "venv/", ".venv/"]
+plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -116,11 +119,14 @@ markers = [
 ]
 
 [tool.coverage.run]
+branch = true
 source = ["src"]
 omit = [
     "*/tests/*",
     "*/__init__.py",
     "*/configs/*",
+    "tests/*",
+    "docs/*",
 ]
 
 [tool.coverage.report]

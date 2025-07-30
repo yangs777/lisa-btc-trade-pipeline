@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """ADX (Average Directional Index) indicators."""
 
 import pandas as pd

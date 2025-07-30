@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """FastAPI application for Bitcoin trading predictions."""
 
 from datetime import datetime

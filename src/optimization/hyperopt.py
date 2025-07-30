@@ -158,7 +158,7 @@ class HyperparameterOptimizer:
                     params[param_name] = random.randint(low, high)
                 else:
                     params[param_name] = float(random.uniform(low, high))
-            elif isinstance(param_range, list):
+            elif isinstance(param_range, List[Any]):
                 # Categorical parameter
                 params[param_name] = random.choice(param_range)
             else:
@@ -182,16 +182,16 @@ class HyperparameterOptimizer:
                 else:
                     values = np.linspace(low, high, n_points).tolist()
                 param_values[param_name] = values
-            elif isinstance(param_range, list):
+            elif isinstance(param_range, List[Any]):
                 param_values[param_name] = param_range
         
         # Generate all combinations
-        keys = list(param_values.keys())
+        keys = List[Any](param_values.keys())
         values = [param_values[k] for k in keys]
         
         grid = []
         for combination in itertools.product(*values):
-            params = dict(zip(keys, combination))
+            params = Dict[str, Any](zip(keys, combination))
             grid.append(params)
         
         # Shuffle to randomize order
@@ -218,7 +218,7 @@ class HyperparameterOptimizer:
                     params[param_name] = int(new_value)
                 else:
                     params[param_name] = new_value
-            elif isinstance(param_range, list):
+            elif isinstance(param_range, List[Any]):
                 # Sometimes keep best, sometimes sample
                 if random.random() < 0.8:
                     params[param_name] = self.best_params[param_name]

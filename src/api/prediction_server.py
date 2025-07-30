@@ -62,8 +62,8 @@ class BatchPredictionRequest(BaseModel):
 class RiskAnalysisRequest(BaseModel):
     """Risk analysis request."""
     portfolio_value: float = Field(..., gt=0)
-    positions: Dict[str, float] = Field(default_factory=dict)
-    recent_returns: List[float] = Field(default_factory=list)
+    positions: Dict[str, float] = Field(default_factory=Dict[str, Any])
+    recent_returns: List[float] = Field(default_factory=List[Any])
 
 
 class PredictionResponse(BaseModel):
@@ -156,7 +156,7 @@ class PredictionServer:
             """Make trading prediction."""
             try:
                 # Convert market data to DataFrame
-                df = pd.DataFrame([m.dict() for m in request.market_data])
+                df = pd.DataFrame([m.Dict[str, Any]() for m in request.market_data])
                 
                 # Add technical indicators
                 df_with_indicators = self.indicators.add_all_indicators(df)

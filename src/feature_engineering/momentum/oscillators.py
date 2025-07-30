@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Momentum oscillator indicators."""
 
 import numpy as np

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """ATR (Average True Range) indicators."""
 
 import pandas as pd

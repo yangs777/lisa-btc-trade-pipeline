@@ -62,7 +62,7 @@ class DataValidator:
         # Check monotonic increasing
         return data[timestamp_col].is_monotonic_increasing
     
-    def get_validation_report(self, data: pd.DataFrame) -> dict:
+    def get_validation_report(self, data: pd.DataFrame) -> Dict[str, Any]:
         """Get detailed validation report.
         
         Args:

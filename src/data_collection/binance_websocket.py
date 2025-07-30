@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-import aiofiles  # type: ignore[import]
+import aiofiles  # type: ignore[import-untyped]
 import websockets
 from websockets.exceptions import ConnectionClosed, WebSocketException
 

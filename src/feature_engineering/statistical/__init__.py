@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Statistical indicators."""
 
 from .basic import SEM, Kurtosis, Skew, StdDev, Variance

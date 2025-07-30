@@ -71,8 +71,8 @@ class SentimentAnalyzer:
                 # Longer-term momentum
                 if len(self.sentiment_history) >= 10:
                     features["sentiment_momentum_10"] = (
-                        np.mean(list(self.sentiment_history)[-5:]) -
-                        np.mean(list(self.sentiment_history)[-10:-5])
+                        np.mean(List[Any](self.sentiment_history)[-5:]) -
+                        np.mean(List[Any](self.sentiment_history)[-10:-5])
                     )
         
         # Composite sentiment score
@@ -160,7 +160,7 @@ class SentimentAnalyzer:
         
         # Momentum reversal
         elif len(self.sentiment_history) >= 5:
-            recent_avg = np.mean(list(self.sentiment_history)[-5:])
+            recent_avg = np.mean(List[Any](self.sentiment_history)[-5:])
             
             # Bullish reversal
             if recent_avg < 0.3 and current > previous:

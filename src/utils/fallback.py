@@ -77,7 +77,7 @@ class FallbackManager:
         self.priority_order.clear()
     
     def get_strategies(self) -> List[str]:
-        """Get list of registered strategies in priority order.
+        """Get List[Any] of registered strategies in priority order.
         
         Returns:
             List of strategy names

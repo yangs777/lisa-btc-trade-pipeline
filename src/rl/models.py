@@ -5,9 +5,9 @@ from typing import Any
 import numpy as np
 import torch
 import torch.nn as nn
-from stable_baselines3 import SAC
-from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+from stable_baselines3 import SAC  # type: ignore[import-untyped]
+from stable_baselines3.common.callbacks import BaseCallback  # type: ignore[import-untyped]
+from stable_baselines3.common.torch_layers import BaseFeaturesExtractor  # type: ignore[import-untyped]
 
 
 class TradingFeatureExtractor(BaseFeaturesExtractor):

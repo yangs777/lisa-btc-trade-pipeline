@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Main entry point for the Bitcoin trading pipeline."""
 
 import argparse

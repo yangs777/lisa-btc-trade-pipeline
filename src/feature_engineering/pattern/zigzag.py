@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """ZigZag indicator."""
 
 import numpy as np

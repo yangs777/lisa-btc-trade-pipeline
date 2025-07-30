@@ -1,8 +1,10 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Indicator registry for dynamic loading and management."""
 
 import logging
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from .base import BaseIndicator
 
@@ -15,7 +17,7 @@ class IndicatorRegistry:
     def __init__(self) -> None:
         """Initialize the registry."""
         self._indicators: dict[str, type[BaseIndicator]] = {}
-        self._configs: dict[str, dict] = {}
+        self._configs: dict[str, Dict[str, Any]] = {}
 
     def register(self, name: str, indicator_class: type[BaseIndicator]) -> None:
         """Register an indicator class.
@@ -41,8 +43,8 @@ class IndicatorRegistry:
         return self._indicators.get(name)
 
     def list_indicators(self) -> list[str]:
-        """Get list of registered indicator names."""
-        return list(self._indicators.keys())
+        """Get List[Any] of registered indicator names."""
+        return List[Any](self._indicators.keys())
 
     def load_config(self, config_path: str) -> None:
         """Load indicator configurations from YAML file.

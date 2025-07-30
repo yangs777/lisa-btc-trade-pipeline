@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Band-based volatility indicators."""
 
 import pandas as pd

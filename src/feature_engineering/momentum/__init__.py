@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Momentum indicators."""
 
 from .macd import MACD, MACDHist, MACDSignal

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Basic statistical indicators."""
 
 import numpy as np

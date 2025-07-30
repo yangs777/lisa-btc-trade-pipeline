@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Trend following indicators."""
 
 from .ichimoku import IchimokuKijun, IchimokuSenkouA, IchimokuSenkouB, IchimokuTenkan

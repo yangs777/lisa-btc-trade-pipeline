@@ -3,7 +3,7 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 
 def setup_logging(name: str, level: int = logging.INFO) -> logging.Logger:

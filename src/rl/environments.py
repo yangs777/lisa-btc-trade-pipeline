@@ -1,11 +1,11 @@
 """Trading environment implementation for τ-SAC reinforcement learning."""
 
-from typing import Any, ClassVar, Union
+from typing import Any, ClassVar, Union, Dict
 
-import gymnasium as gym
+import gymnasium as gym  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd
-from gymnasium import spaces
+from gymnasium import spaces  # type: ignore[import-untyped]
 
 from .rewards import RBSRReward
 
@@ -89,8 +89,8 @@ class BTCTradingEnvironment(gym.Env):
     def reset(
         self,
         seed: int | None = None,
-        options: dict | None = None,
-    ) -> tuple[np.ndarray, dict]:
+        options: Dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, Dict[str, Any]]:
         """Reset environment to initial state."""
         super().reset(seed=seed)
 
@@ -115,7 +115,7 @@ class BTCTradingEnvironment(gym.Env):
 
         return obs, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """Execute one trading step."""
         if self.done:
             raise ValueError("Episode is done. Call reset() to start a new episode.")

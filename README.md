@@ -1,7 +1,7 @@
 # Bitcoin τ-SAC Trading System v0.3
 
 [![CI Pipeline](https://github.com/unsuperior-ai/lisa-btc-trade-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/unsuperior-ai/lisa-btc-trade-pipeline/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-30%25-red.svg)](https://codecov.io/gh/unsuperior-ai/lisa-btc-trade-pipeline)
+[![Coverage](https://img.shields.io/badge/coverage-4.83%25-red.svg)](https://codecov.io/gh/unsuperior-ai/lisa-btc-trade-pipeline)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-310/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

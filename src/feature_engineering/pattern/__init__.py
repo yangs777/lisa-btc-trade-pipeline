@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional, Union, Tuple
+
 """Pattern recognition indicators."""
 
 from .pivots import PivotHigh, PivotLow
