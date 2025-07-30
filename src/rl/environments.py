@@ -284,7 +284,7 @@ class BTCTradingEnvironment(gym.Env):
             "n_trades": len(self.trades),
         }
 
-    def render(self) -> Union[np.ndarray, list[np.ndarray], None]:
+    def render(self) -> None:
         """Render current state."""
         if self.render_mode == "human":
             info = self._get_info()
@@ -297,8 +297,7 @@ class BTCTradingEnvironment(gym.Env):
                 pnl_pct = (info["current_price"] - info["entry_price"]) / info["entry_price"] * 100
                 output += f"\nEntry: ${info['entry_price']:,.2f} ({pnl_pct:+.2f}%)"
             output += f"\nTrades: {info['n_trades']}"
-            return output
-        return None
+            print(output)
 
     def get_episode_summary(self) -> dict[str, Any]:
         """Get summary statistics for the episode."""

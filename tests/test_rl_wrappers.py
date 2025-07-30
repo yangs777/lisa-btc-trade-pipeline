@@ -172,7 +172,7 @@ class TestEpisodeMonitor:
         
         monitor.reset()
         
-        total_reward = 0
+        total_reward = 0.0
         for i in range(5):
             action = env.action_space.sample()
             obs, reward, terminated, truncated, info = monitor.step(action)
