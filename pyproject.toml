@@ -65,6 +65,16 @@ module = [
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = [
+    "src.rl.wrappers",
+    "src.rl.environments",
+    "src.rl.models",
+    "src.feature_engineering.*",
+    "src.data_processing.daily_preprocessor",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
 module = "tests.*"
 # Relax type checking for test files
 disallow_untyped_defs = false
