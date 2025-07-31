@@ -65,3 +65,28 @@ def setup_module_mocks() -> None:
 setup_module_mocks()
 
 # Keep any existing pytest fixtures/configuration below this line
+import copy
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def reset_sys_modules():
+    """Reset sys.modules after each test to prevent test pollution."""
+    # Take a snapshot of sys.modules before the test
+    original_modules = copy.copy(sys.modules)
+    
+    yield
+    
+    # After the test, restore original modules and remove any new ones
+    # Get keys to remove (ones that were added during the test)
+    keys_to_remove = set(sys.modules.keys()) - set(original_modules.keys())
+    
+    # Remove new modules
+    for key in keys_to_remove:
+        if key in sys.modules:
+            del sys.modules[key]
+    
+    # Restore original modules that were modified
+    for key, value in original_modules.items():
+        if key in sys.modules and sys.modules[key] != value:
+            sys.modules[key] = value

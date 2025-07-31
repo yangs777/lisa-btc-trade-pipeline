@@ -9,13 +9,8 @@ import pytest
 # Add src to path to allow direct module import
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Check if google.cloud.storage is available
-try:
-    import google.cloud.storage  # noqa: F401
-
-    HAS_GCS = True
-except ImportError:
-    HAS_GCS = False
+# Always mock google.cloud.storage for testing
+HAS_GCS = True
 
 # Import directly from module file
 import importlib.util
@@ -133,148 +128,125 @@ class TestMockStorageClient:
 class TestGCSStorageClient:
     """Test GCSStorageClient implementation."""
 
+    @pytest.fixture(autouse=True)
+    def mock_gcs(self):
+        """Mock Google Cloud Storage for all tests in this class."""
+        # Create mock storage module
+        mock_storage_module = MagicMock()
+        mock_client = Mock()
+        mock_bucket = Mock()
+        
+        # Set up the mock hierarchy
+        mock_storage_module.Client.return_value = mock_client
+        mock_client.bucket.return_value = mock_bucket
+        
+        # Store for use in tests
+        self.mock_storage = mock_storage_module
+        self.mock_client = mock_client
+        self.mock_bucket = mock_bucket
+        
+        # Patch the import at the module level
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage_module}):
+            # Force reload of _io module to use mocked storage
+            if "src.data_processing._io" in sys.modules:
+                del sys.modules["src.data_processing._io"]
+            
+            yield
+            
+            # Clean up after test
+            if "src.data_processing._io" in sys.modules:
+                del sys.modules["src.data_processing._io"]
+
     def test_init_without_credentials(self):
         """Test initialization without credentials."""
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
+        client = GCSStorageClient(bucket_name="test-bucket", project_id="test-project")
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient(bucket_name="test-bucket", project_id="test-project")
+        assert client.client == self.mock_client
+        assert client.bucket == self.mock_bucket
+        self.mock_storage.Client.assert_called_once_with(project="test-project")
+        self.mock_client.bucket.assert_called_once_with("test-bucket")
 
-        assert client.client == mock_client
-        assert client.bucket == mock_bucket
-        mock_storage.Client.assert_called_once_with(project="test-project")
-        mock_client.bucket.assert_called_once_with("test-bucket")
-
-    @patch("os.environ", {})
     def test_init_with_credentials(self):
         """Test initialization with credentials path."""
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
+        with patch("os.environ", {}) as mock_environ:
             client = GCSStorageClient(
                 bucket_name="test-bucket",
                 project_id="test-project",
                 credentials_path="/path/to/creds.json",
             )
 
-        # Should set environment variable
-        assert os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") == "/path/to/creds.json"
+            # Should set environment variable
+            assert os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") == "/path/to/creds.json"
 
-        assert client.client == mock_client
-        assert client.bucket == mock_bucket
+        assert client.client == self.mock_client
+        assert client.bucket == self.mock_bucket
 
     def test_list_blobs(self):
         """Test listing blobs."""
-        # Setup
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-
         # Create mock blobs
         mock_blob1 = Mock()
         mock_blob1.name = "data/file1.json"
         mock_blob2 = Mock()
         mock_blob2.name = "data/file2.json"
 
-        mock_bucket.list_blobs.return_value = [mock_blob1, mock_blob2]
+        self.mock_bucket.list_blobs.return_value = [mock_blob1, mock_blob2]
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
-            result = client.list_blobs("data/")
+        client = GCSStorageClient("test-bucket", "test-project")
+        result = client.list_blobs("data/")
 
         assert len(result) == 2
         assert "data/file1.json" in result
         assert "data/file2.json" in result
-        mock_bucket.list_blobs.assert_called_once_with(prefix="data/")
+        self.mock_bucket.list_blobs.assert_called_once_with(prefix="data/")
 
     def test_download_blob(self):
         """Test downloading blob."""
-        # Setup
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
         mock_blob = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
+        self.mock_bucket.blob.return_value = mock_blob
 
         content = b"test content"
         mock_blob.download_as_bytes.return_value = content
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
-            result = client.download_blob("test/data.json")
+        client = GCSStorageClient("test-bucket", "test-project")
+        result = client.download_blob("test/data.json")
 
         assert result == content
-        mock_bucket.blob.assert_called_once_with("test/data.json")
+        self.mock_bucket.blob.assert_called_once_with("test/data.json")
         mock_blob.download_as_bytes.assert_called_once()
 
     def test_upload_blob(self):
         """Test uploading blob."""
-        # Setup
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
         mock_blob = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
+        self.mock_bucket.blob.return_value = mock_blob
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
-            content = b"test content"
-            client.upload_blob("test/data.json", content)
+        client = GCSStorageClient("test-bucket", "test-project")
+        content = b"test content"
+        client.upload_blob("test/data.json", content)
 
-        mock_bucket.blob.assert_called_once_with("test/data.json")
+        self.mock_bucket.blob.assert_called_once_with("test/data.json")
         mock_blob.upload_from_string.assert_called_once_with(content)
 
     def test_blob_exists(self):
         """Test checking blob existence."""
-        # Setup
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
         mock_blob = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-
+        self.mock_bucket.blob.return_value = mock_blob
         mock_blob.exists.return_value = True
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
-            result = client.blob_exists("test/data.json")
+        client = GCSStorageClient("test-bucket", "test-project")
+        result = client.blob_exists("test/data.json")
 
         assert result is True
-        mock_bucket.blob.assert_called_once_with("test/data.json")
+        self.mock_bucket.blob.assert_called_once_with("test/data.json")
         mock_blob.exists.assert_called_once()
 
     def test_blob_not_exists(self):
         """Test checking non-existent blob."""
-        # Setup
-        mock_storage = MagicMock()
-        mock_client = Mock()
-        mock_bucket = Mock()
         mock_blob = Mock()
-        mock_storage.Client.return_value = mock_client
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-
+        self.mock_bucket.blob.return_value = mock_blob
         mock_blob.exists.return_value = False
 
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
-            result = client.blob_exists("test/missing.json")
+        client = GCSStorageClient("test-bucket", "test-project")
+        result = client.blob_exists("test/missing.json")
 
         assert result is False
 
@@ -295,12 +267,7 @@ class TestIntegration:
     @pytest.mark.skipif(not HAS_GCS, reason="google.cloud.storage not available")
     def test_gcs_client_implements_protocol(self):
         """Test that GCSStorageClient implements StorageClient protocol."""
-        mock_storage = MagicMock()
-        mock_storage.Client.return_value = Mock()
-        mock_storage.Client.return_value.bucket.return_value = Mock()
-
-        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
-            client = GCSStorageClient("test-bucket", "test-project")
+        client = GCSStorageClient("test-bucket", "test-project")
 
         # Should have all protocol methods
         assert callable(client.list_blobs)

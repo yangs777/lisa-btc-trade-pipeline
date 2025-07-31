@@ -9,137 +9,149 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-# Mock pandas and scipy
-sys.modules["pandas"] = MagicMock()
-sys.modules["scipy"] = MagicMock()
-sys.modules["scipy.stats"] = MagicMock()
 
-# Use real numpy
-mock_numpy = np
+@pytest.fixture(autouse=True)
+def mock_pandas_scipy(monkeypatch):
+    """Mock pandas and scipy for each test."""
+    # Create mocks
+    mock_pandas = MagicMock()
+    mock_scipy = MagicMock()
+    mock_scipy_stats = MagicMock()
+    
+    # Patch sys.modules
+    monkeypatch.setitem(sys.modules, "pandas", mock_pandas)
+    monkeypatch.setitem(sys.modules, "scipy", mock_scipy)
+    monkeypatch.setitem(sys.modules, "scipy.stats", mock_scipy_stats)
+    
+    # Use real numpy
+    mock_numpy = np
+    
+    # Create mock pandas classes
+    class MockSeries:
+        def __init__(self, data=None, index=None, dtype=None):
+            self.data = data or []
+            self.index = index or list(range(len(self.data)))
+            self.values = self.data
+            self.iloc = self
+            self.empty = len(self.data) == 0
 
+        def __getitem__(self, idx):
+            if isinstance(idx, int):
+                return self.data[idx] if idx < len(self.data) else None
+            return self
 
-# Create mock pandas classes
-class MockSeries:
-    def __init__(self, data=None, index=None, dtype=None):
-        self.data = data or []
-        self.index = index or list(range(len(self.data)))
-        self.values = self.data
-        self.iloc = self
-        self.empty = len(self.data) == 0
+        def __setitem__(self, idx, value):
+            if isinstance(idx, int) and idx < len(self.data):
+                self.data[idx] = value
 
-    def __getitem__(self, idx):
-        if isinstance(idx, int):
-            return self.data[idx] if idx < len(self.data) else None
-        return self
+        def rolling(self, window):
+            return self
 
-    def __setitem__(self, idx, value):
-        if isinstance(idx, int) and idx < len(self.data):
-            self.data[idx] = value
+        def mean(self):
+            return self
 
-    def rolling(self, window):
-        return self
+        def std(self):
+            return self
 
-    def mean(self):
-        return self
+        def sum(self):
+            return self
 
-    def std(self):
-        return self
+        def max(self):
+            return self
 
-    def sum(self):
-        return self
+        def min(self):
+            return self
 
-    def max(self):
-        return self
+        def ewm(self, span=None, adjust=False):
+            return self
 
-    def min(self):
-        return self
+        def diff(self):
+            return self
 
-    def ewm(self, span=None, adjust=False):
-        return self
+        def shift(self, periods=1):
+            return self
 
-    def diff(self):
-        return self
+        def pct_change(self):
+            return self
 
-    def shift(self, periods=1):
-        return self
+        def cumsum(self):
+            return self
 
-    def pct_change(self):
-        return self
+        def fillna(self, value=0, method=None):
+            return self
 
-    def cumsum(self):
-        return self
+        def where(self, cond, other):
+            return self
 
-    def fillna(self, value=0, method=None):
-        return self
+        def replace(self, to_replace, value):
+            return self
 
-    def where(self, cond, other):
-        return self
+        def apply(self, func, raw=False):
+            return self
 
-    def replace(self, to_replace, value):
-        return self
+        def __len__(self):
+            return len(self.data)
 
-    def apply(self, func, raw=False):
-        return self
+        def combine(self, other, func):
+            return self
 
-    def __len__(self):
-        return len(self.data)
+        def abs(self):
+            return self
 
-    def combine(self, other, func):
-        return self
+        def var(self):
+            return self
 
-    def abs(self):
-        return self
+        def skew(self):
+            return self
 
-    def var(self):
-        return self
+        def kurt(self):
+            return self
 
-    def skew(self):
-        return self
+        def corr(self, other):
+            return self
 
-    def kurt(self):
-        return self
-
-    def corr(self, other):
-        return self
-
-    def cov(self, other):
-        return self
-
-
-class MockDataFrame:
-    def __init__(self, data=None):
-        self.data = data or {}
-        self.columns = list(self.data.keys()) if data else []
-        self.index = None
-        self.empty = len(self.columns) == 0
-
-    def __getitem__(self, key):
-        if key in self.data:
-            return MockSeries(self.data[key])
-        return MockSeries()
-
-    def __setitem__(self, key, value):
-        self.data[key] = value
-        if key not in self.columns:
-            self.columns.append(key)
-
-    def copy(self):
-        return MockDataFrame(self.data.copy())
-
-    def __len__(self):
-        if self.columns:
-            return len(self.data[self.columns[0]])
-        return 0
+        def cov(self, other):
+            return self
 
 
-sys.modules["pandas"].Series = MockSeries
-sys.modules["pandas"].DataFrame = MockDataFrame
-sys.modules["pandas"].concat = lambda dfs, axis=1: MockDataFrame()
-sys.modules["pandas"].NA = None
+    class MockDataFrame:
+        def __init__(self, data=None):
+            self.data = data or {}
+            self.columns = list(self.data.keys()) if data else []
+            self.index = None
+            self.empty = len(self.columns) == 0
 
-# Mock scipy.stats
-mock_stats = sys.modules["scipy.stats"]
-mock_stats.linregress = lambda x, y: (0.1, 30000, 0.9, 0.01, 0.1)  # slope, intercept, r, p, se
+        def __getitem__(self, key):
+            if key in self.data:
+                return MockSeries(self.data[key])
+            return MockSeries()
+
+        def __setitem__(self, key, value):
+            self.data[key] = value
+            if key not in self.columns:
+                self.columns.append(key)
+
+        def copy(self):
+            return MockDataFrame(self.data.copy())
+
+        def __len__(self):
+            if self.columns:
+                return len(self.data[self.columns[0]])
+            return 0
+
+
+    mock_pandas.Series = MockSeries
+    mock_pandas.DataFrame = MockDataFrame
+    mock_pandas.concat = lambda dfs, axis=1: MockDataFrame()
+    mock_pandas.NA = None
+    
+    # Mock scipy.stats
+    mock_scipy_stats.linregress = lambda x, y: (0.1, 30000, 0.9, 0.01, 0.1)  # slope, intercept, r, p, se
+    
+    yield
+    
+    # Cleanup happens automatically with monkeypatch
+
 
 # Now import the actual modules
 from src.feature_engineering import FeatureEngineer  # noqa: E402

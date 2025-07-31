@@ -9,74 +9,89 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-# Mock external dependencies
-sys.modules["google"] = MagicMock()
-sys.modules["google.cloud"] = MagicMock()
-sys.modules["google.cloud.storage"] = MagicMock()
-sys.modules["numpy"] = MagicMock()
-sys.modules["pandas"] = MagicMock()
+
+@pytest.fixture(autouse=True)
+def mock_dependencies(monkeypatch):
+    """Mock external dependencies for each test."""
+    # Create mocks
+    mock_google = MagicMock()
+    mock_google_cloud = MagicMock()
+    mock_google_cloud_storage = MagicMock()
+    mock_numpy = MagicMock()
+    mock_pandas = MagicMock()
+    
+    # Patch sys.modules
+    monkeypatch.setitem(sys.modules, "google", mock_google)
+    monkeypatch.setitem(sys.modules, "google.cloud", mock_google_cloud)
+    monkeypatch.setitem(sys.modules, "google.cloud.storage", mock_google_cloud_storage)
+    monkeypatch.setitem(sys.modules, "numpy", mock_numpy)
+    monkeypatch.setitem(sys.modules, "pandas", mock_pandas)
+    
+    # Create mock DataFrame class
+    class MockDataFrame:
+        def __init__(self, data=None):
+            self.data = data or []
+            self.columns = []
+            self.empty = len(self.data) == 0
+            self.index = None
+            self._items = {}  # Store column data
+
+        def __len__(self):
+            return len(self.data)
+
+        def iloc(self, idx):
+            return self.data[idx] if idx < len(self.data) else None
+
+        def __getitem__(self, key):
+            return self._items.get(key, self)
+
+        def __setitem__(self, key, value):
+            self._items[key] = value
+
+        def resample(self, freq):
+            return self
+
+        def sum(self):
+            return self
+
+        def count(self):
+            return self
+
+        def mean(self):
+            return self
+
+        def last(self):
+            return self
+
+        def agg(self, *args, **kwargs):
+            return self
+
+        def ohlc(self):
+            return {"open": self, "high": self, "low": self, "close": self}
+
+        def fillna(self, *args, **kwargs):
+            return self
+
+        def sort_index(self):
+            return self
+
+        def set_index(self, *args, **kwargs):
+            return self
+
+        def to_parquet(self, *args, **kwargs):
+            pass
 
 
-# Create mock DataFrame class
-class MockDataFrame:
-    def __init__(self, data=None):
-        self.data = data or []
-        self.columns = []
-        self.empty = len(self.data) == 0
-        self.index = None
-        self._items = {}  # Store column data
+    # Replace pandas.DataFrame with our mock
+    mock_pandas.DataFrame = MockDataFrame
+    mock_pandas.concat = lambda x: MockDataFrame() if not x else x[0]
+    mock_pandas.merge = lambda *args, **kwargs: MockDataFrame()
+    mock_pandas.to_datetime = lambda x, **kwargs: x
+    
+    yield
+    
+    # Cleanup happens automatically with monkeypatch
 
-    def __len__(self):
-        return len(self.data)
-
-    def iloc(self, idx):
-        return self.data[idx] if idx < len(self.data) else None
-
-    def __getitem__(self, key):
-        return self._items.get(key, self)
-
-    def __setitem__(self, key, value):
-        self._items[key] = value
-
-    def resample(self, freq):
-        return self
-
-    def sum(self):
-        return self
-
-    def count(self):
-        return self
-
-    def mean(self):
-        return self
-
-    def last(self):
-        return self
-
-    def agg(self, *args, **kwargs):
-        return self
-
-    def ohlc(self):
-        return {"open": self, "high": self, "low": self, "close": self}
-
-    def fillna(self, *args, **kwargs):
-        return self
-
-    def sort_index(self):
-        return self
-
-    def set_index(self, *args, **kwargs):
-        return self
-
-    def to_parquet(self, *args, **kwargs):
-        pass
-
-
-# Replace pandas.DataFrame with our mock
-sys.modules["pandas"].DataFrame = MockDataFrame
-sys.modules["pandas"].concat = lambda x: MockDataFrame() if not x else x[0]
-sys.modules["pandas"].merge = lambda *args, **kwargs: MockDataFrame()
-sys.modules["pandas"].to_datetime = lambda x, **kwargs: x
 
 from src.data_processing.daily_preprocessor import DailyPreprocessor  # noqa: E402
 
