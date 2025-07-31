@@ -24,6 +24,7 @@ class MockDataFrame:
         self.columns = []
         self.empty = len(self.data) == 0
         self.index = None
+        self._items = {}  # Store column data
 
     def __len__(self):
         return len(self.data)
@@ -32,7 +33,10 @@ class MockDataFrame:
         return self.data[idx] if idx < len(self.data) else None
 
     def __getitem__(self, key):
-        return self
+        return self._items.get(key, self)
+
+    def __setitem__(self, key, value):
+        self._items[key] = value
 
     def resample(self, freq):
         return self
@@ -457,12 +461,15 @@ def test_list_blobs_for_date(preprocessor):
     test_date = datetime(2023, 11, 15)
     expected_prefix = "raw/2023/11/15/"
 
-    # Mock blob objects
-    mock_blobs = [
-        Mock(name="raw/2023/11/15/orderbook_000.jsonl"),
-        Mock(name="raw/2023/11/15/orderbook_001.jsonl"),
-        Mock(name="raw/2023/11/15/trades_000.jsonl"),
-    ]
+    # Mock blob objects with explicit name attributes
+    mock_blob1 = Mock()
+    mock_blob1.name = "raw/2023/11/15/orderbook_000.jsonl"
+    mock_blob2 = Mock()
+    mock_blob2.name = "raw/2023/11/15/orderbook_001.jsonl"
+    mock_blob3 = Mock()
+    mock_blob3.name = "raw/2023/11/15/trades_000.jsonl"
+    
+    mock_blobs = [mock_blob1, mock_blob2, mock_blob3]
 
     preprocessor.bucket.list_blobs.return_value = mock_blobs
 
@@ -473,7 +480,13 @@ def test_list_blobs_for_date(preprocessor):
     # Verify
     preprocessor.bucket.list_blobs.assert_called_once_with(prefix=expected_prefix)
     assert len(result) == 3
-    assert all(expected_prefix in name for name in result)
+    # Result should be list of names extracted from mock blobs
+    expected_names = [
+        "raw/2023/11/15/orderbook_000.jsonl",
+        "raw/2023/11/15/orderbook_001.jsonl",
+        "raw/2023/11/15/trades_000.jsonl",
+    ]
+    assert result == expected_names
 
 
 def test_download_blob(preprocessor, tmp_path):

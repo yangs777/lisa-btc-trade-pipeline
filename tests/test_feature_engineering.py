@@ -693,7 +693,7 @@ def test_empty_dataframe_handling(indicators_yaml):
 
 
 def test_config_loading_error_handling():
-    """Test that FeatureEngineer handles config loading errors gracefully."""
+    """Test that FeatureEngineer raises error when config is missing."""
     with patch("src.feature_engineering.engineer.Path") as mock_path:
         # Create a mock path chain
         mock_parent_parent_parent = MagicMock()
@@ -714,11 +714,9 @@ def test_config_loading_error_handling():
             # Simulate file error
             mock_open.side_effect = OSError("File not found")
 
-            # Should still initialize
-            engineer = FeatureEngineer()
-
-            # Should have registered indicators even if config failed
-            assert hasattr(engineer, "indicators")
+            # Should raise OSError when config file is missing
+            with pytest.raises(OSError, match="File not found"):
+                engineer = FeatureEngineer()
 
 
 def test_transform_does_not_modify_original(sample_ohlcv_df, indicators_yaml):

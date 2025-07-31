@@ -9,6 +9,13 @@ import pytest
 # Add src to path to allow direct module import
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+# Check if google.cloud.storage is available
+try:
+    import google.cloud.storage
+    HAS_GCS = True
+except ImportError:
+    HAS_GCS = False
+
 # Import directly from module file
 import importlib.util
 
@@ -121,6 +128,7 @@ class TestMockStorageClient:
         assert client.blob_exists(blob_name)
 
 
+@pytest.mark.skipif(not HAS_GCS, reason="google.cloud.storage not available")
 class TestGCSStorageClient:
     """Test GCSStorageClient implementation."""
 
@@ -283,6 +291,7 @@ class TestIntegration:
         assert callable(client.upload_blob)
         assert callable(client.blob_exists)
 
+    @pytest.mark.skipif(not HAS_GCS, reason="google.cloud.storage not available")
     def test_gcs_client_implements_protocol(self):
         """Test that GCSStorageClient implements StorageClient protocol."""
         mock_storage = MagicMock()
