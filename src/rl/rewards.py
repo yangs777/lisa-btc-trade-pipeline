@@ -1,7 +1,6 @@
 """Risk-Balanced Sharpe Reward (RBSR) implementation for τ-SAC trading."""
 
 import numpy as np
-from typing import Optional
 
 
 class RBSRReward:
@@ -48,7 +47,7 @@ class RBSRReward:
         self.equity_curve.clear()
         self.peak_equity = 0.0
 
-    def calculate_reward(
+    def calculate_reward(  # noqa: C901
         self,
         current_equity: float,
         position_pnl: float,
@@ -109,7 +108,7 @@ class RBSRReward:
             if long_vol > 0:
                 vol_ratio = recent_vol / long_vol
                 if vol_ratio > 1.5:  # Recent volatility 50% higher than average
-                    volatility_penalty = (vol_ratio - 1.5) * self.volatility_penalty
+                    volatility_penalty = float((vol_ratio - 1.5) * self.volatility_penalty)
 
         # Calculate holding penalty (encourage closing positions)
         holding_penalty = 0.0

@@ -5,10 +5,9 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 # Import real numpy to avoid conflicts
 import numpy as np
+import pytest
 
 # Mock pandas and scipy
 sys.modules["pandas"] = MagicMock()
@@ -485,11 +484,8 @@ def test_feature_engineer_get_indicator_info(indicators_yaml):
 
                 mock_ind1 = MockIndicator(window_size=20)
                 mock_ind2 = MockIndicator()  # No window_size
-                
-                engineer.indicators = {
-                    "IND1": mock_ind1,
-                    "IND2": mock_ind2
-                }
+
+                engineer.indicators = {"IND1": mock_ind1, "IND2": mock_ind2}
 
                 info = engineer.get_indicator_info()
 
@@ -505,9 +501,10 @@ def test_all_indicators_registered():
     """Test that all expected indicators are registered."""
     # Clear registry first
     from src.feature_engineering.registry import registry
+
     registry._indicators = {}
     registry._configs = {}
-    
+
     with patch("src.feature_engineering.engineer.Path") as mock_path:
         # Create a mock path chain
         mock_parent_parent_parent = MagicMock()
@@ -528,27 +525,46 @@ def test_all_indicators_registered():
             mock_open.return_value.__enter__.return_value.read.return_value = "dummy"
             with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
                 mock_yaml.return_value = {}
-                
-                engineer = FeatureEngineer()
-    
+
+                FeatureEngineer()
+
     # Check key indicators from each category
     expected_indicators = [
         # Trend
-        "SMA", "EMA", "WMA", "HMA", "TEMA", "DEMA", "KAMA",
+        "SMA",
+        "EMA",
+        "WMA",
+        "HMA",
+        "TEMA",
+        "DEMA",
+        "KAMA",
         # Momentum
-        "RSI", "MACD", "CCI", "StochasticK",
+        "RSI",
+        "MACD",
+        "CCI",
+        "StochasticK",
         # Volatility
-        "ATR", "BollingerUpper", "BollingerLower",
+        "ATR",
+        "BollingerUpper",
+        "BollingerLower",
         # Volume
-        "OBV", "AD", "CMF", "VWAP",
+        "OBV",
+        "AD",
+        "CMF",
+        "VWAP",
         # Trend strength
-        "ADX", "AroonUp", "AroonDown",
+        "ADX",
+        "AroonUp",
+        "AroonDown",
         # Pattern
-        "PSAR", "SuperTrend",
+        "PSAR",
+        "SuperTrend",
         # Statistical
-        "StdDev", "Variance", "Skew"
+        "StdDev",
+        "Variance",
+        "Skew",
     ]
-    
+
     registered = registry._indicators.keys()
     for indicator in expected_indicators:
         assert indicator in registered, f"{indicator} not registered"
@@ -578,19 +594,19 @@ def test_transform_preserves_original_columns(sample_ohlcv_df, indicators_yaml):
                 mock_yaml.return_value = {}
 
                 engineer = FeatureEngineer(str(indicators_yaml))
-                
+
                 # Mock indicator
                 mock_indicator = MagicMock()
                 mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
                 engineer.indicators = {"NEW_IND": mock_indicator}
-                
+
                 # Transform
                 result = engineer.transform(sample_ohlcv_df)
-    
+
     # Check original columns preserved
     for col in ["open", "high", "low", "close", "volume"]:
         assert col in result.columns
-    
+
     # Check new indicator added
     assert "NEW_IND" in result.columns
 
@@ -619,23 +635,20 @@ def test_selective_transform_with_missing_indicator(sample_ohlcv_df, indicators_
                 mock_yaml.return_value = {}
 
                 engineer = FeatureEngineer(str(indicators_yaml))
-                
+
                 # Only one indicator available
                 mock_indicator = MagicMock()
                 mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
                 engineer.indicators = {"AVAILABLE": mock_indicator}
-                
+
                 # Request both available and missing
                 with patch("src.feature_engineering.engineer.logger") as mock_logger:
-                    result = engineer.transform_selective(
-                        sample_ohlcv_df, 
-                        ["AVAILABLE", "MISSING"]
-                    )
-                
+                    result = engineer.transform_selective(sample_ohlcv_df, ["AVAILABLE", "MISSING"])
+
                 # Should log warning about missing
                 mock_logger.warning.assert_called()
                 assert "MISSING" in str(mock_logger.warning.call_args)
-    
+
     # Should still have available indicator
     assert "AVAILABLE" in result.columns
     assert "MISSING" not in result.columns
@@ -644,7 +657,7 @@ def test_selective_transform_with_missing_indicator(sample_ohlcv_df, indicators_
 def test_empty_dataframe_handling(indicators_yaml):
     """Test handling of empty DataFrame."""
     empty_df = MockDataFrame()
-    
+
     with patch("src.feature_engineering.engineer.Path") as mock_path:
         # Create a mock path chain
         mock_parent_parent_parent = MagicMock()
@@ -667,15 +680,15 @@ def test_empty_dataframe_handling(indicators_yaml):
                 mock_yaml.return_value = {}
 
                 engineer = FeatureEngineer(str(indicators_yaml))
-                
+
                 # Mock indicator
                 mock_indicator = MagicMock()
                 mock_indicator.transform.return_value = MockSeries()
                 engineer.indicators = {"TEST": mock_indicator}
-                
+
                 # Should handle empty DataFrame
                 result = engineer.transform(empty_df)
-                
+
                 assert result.empty
 
 
@@ -699,11 +712,11 @@ def test_config_loading_error_handling():
 
         with patch("builtins.open", create=True) as mock_open:
             # Simulate file error
-            mock_open.side_effect = IOError("File not found")
-            
+            mock_open.side_effect = OSError("File not found")
+
             # Should still initialize
             engineer = FeatureEngineer()
-            
+
             # Should have registered indicators even if config failed
             assert hasattr(engineer, "indicators")
 
@@ -732,21 +745,21 @@ def test_transform_does_not_modify_original(sample_ohlcv_df, indicators_yaml):
                 mock_yaml.return_value = {}
 
                 engineer = FeatureEngineer(str(indicators_yaml))
-                
+
                 # Track original columns
                 original_columns = list(sample_ohlcv_df.columns)
-                
+
                 # Mock indicator
                 mock_indicator = MagicMock()
                 mock_indicator.transform.return_value = MockSeries([1, 2, 3, 4, 5])
                 engineer.indicators = {"NEW": mock_indicator}
-                
+
                 # Transform
                 result = engineer.transform(sample_ohlcv_df)
-    
+
     # Original should be unchanged
     assert list(sample_ohlcv_df.columns) == original_columns
     assert "NEW" not in sample_ohlcv_df.columns
-    
+
     # Result should have new column
     assert "NEW" in result.columns

@@ -378,11 +378,11 @@ async def main() -> None:
 
     sys.path.append(str(Path(__file__).parent.parent.parent))
     from src.config import (
+        GCP_CREDENTIALS_PATH,
         GCP_PROJECT_ID,
         GCS_BUCKET,
-        GCP_CREDENTIALS_PATH,
         PROCESSED_DATA_DIR,
-    )  # noqa: I001
+    )
 
     # Create preprocessor
     preprocessor = DailyPreprocessor(

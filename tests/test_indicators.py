@@ -3,12 +3,10 @@
 # mypy: ignore-errors
 
 import sys
-from unittest.mock import MagicMock
-
-import pytest
 
 # Import real numpy to avoid conflicts
 import numpy as np
+import pytest
 
 # Setup numpy references
 mock_numpy = np
@@ -129,7 +127,7 @@ class MockDataFrame:
         self.data = data or {}
         self.columns = list(self.data.keys())
         # Get the length from the first column if available
-        first_col = list(self.data.values())[0] if self.data else []
+        first_col = next(iter(self.data.values())) if self.data else []
         self.index = list(range(len(first_col)))
 
     def __getitem__(self, key):
@@ -143,14 +141,14 @@ class MockDataFrame:
     def __len__(self):
         # Return length based on the first column
         if self.data:
-            first_col = list(self.data.values())[0]
+            first_col = next(iter(self.data.values()))
             return len(first_col)
         return 0
 
     def max(self, axis=1):
         # Mock max method for DataFrame
         if self.data:
-            first_col = list(self.data.values())[0]
+            first_col = next(iter(self.data.values()))
             return MockSeries([100] * len(first_col))
         return MockSeries()
 
@@ -160,16 +158,18 @@ class SeriesMock:
     def __new__(cls, *args, **kwargs):
         if args:
             return MockSeries(args[0])
-        elif 'index' in kwargs:
-            return MockSeries([0] * len(kwargs['index']), index=kwargs['index'])
+        elif "index" in kwargs:
+            return MockSeries([0] * len(kwargs["index"]), index=kwargs["index"])
         return MockSeries()
-    
+
     @classmethod
     def __instancecheck__(cls, instance):
         return isinstance(instance, MockSeries)
 
+
 sys.modules["pandas"].Series = SeriesMock
 sys.modules["pandas"].DataFrame = MockDataFrame
+
 
 # Mock concat that returns a proper DataFrame with data
 def mock_concat(dfs, axis=1):
@@ -177,10 +177,11 @@ def mock_concat(dfs, axis=1):
     result_data = {}
     if dfs:
         # Use the length from the first series
-        length = len(dfs[0]) if hasattr(dfs[0], '__len__') else 5
-        for i, df in enumerate(dfs):
+        length = len(dfs[0]) if hasattr(dfs[0], "__len__") else 5
+        for i, _df in enumerate(dfs):
             result_data[f"col_{i}"] = [100] * length
     return MockDataFrame(result_data)
+
 
 sys.modules["pandas"].concat = mock_concat
 

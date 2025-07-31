@@ -2,6 +2,7 @@
 Dummy E2E smoke test to ensure CI pipeline passes.
 This will be replaced with actual E2E tests as they are developed.
 """
+
 import pytest
 
 
