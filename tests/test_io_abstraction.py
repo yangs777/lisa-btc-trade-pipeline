@@ -11,8 +11,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Import directly from module file
 import importlib.util
 spec = importlib.util.spec_from_file_location("_io", "src/data_processing/_io.py")
-_io = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(_io)
+if spec and spec.loader:
+    _io = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(_io)
+else:
+    raise ImportError("Could not load _io module")
 
 StorageClient = _io.StorageClient
 GCSStorageClient = _io.GCSStorageClient

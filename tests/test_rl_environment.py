@@ -20,7 +20,7 @@ def create_sample_data(n_samples: int = 1000) -> pd.DataFrame:
 
     for _ in range(n_samples):
         change = np.random.normal(0, 0.002)  # 0.2% volatility
-        price *= 1 + change
+        price = price * (1 + change)
         prices.append(price)
 
     # Create OHLCV data
