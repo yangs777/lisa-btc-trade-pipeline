@@ -15,7 +15,7 @@ def create_sample_data(n_samples: int = 1000) -> pd.DataFrame:
 
     # Generate realistic price data
     np.random.seed(42)
-    price = 40000
+    price = 40000.0
     prices = []
 
     for _ in range(n_samples):
