@@ -54,7 +54,7 @@ jobs:
         bash scripts/fetch_gdrive_data.sh || echo "⚠️ Google Drive data fetch failed"
     
     - name: 📊 Cache test data
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: tests/_data
         key: test-data-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-${{ secrets.GDRIVE_SHA256 }}
@@ -111,7 +111,7 @@ jobs:
     
     - name: 📤 Upload coverage to Codecov
       if: always()
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: ./coverage-combined.xml,./coverage-e2e.xml,./coverage-heavy.xml,./coverage-integration.xml
         flags: e2e,heavy,integration
@@ -134,7 +134,7 @@ jobs:
     
     - name: 💾 Upload test artifacts
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: e2e-test-results
         path: |
