@@ -3,9 +3,9 @@ import sys
 from unittest.mock import MagicMock
 
 # Import numpy first to avoid conflicts
-import numpy as np
 # Ensure numpy.typing is available
 import numpy.typing  # noqa
+
 
 # Pre-mock problematic modules before any imports
 def setup_module_mocks() -> None:
@@ -17,7 +17,7 @@ def setup_module_mocks() -> None:
     websockets_mock.exceptions.WebSocketException = type('WebSocketException', (Exception,), {})
     sys.modules["websockets"] = websockets_mock
     sys.modules["websockets.exceptions"] = websockets_mock.exceptions
-    
+
     # Mock torch and its submodules
     torch_mock = MagicMock()
     torch_mock.nn = MagicMock()
@@ -39,7 +39,7 @@ def setup_module_mocks() -> None:
     sys.modules["torch.nn"] = torch_mock.nn
     sys.modules["torch.nn.functional"] = torch_mock.nn.functional
     sys.modules["torch.optim"] = torch_mock.optim
-    
+
     # Mock stable_baselines3
     sb3_mock = MagicMock()
     sb3_mock.SAC = MagicMock

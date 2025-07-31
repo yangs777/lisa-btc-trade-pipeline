@@ -1,9 +1,7 @@
 """Tests for reinforcement learning environment."""
 
-import pytest
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 
 from src.rl.environments import BTCTradingEnvironment
 from src.rl.rewards import RBSRReward

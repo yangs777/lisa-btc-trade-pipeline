@@ -1,7 +1,7 @@
 """Risk-Balanced Sharpe Reward (RBSR) implementation for τ-SAC trading."""
 
+
 import numpy as np
-from typing import Optional
 
 
 class RBSRReward:

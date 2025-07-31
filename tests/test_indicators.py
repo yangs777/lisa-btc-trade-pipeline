@@ -3,12 +3,10 @@
 # mypy: ignore-errors
 
 import sys
-from unittest.mock import MagicMock
-
-import pytest
 
 # Import real numpy to avoid conflicts
 import numpy as np
+import pytest
 
 # Setup numpy references
 mock_numpy = np
@@ -163,7 +161,7 @@ class SeriesMock:
         elif 'index' in kwargs:
             return MockSeries([0] * len(kwargs['index']), index=kwargs['index'])
         return MockSeries()
-    
+
     @classmethod
     def __instancecheck__(cls, instance):
         return isinstance(instance, MockSeries)
