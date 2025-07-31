@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 # Check if google.cloud.storage is available
 try:
-    import google.cloud.storage
+    import google.cloud.storage  # noqa: F401
+
     HAS_GCS = True
 except ImportError:
     HAS_GCS = False

@@ -468,7 +468,7 @@ def test_list_blobs_for_date(preprocessor):
     mock_blob2.name = "raw/2023/11/15/orderbook_001.jsonl"
     mock_blob3 = Mock()
     mock_blob3.name = "raw/2023/11/15/trades_000.jsonl"
-    
+
     mock_blobs = [mock_blob1, mock_blob2, mock_blob3]
 
     preprocessor.bucket.list_blobs.return_value = mock_blobs

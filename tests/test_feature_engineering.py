@@ -716,7 +716,7 @@ def test_config_loading_error_handling():
 
             # Should raise OSError when config file is missing
             with pytest.raises(OSError, match="File not found"):
-                engineer = FeatureEngineer()
+                FeatureEngineer()
 
 
 def test_transform_does_not_modify_original(sample_ohlcv_df, indicators_yaml):
