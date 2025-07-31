@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing  # noqa
 
 # Pre-mock problematic modules before any imports
-def setup_module_mocks():
+def setup_module_mocks() -> None:
     """Setup mocks for modules that cause import errors."""
     # Mock websockets and all its submodules
     websockets_mock = MagicMock()

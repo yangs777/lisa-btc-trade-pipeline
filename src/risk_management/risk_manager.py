@@ -323,7 +323,7 @@ class RiskManager:
             holding_hours=24,  # Assume 1 day hold
         )
         
-        return max_loss + costs["total_cost"]
+        return float(max_loss + costs["total_cost"])
 
     def _check_daily_reset(self) -> None:
         """Reset daily metrics if new day."""
