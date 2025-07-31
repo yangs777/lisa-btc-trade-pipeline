@@ -113,6 +113,9 @@ python_functions = ["test_*"]
 python_classes = ["Test*"]
 markers = [
     "asyncio: mark test as async",
+    "e2e: mark test as end-to-end test",
+    "integration: mark test as integration test",
+    "heavy: mark test as heavy/slow test",
 ]
 
 [tool.coverage.run]
