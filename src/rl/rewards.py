@@ -1,6 +1,5 @@
 """Risk-Balanced Sharpe Reward (RBSR) implementation for τ-SAC trading."""
 
-
 import numpy as np
 
 
@@ -48,7 +47,7 @@ class RBSRReward:
         self.equity_curve.clear()
         self.peak_equity = 0.0
 
-    def calculate_reward(
+    def calculate_reward(  # noqa: C901
         self,
         current_equity: float,
         position_pnl: float,

@@ -61,14 +61,14 @@ class TestBinanceAPIThrottler:
         """Test safety margin enforcement."""
         throttler = BinanceAPIThrottler(
             safety_margin=0.1,  # Only use 10% of limit
-            enable_queueing=False  # Disable queueing for this test
+            enable_queueing=False,  # Disable queueing for this test
         )
 
         # With 1200 limit and 0.1 margin, can only use 120 weight
         # ticker_24hr uses 40 weight each
 
         # Should allow 3 calls (120 weight)
-        for i in range(3):
+        for _i in range(3):
             can_proceed = await throttler.check_and_wait("ticker_24hr", 1)
             assert can_proceed
 
@@ -202,10 +202,7 @@ class TestBinanceAPIThrottler:
     @pytest.mark.asyncio
     async def test_burst_allowance(self):
         """Test burst allowance feature."""
-        throttler = BinanceAPIThrottler(
-            safety_margin=0.5,
-            burst_allowance=0.2  # Allow 20% burst
-        )
+        throttler = BinanceAPIThrottler(safety_margin=0.5, burst_allowance=0.2)  # Allow 20% burst
 
         # With 50% margin + 20% burst, effective limit is 70%
         # 1200 * 0.7 = 840 weight

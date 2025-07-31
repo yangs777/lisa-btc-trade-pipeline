@@ -67,10 +67,7 @@ class TestDrawdownGuard:
 
     def test_recovery_period(self):
         """Test recovery period after trigger."""
-        guard = DrawdownGuard(
-            max_drawdown=0.10,
-            recovery_days=7
-        )
+        guard = DrawdownGuard(max_drawdown=0.10, recovery_days=7)
 
         base_time = datetime.now()
 
@@ -91,10 +88,7 @@ class TestDrawdownGuard:
 
     def test_lookback_window(self):
         """Test lookback window for peak calculation."""
-        guard = DrawdownGuard(
-            max_drawdown=0.10,
-            lookback_days=30
-        )
+        guard = DrawdownGuard(max_drawdown=0.10, lookback_days=30)
 
         base_time = datetime.now()
 
@@ -103,7 +97,7 @@ class TestDrawdownGuard:
 
         # Add recent data
         for i in range(20):
-            guard.update(100000 + i * 1000, base_time - timedelta(days=20-i))
+            guard.update(100000 + i * 1000, base_time - timedelta(days=20 - i))
 
         # Old peak should be excluded
         assert guard.peak_equity < 150000
@@ -115,9 +109,15 @@ class TestDrawdownGuard:
 
         # Simulate volatile equity curve
         equities = [
-            100000, 110000, 105000, 115000, 100000,  # 13% drawdown
-            90000,   # 21.7% drawdown from 115k
-            95000, 100000, 105000
+            100000,
+            110000,
+            105000,
+            115000,
+            100000,  # 13% drawdown
+            90000,  # 21.7% drawdown from 115k
+            95000,
+            100000,
+            105000,
         ]
 
         for equity in equities:
@@ -146,10 +146,7 @@ class TestDrawdownGuard:
 
     def test_no_scaling_mode(self):
         """Test binary mode (no scaling)."""
-        guard = DrawdownGuard(
-            max_drawdown=0.10,
-            scale_positions=False
-        )
+        guard = DrawdownGuard(max_drawdown=0.10, scale_positions=False)
 
         # Before trigger
         guard.update(100000)

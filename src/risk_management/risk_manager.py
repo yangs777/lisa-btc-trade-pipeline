@@ -343,10 +343,9 @@ class RiskManager:
 
         # Cost estimates
         if self.open_positions:
-            avg_position = np.mean([
-                pos["size"] * pos["entry_price"]
-                for pos in self.open_positions.values()
-            ])
+            avg_position = np.mean(
+                [pos["size"] * pos["entry_price"] for pos in self.open_positions.values()]
+            )
         else:
             avg_position = 0
 

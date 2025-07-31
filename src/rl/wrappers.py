@@ -296,7 +296,7 @@ class ActionNoiseWrapper(gym.Wrapper):
         noisy_action = action + noise
 
         # Clip to action space bounds
-        if hasattr(self.action_space, 'low') and hasattr(self.action_space, 'high'):
+        if hasattr(self.action_space, "low") and hasattr(self.action_space, "high"):
             noisy_action = np.clip(noisy_action, self.action_space.low, self.action_space.high)
 
         return self.env.step(noisy_action)

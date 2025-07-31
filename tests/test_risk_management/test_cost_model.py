@@ -1,6 +1,5 @@
 """Tests for trading cost model."""
 
-
 from src.risk_management.models.cost_model import CostModel
 
 
@@ -134,11 +133,7 @@ class TestCostModel:
         # Funding: 48 hours = 6 periods
 
         # Total should be sum of components
-        total = (
-            result["total_commission"] +
-            result["total_slippage"] +
-            result["total_funding"]
-        )
+        total = result["total_commission"] + result["total_slippage"] + result["total_funding"]
         assert abs(result["total_cost"] - total) < 0.01
 
     def test_vip_discounts(self):

@@ -345,31 +345,27 @@ def test_empty_dataframe_handling(preprocessor):
 
 def test_init_with_credentials(preprocessor):
     """Test initialization with credentials path."""
-    with patch('os.environ') as mock_environ:
-        with patch('src.data_processing.daily_preprocessor.storage.Client'):
+    with patch("os.environ") as mock_environ:
+        with patch("src.data_processing.daily_preprocessor.storage.Client"):
             DailyPreprocessor(
                 bucket_name="test-bucket",
                 project_id="test-project",
-                credentials_path="/path/to/creds.json"
+                credentials_path="/path/to/creds.json",
             )
 
             # Should set environment variable
             mock_environ.__setitem__.assert_called_with(
-                "GOOGLE_APPLICATION_CREDENTIALS",
-                "/path/to/creds.json"
+                "GOOGLE_APPLICATION_CREDENTIALS", "/path/to/creds.json"
             )
 
 
 def test_init_error_handling():
     """Test initialization error handling."""
-    with patch('src.data_processing.daily_preprocessor.storage.Client') as mock_client:
+    with patch("src.data_processing.daily_preprocessor.storage.Client") as mock_client:
         mock_client.side_effect = Exception("GCS connection failed")
 
         with pytest.raises(Exception, match="GCS connection failed"):
-            DailyPreprocessor(
-                bucket_name="test-bucket",
-                project_id="test-project"
-            )
+            DailyPreprocessor(bucket_name="test-bucket", project_id="test-project")
 
 
 def test_parse_orderbook_with_invalid_data(preprocessor, tmp_path):
@@ -378,16 +374,16 @@ def test_parse_orderbook_with_invalid_data(preprocessor, tmp_path):
 
     data = [
         '{"timestamp": 1700000000000, "event_time": 1700000000000, "bids": [["30000", "1"]], "asks": [["30001", "1"]]}',
-        'invalid json line',  # Invalid
+        "invalid json line",  # Invalid
         '{"missing_fields": true}',  # Missing required fields
-        '{"timestamp": 1700000002000, "event_time": 1700000002000, "bids": [["30002", "2"]], "asks": [["30003", "2"]]}'
+        '{"timestamp": 1700000002000, "event_time": 1700000002000, "bids": [["30002", "2"]], "asks": [["30003", "2"]]}',
     ]
 
     with open(file_path, "w") as f:
         f.write("\n".join(data))
 
     # Should handle errors gracefully
-    result = preprocessor._parse_orderbook_data(file_path)
+    preprocessor._parse_orderbook_data(file_path)
     # Result depends on mock implementation
 
 
@@ -397,14 +393,14 @@ def test_parse_trade_with_type_errors(preprocessor, tmp_path):
 
     data = [
         '{"timestamp": 1700000000000, "event_time": 1700000000000, "trade_id": 123, "price": "not_a_number", "quantity": "0.1", "is_buyer_maker": true}',
-        '{"timestamp": 1700000001000, "event_time": 1700000001000, "trade_id": 124, "price": "30000", "quantity": "0.2", "is_buyer_maker": false}'
+        '{"timestamp": 1700000001000, "event_time": 1700000001000, "trade_id": 124, "price": "30000", "quantity": "0.2", "is_buyer_maker": false}',
     ]
 
     with open(file_path, "w") as f:
         f.write("\n".join(data))
 
     # Should handle type errors
-    result = preprocessor._parse_trade_data(file_path)
+    preprocessor._parse_trade_data(file_path)
     # Result depends on mock implementation
 
 
@@ -413,11 +409,13 @@ def test_aggregate_trade_features_edge_cases(preprocessor):
     # Test with single trade
     single_trade = MockDataFrame()
     single_trade.empty = False
-    single_trade.data = [{"price": 30000, "quantity": 0.1, "trade_id": "1", "is_buyer_maker": False}]
+    single_trade.data = [
+        {"price": 30000, "quantity": 0.1, "trade_id": "1", "is_buyer_maker": False}
+    ]
 
     with patch.object(preprocessor, "_aggregate_trade_features") as mock_agg:
         mock_agg.return_value = MockDataFrame()
-        result = preprocessor._aggregate_trade_features(single_trade, freq="1min")
+        preprocessor._aggregate_trade_features(single_trade, freq="1min")
         mock_agg.assert_called_once_with(single_trade, freq="1min")
 
 
@@ -561,6 +559,7 @@ async def test_process_date_error_handling(preprocessor, tmp_path):
 @pytest.mark.asyncio
 async def test_process_date_range(preprocessor):
     """Test processing multiple dates."""
+
     # Mock process_date to succeed for some dates
     async def mock_process_date(date):
         if date.day % 2 == 0:  # Even days succeed
@@ -602,7 +601,7 @@ def test_parse_orderbook_calculations(preprocessor, tmp_path):
             ["30004", "3.5"],
             ["30005", "4.5"],
             ["30006", "5.5"],
-        ]
+        ],
     }
 
     with open(file_path, "w") as f:
@@ -651,7 +650,7 @@ def test_fillna_method_warning(preprocessor):
 
     # The code uses fillna(method='ffill') which is deprecated
     # This test documents the current behavior
-    result = mock_df.fillna(method='ffill')
+    mock_df.fillna(method="ffill")
 
     assert len(fillna_calls) == 1
-    assert fillna_calls[0].get('method') == 'ffill'
+    assert fillna_calls[0].get("method") == "ffill"

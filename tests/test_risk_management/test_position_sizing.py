@@ -15,8 +15,7 @@ class TestKellyPositionSizer:
     def test_kelly_basic_calculation(self):
         """Test basic Kelly calculation."""
         kelly = KellyPositionSizer(
-            kelly_fraction=0.25,
-            min_edge=0.005  # Lower threshold to allow this test case
+            kelly_fraction=0.25, min_edge=0.005  # Lower threshold to allow this test case
         )
 
         # Favorable edge: 60% win rate, 2:1 reward/risk
@@ -84,8 +83,7 @@ class TestKellyPositionSizer:
     def test_kelly_max_position_limit(self):
         """Test maximum position size constraint."""
         kelly = KellyPositionSizer(
-            max_position_size=0.5,
-            min_edge=0.01  # Adjust for this test's edge
+            max_position_size=0.5, min_edge=0.01  # Adjust for this test's edge
         )
 
         # Very favorable edge that would suggest large position
@@ -109,10 +107,7 @@ class TestFixedFractionalPositionSizer:
 
     def test_fixed_fractional_basic(self):
         """Test basic fixed fractional calculation."""
-        ff = FixedFractionalPositionSizer(
-            risk_per_trade=0.02,
-            stop_loss_pct=0.05
-        )
+        ff = FixedFractionalPositionSizer(risk_per_trade=0.02, stop_loss_pct=0.05)
 
         position_size = ff.calculate_position_size(
             portfolio_value=100000,
@@ -142,8 +137,7 @@ class TestFixedFractionalPositionSizer:
     def test_fixed_fractional_confidence_scaling(self):
         """Test confidence scaling."""
         ff = FixedFractionalPositionSizer(
-            risk_per_trade=0.01,  # Lower risk to avoid clipping
-            stop_loss_pct=0.02
+            risk_per_trade=0.01, stop_loss_pct=0.02  # Lower risk to avoid clipping
         )
 
         size_high = ff.calculate_position_size(
@@ -166,10 +160,7 @@ class TestVolatilityParityPositionSizer:
 
     def test_volatility_parity_basic(self):
         """Test basic volatility parity calculation."""
-        vp = VolatilityParityPositionSizer(
-            target_volatility=0.15,
-            lookback_days=30
-        )
+        vp = VolatilityParityPositionSizer(target_volatility=0.15, lookback_days=30)
 
         # Create returns with 20% annualized vol
         daily_vol = 0.20 / np.sqrt(365)
@@ -185,7 +176,7 @@ class TestVolatilityParityPositionSizer:
         # With 20% realized vol and 15% target, scale = 0.75
         # Position should be around 75% of portfolio
         expected_fraction = 0.75
-        expected_btc = (100000 * expected_fraction) / 50000
+        (100000 * expected_fraction) / 50000
 
         # Allow for randomness in returns
         assert 0.5 < position_size < 2.5

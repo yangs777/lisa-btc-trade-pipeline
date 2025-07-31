@@ -155,10 +155,7 @@ class TemperatureCallback(BaseCallback):
 
                 # Log
                 if self.verbose > 0:
-                    print(
-                        f"Episode reward: {episode_reward:.2f}, "
-                        f"Temperature: {self.current_temp:.3f}"
-                    )
+                    pass
 
         return True
 

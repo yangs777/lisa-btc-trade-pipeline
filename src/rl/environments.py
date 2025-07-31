@@ -1,6 +1,6 @@
 """Trading environment implementation for τ-SAC reinforcement learning."""
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium as gym
 import numpy as np
@@ -20,7 +20,7 @@ class BTCTradingEnvironment(gym.Env):
     - Margin requirements
     """
 
-    metadata = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, list[str]]] = {"render_modes": ["human"]}
 
     def __init__(
         self,
@@ -115,7 +115,7 @@ class BTCTradingEnvironment(gym.Env):
 
         return obs, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict]:  # noqa: C901
         """Execute one trading step."""
         if self.done:
             raise ValueError("Episode is done. Call reset() to start a new episode.")

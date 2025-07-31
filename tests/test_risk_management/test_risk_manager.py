@@ -277,10 +277,7 @@ class TestRiskManager:
 
     def test_custom_position_sizer(self):
         """Test using custom position sizer."""
-        sizer = FixedFractionalPositionSizer(
-            risk_per_trade=0.01,
-            stop_loss_pct=0.02
-        )
+        sizer = FixedFractionalPositionSizer(risk_per_trade=0.01, stop_loss_pct=0.02)
 
         rm = RiskManager(position_sizer=sizer)
 

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 # Add src to path to allow direct module import
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import directly from module file
 import importlib.util
@@ -30,10 +30,10 @@ class TestStorageClientProtocol:
     def test_protocol_methods(self):
         """Test that protocol defines required methods."""
         # Protocol should define these methods
-        assert hasattr(StorageClient, 'list_blobs')
-        assert hasattr(StorageClient, 'download_blob')
-        assert hasattr(StorageClient, 'upload_blob')
-        assert hasattr(StorageClient, 'blob_exists')
+        assert hasattr(StorageClient, "list_blobs")
+        assert hasattr(StorageClient, "download_blob")
+        assert hasattr(StorageClient, "upload_blob")
+        assert hasattr(StorageClient, "blob_exists")
 
 
 class TestMockStorageClient:
@@ -132,18 +132,15 @@ class TestGCSStorageClient:
         mock_storage.Client.return_value = mock_client
         mock_client.bucket.return_value = mock_bucket
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
-            client = GCSStorageClient(
-                bucket_name="test-bucket",
-                project_id="test-project"
-            )
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
+            client = GCSStorageClient(bucket_name="test-bucket", project_id="test-project")
 
         assert client.client == mock_client
         assert client.bucket == mock_bucket
         mock_storage.Client.assert_called_once_with(project="test-project")
         mock_client.bucket.assert_called_once_with("test-bucket")
 
-    @patch('os.environ', {})
+    @patch("os.environ", {})
     def test_init_with_credentials(self):
         """Test initialization with credentials path."""
         mock_storage = MagicMock()
@@ -152,11 +149,11 @@ class TestGCSStorageClient:
         mock_storage.Client.return_value = mock_client
         mock_client.bucket.return_value = mock_bucket
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient(
                 bucket_name="test-bucket",
                 project_id="test-project",
-                credentials_path="/path/to/creds.json"
+                credentials_path="/path/to/creds.json",
             )
 
         # Should set environment variable
@@ -182,7 +179,7 @@ class TestGCSStorageClient:
 
         mock_bucket.list_blobs.return_value = [mock_blob1, mock_blob2]
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
             result = client.list_blobs("data/")
 
@@ -205,7 +202,7 @@ class TestGCSStorageClient:
         content = b"test content"
         mock_blob.download_as_bytes.return_value = content
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
             result = client.download_blob("test/data.json")
 
@@ -224,7 +221,7 @@ class TestGCSStorageClient:
         mock_client.bucket.return_value = mock_bucket
         mock_bucket.blob.return_value = mock_blob
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
             content = b"test content"
             client.upload_blob("test/data.json", content)
@@ -245,7 +242,7 @@ class TestGCSStorageClient:
 
         mock_blob.exists.return_value = True
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
             result = client.blob_exists("test/data.json")
 
@@ -266,7 +263,7 @@ class TestGCSStorageClient:
 
         mock_blob.exists.return_value = False
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
             result = client.blob_exists("test/missing.json")
 
@@ -292,7 +289,7 @@ class TestIntegration:
         mock_storage.Client.return_value = Mock()
         mock_storage.Client.return_value.bucket.return_value = Mock()
 
-        with patch.dict('sys.modules', {'google.cloud.storage': mock_storage}):
+        with patch.dict("sys.modules", {"google.cloud.storage": mock_storage}):
             client = GCSStorageClient("test-bucket", "test-project")
 
         # Should have all protocol methods
@@ -307,13 +304,13 @@ class TestIntegration:
         # and implementations follow it
 
         # Protocol should define these methods
-        assert hasattr(StorageClient, 'list_blobs')
-        assert hasattr(StorageClient, 'download_blob')
-        assert hasattr(StorageClient, 'upload_blob')
-        assert hasattr(StorageClient, 'blob_exists')
+        assert hasattr(StorageClient, "list_blobs")
+        assert hasattr(StorageClient, "download_blob")
+        assert hasattr(StorageClient, "upload_blob")
+        assert hasattr(StorageClient, "blob_exists")
 
         # Check that both implementations have the same methods
         mock_client = MockStorageClient()
-        for method_name in ['list_blobs', 'download_blob', 'upload_blob', 'blob_exists']:
+        for method_name in ["list_blobs", "download_blob", "upload_blob", "blob_exists"]:
             assert hasattr(mock_client, method_name)
             assert callable(getattr(mock_client, method_name))

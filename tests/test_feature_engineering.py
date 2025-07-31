@@ -485,10 +485,7 @@ def test_feature_engineer_get_indicator_info(indicators_yaml):
                 mock_ind1 = MockIndicator(window_size=20)
                 mock_ind2 = MockIndicator()  # No window_size
 
-                engineer.indicators = {
-                    "IND1": mock_ind1,
-                    "IND2": mock_ind2
-                }
+                engineer.indicators = {"IND1": mock_ind1, "IND2": mock_ind2}
 
                 info = engineer.get_indicator_info()
 
@@ -504,6 +501,7 @@ def test_all_indicators_registered():
     """Test that all expected indicators are registered."""
     # Clear registry first
     from src.feature_engineering.registry import registry
+
     registry._indicators = {}
     registry._configs = {}
 
@@ -528,24 +526,43 @@ def test_all_indicators_registered():
             with patch("src.feature_engineering.registry.yaml.safe_load") as mock_yaml:
                 mock_yaml.return_value = {}
 
-                engineer = FeatureEngineer()
+                FeatureEngineer()
 
     # Check key indicators from each category
     expected_indicators = [
         # Trend
-        "SMA", "EMA", "WMA", "HMA", "TEMA", "DEMA", "KAMA",
+        "SMA",
+        "EMA",
+        "WMA",
+        "HMA",
+        "TEMA",
+        "DEMA",
+        "KAMA",
         # Momentum
-        "RSI", "MACD", "CCI", "StochasticK",
+        "RSI",
+        "MACD",
+        "CCI",
+        "StochasticK",
         # Volatility
-        "ATR", "BollingerUpper", "BollingerLower",
+        "ATR",
+        "BollingerUpper",
+        "BollingerLower",
         # Volume
-        "OBV", "AD", "CMF", "VWAP",
+        "OBV",
+        "AD",
+        "CMF",
+        "VWAP",
         # Trend strength
-        "ADX", "AroonUp", "AroonDown",
+        "ADX",
+        "AroonUp",
+        "AroonDown",
         # Pattern
-        "PSAR", "SuperTrend",
+        "PSAR",
+        "SuperTrend",
         # Statistical
-        "StdDev", "Variance", "Skew"
+        "StdDev",
+        "Variance",
+        "Skew",
     ]
 
     registered = registry._indicators.keys()
@@ -626,10 +643,7 @@ def test_selective_transform_with_missing_indicator(sample_ohlcv_df, indicators_
 
                 # Request both available and missing
                 with patch("src.feature_engineering.engineer.logger") as mock_logger:
-                    result = engineer.transform_selective(
-                        sample_ohlcv_df,
-                        ["AVAILABLE", "MISSING"]
-                    )
+                    result = engineer.transform_selective(sample_ohlcv_df, ["AVAILABLE", "MISSING"])
 
                 # Should log warning about missing
                 mock_logger.warning.assert_called()

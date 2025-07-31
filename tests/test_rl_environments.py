@@ -17,7 +17,7 @@ class TestBTCTradingEnvironment:
     def sample_df(self):
         """Create sample OHLCV data with indicators."""
         n = 200
-        dates = pd.date_range('2024-01-01', periods=n, freq='h')
+        pd.date_range("2024-01-01", periods=n, freq="h")
 
         # Generate price data
         np.random.seed(42)
@@ -25,17 +25,19 @@ class TestBTCTradingEnvironment:
         price_noise = np.random.randn(n).cumsum() * 100
         prices = price_base + price_noise
 
-        df = pd.DataFrame({
-            'open': prices + np.random.uniform(-50, 50, n),
-            'high': prices + np.random.uniform(0, 100, n),
-            'low': prices - np.random.uniform(0, 100, n),
-            'close': prices,
-            'volume': np.random.uniform(100, 200, n),
-            # Add some indicators
-            'sma_20': pd.Series(prices).rolling(20).mean().fillna(prices[0]),
-            'rsi': np.random.uniform(30, 70, n),
-            'macd': np.random.uniform(-50, 50, n),
-        })
+        df = pd.DataFrame(
+            {
+                "open": prices + np.random.uniform(-50, 50, n),
+                "high": prices + np.random.uniform(0, 100, n),
+                "low": prices - np.random.uniform(0, 100, n),
+                "close": prices,
+                "volume": np.random.uniform(100, 200, n),
+                # Add some indicators
+                "sma_20": pd.Series(prices).rolling(20).mean().fillna(prices[0]),
+                "rsi": np.random.uniform(30, 70, n),
+                "macd": np.random.uniform(-50, 50, n),
+            }
+        )
 
         return df
 
@@ -43,10 +45,7 @@ class TestBTCTradingEnvironment:
     def env(self, sample_df):
         """Create environment instance."""
         return BTCTradingEnvironment(
-            df=sample_df,
-            initial_balance=10000.0,
-            max_position_size=0.95,
-            lookback_window=10
+            df=sample_df, initial_balance=10000.0, max_position_size=0.95, lookback_window=10
         )
 
     def test_init(self, sample_df):
@@ -59,7 +58,7 @@ class TestBTCTradingEnvironment:
             taker_fee=0.002,
             slippage_factor=0.0005,
             leverage=2.0,
-            lookback_window=50
+            lookback_window=50,
         )
 
         assert env.initial_balance == 50000.0
@@ -75,11 +74,13 @@ class TestBTCTradingEnvironment:
 
     def test_init_missing_columns(self):
         """Test initialization with missing required columns."""
-        df = pd.DataFrame({
-            'open': [100, 101, 102],
-            'close': [100, 101, 102],
-            # Missing high, low, volume
-        })
+        df = pd.DataFrame(
+            {
+                "open": [100, 101, 102],
+                "close": [100, 101, 102],
+                # Missing high, low, volume
+            }
+        )
 
         with pytest.raises(ValueError, match="DataFrame must contain columns"):
             BTCTradingEnvironment(df=df)
@@ -117,10 +118,10 @@ class TestBTCTradingEnvironment:
         assert env.equity_curve[0] == env.initial_balance
 
         # Check info
-        assert info['step'] == env.current_step
-        assert info['balance'] == env.initial_balance
-        assert info['position'] == 0.0
-        assert info['equity'] == env.initial_balance
+        assert info["step"] == env.current_step
+        assert info["balance"] == env.initial_balance
+        assert info["position"] == 0.0
+        assert info["equity"] == env.initial_balance
 
     def test_reset_with_seed(self, env):
         """Test deterministic reset with seed."""
@@ -141,7 +142,7 @@ class TestBTCTradingEnvironment:
         assert env.position == 0.0
         assert env.balance == env.initial_balance
         assert len(env.trades) == 0
-        assert info['n_trades'] == 0
+        assert info["n_trades"] == 0
 
     def test_step_long_position(self, env):
         """Test opening a long position."""
@@ -160,9 +161,9 @@ class TestBTCTradingEnvironment:
 
         # Check trade record
         trade = env.trades[0]
-        assert trade['action'] == 0.5
-        assert trade['position_change'] > 0
-        assert trade['cost'] > 0  # Transaction cost
+        assert trade["action"] == 0.5
+        assert trade["position_change"] > 0
+        assert trade["cost"] > 0  # Transaction cost
 
     def test_step_short_position(self, env):
         """Test opening a short position."""
@@ -175,8 +176,8 @@ class TestBTCTradingEnvironment:
         assert len(env.trades) == 1
 
         trade = env.trades[0]
-        assert trade['action'] == -0.5
-        assert trade['position_change'] < 0
+        assert trade["action"] == -0.5
+        assert trade["position_change"] < 0
 
     def test_step_position_change(self, env):
         """Test changing positions."""
@@ -184,7 +185,6 @@ class TestBTCTradingEnvironment:
 
         # Open long
         env.step(np.array([0.5]))
-        long_position = env.position
 
         # Switch to short
         obs, reward, terminated, truncated, info = env.step(np.array([-0.5]))
@@ -202,14 +202,14 @@ class TestBTCTradingEnvironment:
         env.step(np.array([1.0]))  # Max long
 
         trade = env.trades[0]
-        exec_price = trade['price']
+        exec_price = trade["price"]
 
         # Execution price should be higher than base (buying pressure)
         assert exec_price > base_price
 
         # Calculate expected slippage
         max_btc = (env.initial_balance * env.max_position_size) / base_price
-        expected_slippage = env.slippage_factor * trade['position_change'] / max_btc
+        expected_slippage = env.slippage_factor * trade["position_change"] / max_btc
         expected_price = base_price * (1 + expected_slippage)
 
         assert abs(exec_price - expected_price) < 0.01
@@ -222,9 +222,9 @@ class TestBTCTradingEnvironment:
         env.step(np.array([0.5]))
 
         trade = env.trades[0]
-        expected_cost = abs(trade['position_change'] * trade['price'] * env.taker_fee)
+        expected_cost = abs(trade["position_change"] * trade["price"] * env.taker_fee)
 
-        assert abs(trade['cost'] - expected_cost) < 0.001
+        assert abs(trade["cost"] - expected_cost) < 0.001
 
     def test_reward_calculation(self, env):
         """Test reward calculation through mock."""
@@ -232,23 +232,21 @@ class TestBTCTradingEnvironment:
 
         # Mock reward calculator
         mock_reward = 0.5
-        mock_metrics = {'sharpe': 1.2, 'drawdown': 0.05}
-        env.reward_calculator.calculate_reward = Mock(
-            return_value=(mock_reward, mock_metrics)
-        )
+        mock_metrics = {"sharpe": 1.2, "drawdown": 0.05}
+        env.reward_calculator.calculate_reward = Mock(return_value=(mock_reward, mock_metrics))
 
         obs, reward, terminated, truncated, info = env.step(np.array([0.5]))
 
         assert reward == mock_reward
-        assert info['reward_metrics'] == mock_metrics
+        assert info["reward_metrics"] == mock_metrics
 
         # Verify reward calculator was called with correct args
         env.reward_calculator.calculate_reward.assert_called_once()
         call_args = env.reward_calculator.calculate_reward.call_args[1]
-        assert 'current_equity' in call_args
-        assert 'position_pnl' in call_args
-        assert 'trade_cost' in call_args
-        assert 'holding_period' in call_args
+        assert "current_equity" in call_args
+        assert "position_pnl" in call_args
+        assert "trade_cost" in call_args
+        assert "holding_period" in call_args
 
     def test_holding_period_tracking(self, env):
         """Test holding period tracking."""
@@ -272,7 +270,6 @@ class TestBTCTradingEnvironment:
     def test_equity_calculation(self, env):
         """Test equity calculation with position."""
         env.reset()
-        initial_balance = env.initial_balance
 
         # Open long position
         env.step(np.array([0.5]))
@@ -283,7 +280,7 @@ class TestBTCTradingEnvironment:
         expected_equity = env.balance + position_value
 
         info = env._get_info()
-        assert abs(info['equity'] - expected_equity) < 0.01
+        assert abs(info["equity"] - expected_equity) < 0.01
 
     def test_pnl_calculation(self, env):
         """Test P&L calculation."""
@@ -354,10 +351,7 @@ class TestBTCTradingEnvironment:
 
     def test_render_human_mode(self, sample_df):
         """Test human-readable rendering."""
-        env = BTCTradingEnvironment(
-            df=sample_df,
-            render_mode="human"
-        )
+        env = BTCTradingEnvironment(df=sample_df, render_mode="human")
         env.reset()
 
         # Test render output
@@ -386,19 +380,18 @@ class TestBTCTradingEnvironment:
 
         summary = env.get_episode_summary()
 
-        assert 'n_trades' in summary
-        assert summary['n_trades'] == 3
-        assert 'avg_trade_value' in summary
-        assert 'total_fees' in summary
-        assert 'final_equity' in summary
-        assert 'total_return_pct' in summary
+        assert "n_trades" in summary
+        assert summary["n_trades"] == 3
+        assert "avg_trade_value" in summary
+        assert "total_fees" in summary
+        assert "final_equity" in summary
+        assert "total_return_pct" in summary
 
         # Check return calculation
         expected_return = (
-            (summary['final_equity'] - env.initial_balance) /
-            env.initial_balance * 100
+            (summary["final_equity"] - env.initial_balance) / env.initial_balance * 100
         )
-        assert abs(summary['total_return_pct'] - expected_return) < 0.01
+        assert abs(summary["total_return_pct"] - expected_return) < 0.01
 
     def test_minimum_trade_size(self, env):
         """Test minimum trade size enforcement."""

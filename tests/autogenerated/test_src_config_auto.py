@@ -41,7 +41,7 @@ class TestSrc_ConfigSmoke:
         except ImportError:
             pytest.skip("Module has heavy dependencies")
 
-    @pytest.mark.parametrize("func_name", ['Path'])
+    @pytest.mark.parametrize("func_name", ["Path"])
     def test_function_exists(self, func_name):
         """Test that function exists and is callable."""
         try:

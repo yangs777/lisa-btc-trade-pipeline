@@ -1,4 +1,5 @@
 """Global test configuration."""
+
 import sys
 from unittest.mock import MagicMock
 
@@ -13,21 +14,21 @@ def setup_module_mocks() -> None:
     # Mock websockets and all its submodules
     websockets_mock = MagicMock()
     websockets_mock.exceptions = MagicMock()
-    websockets_mock.exceptions.ConnectionClosed = type('ConnectionClosed', (Exception,), {})
-    websockets_mock.exceptions.WebSocketException = type('WebSocketException', (Exception,), {})
+    websockets_mock.exceptions.ConnectionClosed = type("ConnectionClosed", (Exception,), {})
+    websockets_mock.exceptions.WebSocketException = type("WebSocketException", (Exception,), {})
     sys.modules["websockets"] = websockets_mock
     sys.modules["websockets.exceptions"] = websockets_mock.exceptions
 
     # Mock torch and its submodules
     torch_mock = MagicMock()
     torch_mock.nn = MagicMock()
-    torch_mock.nn.Module = type('Module', (), {})
+    torch_mock.nn.Module = type("Module", (), {})
     torch_mock.nn.Linear = MagicMock
     torch_mock.nn.ReLU = MagicMock
     torch_mock.nn.Sequential = MagicMock
     torch_mock.nn.functional = MagicMock()
     torch_mock.optim = MagicMock()
-    torch_mock.device = MagicMock(return_value='cpu')
+    torch_mock.device = MagicMock(return_value="cpu")
     torch_mock.cuda = MagicMock()
     torch_mock.cuda.is_available = MagicMock(return_value=False)
     torch_mock.Tensor = MagicMock
@@ -47,17 +48,18 @@ def setup_module_mocks() -> None:
     sb3_mock.DQN = MagicMock
     sb3_mock.common = MagicMock()
     sb3_mock.common.torch_layers = MagicMock()
-    sb3_mock.common.torch_layers.BaseFeaturesExtractor = type('BaseFeaturesExtractor', (), {})
+    sb3_mock.common.torch_layers.BaseFeaturesExtractor = type("BaseFeaturesExtractor", (), {})
     sb3_mock.common.vec_env = MagicMock()
     sb3_mock.common.vec_env.VecNormalize = MagicMock
     sb3_mock.common.vec_env.DummyVecEnv = MagicMock
     sb3_mock.common.callbacks = MagicMock()
-    sb3_mock.common.callbacks.BaseCallback = type('BaseCallback', (), {})
+    sb3_mock.common.callbacks.BaseCallback = type("BaseCallback", (), {})
     sys.modules["stable_baselines3"] = sb3_mock
     sys.modules["stable_baselines3.common"] = sb3_mock.common
     sys.modules["stable_baselines3.common.torch_layers"] = sb3_mock.common.torch_layers
     sys.modules["stable_baselines3.common.vec_env"] = sb3_mock.common.vec_env
     sys.modules["stable_baselines3.common.callbacks"] = sb3_mock.common.callbacks
+
 
 # Call this immediately when conftest is loaded
 setup_module_mocks()
