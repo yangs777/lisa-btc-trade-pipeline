@@ -65,7 +65,7 @@ jobs:
         fi
     
     - name: 📊 Cache test data
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: tests/_data
         key: gdrive-${{ hashFiles('scripts/fetch_gdrive_data.sh') }}-${{ secrets.GDRIVE_SHA256 }}
