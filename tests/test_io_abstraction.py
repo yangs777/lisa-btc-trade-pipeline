@@ -265,13 +265,11 @@ class TestIntegration:
     @pytest.mark.skipif(not HAS_GCS, reason="google.cloud.storage not available")
     def test_gcs_client_implements_protocol(self):
         """Test that GCSStorageClient implements StorageClient protocol."""
-        client = GCSStorageClient("test-bucket", "test-project")
-
-        # Should have all protocol methods
-        assert callable(client.list_blobs)
-        assert callable(client.download_blob)
-        assert callable(client.upload_blob)
-        assert callable(client.blob_exists)
+        # Check that GCSStorageClient has all protocol methods without instantiating
+        assert hasattr(GCSStorageClient, "list_blobs")
+        assert hasattr(GCSStorageClient, "download_blob")
+        assert hasattr(GCSStorageClient, "upload_blob")
+        assert hasattr(GCSStorageClient, "blob_exists")
 
     def test_storage_client_type_hints(self):
         """Test that implementations match protocol type hints."""
