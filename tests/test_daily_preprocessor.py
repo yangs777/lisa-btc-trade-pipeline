@@ -103,14 +103,12 @@ def mock_dependencies(monkeypatch):
     mock_google = MagicMock()
     mock_google_cloud = MagicMock()
     mock_google_cloud_storage = MagicMock()
-    mock_numpy = MagicMock()
     mock_pandas = MagicMock()
 
-    # Patch sys.modules
+    # Patch sys.modules (but not numpy - it's needed by other tests)
     monkeypatch.setitem(sys.modules, "google", mock_google)
     monkeypatch.setitem(sys.modules, "google.cloud", mock_google_cloud)
     monkeypatch.setitem(sys.modules, "google.cloud.storage", mock_google_cloud_storage)
-    monkeypatch.setitem(sys.modules, "numpy", mock_numpy)
     monkeypatch.setitem(sys.modules, "pandas", mock_pandas)
 
     # Replace pandas.DataFrame with our mock
