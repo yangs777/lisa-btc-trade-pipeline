@@ -10,6 +10,120 @@ import numpy as np
 import pytest
 
 
+# Define mock classes at module level
+class MockSeries:
+    def __init__(self, data=None, index=None, dtype=None):
+        self.data = data or []
+        self.index = index or list(range(len(self.data)))
+        self.values = self.data
+        self.iloc = self
+        self.empty = len(self.data) == 0
+
+    def __getitem__(self, idx):
+        if isinstance(idx, int):
+            return self.data[idx] if idx < len(self.data) else None
+        return self
+
+    def __setitem__(self, idx, value):
+        if isinstance(idx, int) and idx < len(self.data):
+            self.data[idx] = value
+
+    def rolling(self, window):
+        return self
+
+    def mean(self):
+        return self
+
+    def std(self):
+        return self
+
+    def sum(self):
+        return self
+
+    def max(self):
+        return self
+
+    def min(self):
+        return self
+
+    def ewm(self, span=None, adjust=False):
+        return self
+
+    def diff(self):
+        return self
+
+    def shift(self, periods=1):
+        return self
+
+    def pct_change(self):
+        return self
+
+    def cumsum(self):
+        return self
+
+    def fillna(self, value=0, method=None):
+        return self
+
+    def where(self, cond, other):
+        return self
+
+    def replace(self, to_replace, value):
+        return self
+
+    def apply(self, func, raw=False):
+        return self
+
+    def __len__(self):
+        return len(self.data)
+
+    def combine(self, other, func):
+        return self
+
+    def abs(self):
+        return self
+
+    def var(self):
+        return self
+
+    def skew(self):
+        return self
+
+    def kurt(self):
+        return self
+
+    def corr(self, other):
+        return self
+
+    def cov(self, other):
+        return self
+
+
+class MockDataFrame:
+    def __init__(self, data=None):
+        self.data = data or {}
+        self.columns = list(self.data.keys()) if data else []
+        self.index = None
+        self.empty = len(self.columns) == 0
+
+    def __getitem__(self, key):
+        if key in self.data:
+            return MockSeries(self.data[key])
+        return MockSeries()
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+        if key not in self.columns:
+            self.columns.append(key)
+
+    def copy(self):
+        return MockDataFrame(self.data.copy())
+
+    def __len__(self):
+        if self.columns:
+            return len(self.data[self.columns[0]])
+        return 0
+
+
 @pytest.fixture(autouse=True)
 def mock_pandas_scipy(monkeypatch):
     """Mock pandas and scipy for each test."""
@@ -25,120 +139,6 @@ def mock_pandas_scipy(monkeypatch):
     
     # Use real numpy
     mock_numpy = np
-    
-    # Create mock pandas classes
-    class MockSeries:
-        def __init__(self, data=None, index=None, dtype=None):
-            self.data = data or []
-            self.index = index or list(range(len(self.data)))
-            self.values = self.data
-            self.iloc = self
-            self.empty = len(self.data) == 0
-
-        def __getitem__(self, idx):
-            if isinstance(idx, int):
-                return self.data[idx] if idx < len(self.data) else None
-            return self
-
-        def __setitem__(self, idx, value):
-            if isinstance(idx, int) and idx < len(self.data):
-                self.data[idx] = value
-
-        def rolling(self, window):
-            return self
-
-        def mean(self):
-            return self
-
-        def std(self):
-            return self
-
-        def sum(self):
-            return self
-
-        def max(self):
-            return self
-
-        def min(self):
-            return self
-
-        def ewm(self, span=None, adjust=False):
-            return self
-
-        def diff(self):
-            return self
-
-        def shift(self, periods=1):
-            return self
-
-        def pct_change(self):
-            return self
-
-        def cumsum(self):
-            return self
-
-        def fillna(self, value=0, method=None):
-            return self
-
-        def where(self, cond, other):
-            return self
-
-        def replace(self, to_replace, value):
-            return self
-
-        def apply(self, func, raw=False):
-            return self
-
-        def __len__(self):
-            return len(self.data)
-
-        def combine(self, other, func):
-            return self
-
-        def abs(self):
-            return self
-
-        def var(self):
-            return self
-
-        def skew(self):
-            return self
-
-        def kurt(self):
-            return self
-
-        def corr(self, other):
-            return self
-
-        def cov(self, other):
-            return self
-
-
-    class MockDataFrame:
-        def __init__(self, data=None):
-            self.data = data or {}
-            self.columns = list(self.data.keys()) if data else []
-            self.index = None
-            self.empty = len(self.columns) == 0
-
-        def __getitem__(self, key):
-            if key in self.data:
-                return MockSeries(self.data[key])
-            return MockSeries()
-
-        def __setitem__(self, key, value):
-            self.data[key] = value
-            if key not in self.columns:
-                self.columns.append(key)
-
-        def copy(self):
-            return MockDataFrame(self.data.copy())
-
-        def __len__(self):
-            if self.columns:
-                return len(self.data[self.columns[0]])
-            return 0
-
 
     mock_pandas.Series = MockSeries
     mock_pandas.DataFrame = MockDataFrame

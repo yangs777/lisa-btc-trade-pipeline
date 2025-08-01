@@ -1,5 +1,6 @@
 """Tests for I/O abstraction layer."""
 
+import importlib.util
 import os
 import sys
 from unittest.mock import MagicMock, Mock, patch
@@ -11,9 +12,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 # Always mock google.cloud.storage for testing
 HAS_GCS = True
-
-# Import directly from module file
-import importlib.util
 
 spec = importlib.util.spec_from_file_location("_io", "src/data_processing/_io.py")
 if spec and spec.loader:
@@ -135,24 +133,24 @@ class TestGCSStorageClient:
         mock_storage_module = MagicMock()
         mock_client = Mock()
         mock_bucket = Mock()
-        
+
         # Set up the mock hierarchy
         mock_storage_module.Client.return_value = mock_client
         mock_client.bucket.return_value = mock_bucket
-        
+
         # Store for use in tests
         self.mock_storage = mock_storage_module
         self.mock_client = mock_client
         self.mock_bucket = mock_bucket
-        
+
         # Patch the import at the module level
         with patch.dict("sys.modules", {"google.cloud.storage": mock_storage_module}):
             # Force reload of _io module to use mocked storage
             if "src.data_processing._io" in sys.modules:
                 del sys.modules["src.data_processing._io"]
-            
+
             yield
-            
+
             # Clean up after test
             if "src.data_processing._io" in sys.modules:
                 del sys.modules["src.data_processing._io"]
@@ -168,7 +166,7 @@ class TestGCSStorageClient:
 
     def test_init_with_credentials(self):
         """Test initialization with credentials path."""
-        with patch("os.environ", {}) as mock_environ:
+        with patch("os.environ", {}):
             client = GCSStorageClient(
                 bucket_name="test-bucket",
                 project_id="test-project",
