@@ -141,7 +141,13 @@ def mock_pandas_scipy(monkeypatch):
     mock_pandas.NA = None
 
     # Mock scipy.stats
-    mock_scipy_stats.linregress = lambda x, y: (0.1, 30000, 0.9, 0.01, 0.1)  # slope, intercept, r, p, se
+    mock_scipy_stats.linregress = lambda x, y: (
+        0.1,
+        30000,
+        0.9,
+        0.01,
+        0.1,
+    )  # slope, intercept, r, p, se
 
     yield
 
