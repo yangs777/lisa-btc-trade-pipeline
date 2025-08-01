@@ -1,11 +1,11 @@
 """Global test configuration."""
 
+import copy
 import sys
 from unittest.mock import MagicMock
 
-# Import numpy first to avoid conflicts
-# Ensure numpy.typing is available
 import numpy.typing  # noqa
+import pytest
 
 
 # Pre-mock problematic modules before any imports
@@ -63,10 +63,6 @@ def setup_module_mocks() -> None:
 
 # Call this immediately when conftest is loaded
 setup_module_mocks()
-
-# Keep any existing pytest fixtures/configuration below this line
-import copy
-import pytest
 
 
 @pytest.fixture(autouse=True)
