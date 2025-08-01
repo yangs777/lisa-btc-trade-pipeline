@@ -92,6 +92,7 @@ class MockDataFrame:
     def to_parquet(self, path, *args, **kwargs):
         # Create an empty file to satisfy file existence checks
         from pathlib import Path
+
         Path(path).touch()
 
 
@@ -391,52 +392,59 @@ async def test_process_date_with_data(preprocessor, tmp_path):
     preprocessor._upload_blob = MagicMock()
 
     # Mock parse methods to return non-empty MockDataFrames
-    mock_orderbook_df = MockDataFrame({
-        "mid_price": [30000.5],
-        "spread": [1.0],
-        "order_imbalance": [0.0],
-        "best_bid": [30000.0],
-        "best_ask": [30001.0]
-    })
+    mock_orderbook_df = MockDataFrame(
+        {
+            "mid_price": [30000.5],
+            "spread": [1.0],
+            "order_imbalance": [0.0],
+            "best_bid": [30000.0],
+            "best_ask": [30001.0],
+        }
+    )
     mock_orderbook_df.empty = False
     mock_orderbook_df.index = None
 
-    mock_trade_df = MockDataFrame({
-        "price": [30000.5],
-        "quantity": [0.1],
-        "trade_id": [123456789],
-        "is_buyer_maker": [False]
-    })
+    mock_trade_df = MockDataFrame(
+        {"price": [30000.5], "quantity": [0.1], "trade_id": [123456789], "is_buyer_maker": [False]}
+    )
     mock_trade_df.empty = False
     mock_trade_df.index = None
 
     # Mock the parsing methods
-    with patch.object(preprocessor, '_parse_orderbook_data', return_value=mock_orderbook_df):
-        with patch.object(preprocessor, '_parse_trade_data', return_value=mock_trade_df):
+    with patch.object(preprocessor, "_parse_orderbook_data", return_value=mock_orderbook_df):
+        with patch.object(preprocessor, "_parse_trade_data", return_value=mock_trade_df):
             # Mock aggregate and merge to return non-empty result
-            mock_aggregated = MockDataFrame({
-                "open": [30000.5],
-                "high": [30000.5],
-                "low": [30000.5],
-                "close": [30000.5],
-                "volume": [0.1]
-            })
+            mock_aggregated = MockDataFrame(
+                {
+                    "open": [30000.5],
+                    "high": [30000.5],
+                    "low": [30000.5],
+                    "close": [30000.5],
+                    "volume": [0.1],
+                }
+            )
             mock_aggregated.empty = False
 
-            mock_merged = MockDataFrame({
-                "open": [30000.5],
-                "high": [30000.5],
-                "low": [30000.5],
-                "close": [30000.5],
-                "volume": [0.1],
-                "mid_price": [30000.5]
-            })
+            mock_merged = MockDataFrame(
+                {
+                    "open": [30000.5],
+                    "high": [30000.5],
+                    "low": [30000.5],
+                    "close": [30000.5],
+                    "volume": [0.1],
+                    "mid_price": [30000.5],
+                }
+            )
             mock_merged.empty = False
 
-            with patch.object(preprocessor, '_aggregate_trade_features', return_value=mock_aggregated):
-                with patch.object(preprocessor, '_merge_data', return_value=mock_merged):
+            with patch.object(
+                preprocessor, "_aggregate_trade_features", return_value=mock_aggregated
+            ):
+                with patch.object(preprocessor, "_merge_data", return_value=mock_merged):
                     # Process date
-                    result = await preprocessor.process_date(datetime(2023, 11, 15, tzinfo=timezone.utc))
+                    result = await preprocessor.process_date(
+                        datetime(2023, 11, 15, tzinfo=timezone.utc)
+                    )
 
     assert result is not None
     assert "processed/2023/11/15/btcusdt_20231115_1min.parquet" in result
