@@ -5,8 +5,6 @@
 import sys
 from unittest.mock import MagicMock, patch
 
-# Import real numpy to avoid conflicts
-import numpy as np
 import pytest
 
 
@@ -131,25 +129,22 @@ def mock_pandas_scipy(monkeypatch):
     mock_pandas = MagicMock()
     mock_scipy = MagicMock()
     mock_scipy_stats = MagicMock()
-    
+
     # Patch sys.modules
     monkeypatch.setitem(sys.modules, "pandas", mock_pandas)
     monkeypatch.setitem(sys.modules, "scipy", mock_scipy)
     monkeypatch.setitem(sys.modules, "scipy.stats", mock_scipy_stats)
-    
-    # Use real numpy
-    mock_numpy = np
 
     mock_pandas.Series = MockSeries
     mock_pandas.DataFrame = MockDataFrame
     mock_pandas.concat = lambda dfs, axis=1: MockDataFrame()
     mock_pandas.NA = None
-    
+
     # Mock scipy.stats
     mock_scipy_stats.linregress = lambda x, y: (0.1, 30000, 0.9, 0.01, 0.1)  # slope, intercept, r, p, se
-    
+
     yield
-    
+
     # Cleanup happens automatically with monkeypatch
 
 
