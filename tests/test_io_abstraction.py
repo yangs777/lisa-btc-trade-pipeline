@@ -133,11 +133,11 @@ class TestGCSStorageClient:
     def test_has_required_methods(self):
         """Test that GCSStorageClient has all required methods."""
         # Just check that the class has the required methods
-        assert hasattr(GCSStorageClient, 'list_blobs')
-        assert hasattr(GCSStorageClient, 'download_blob')
-        assert hasattr(GCSStorageClient, 'upload_blob')
-        assert hasattr(GCSStorageClient, 'blob_exists')
-        assert hasattr(GCSStorageClient, '__init__')
+        assert hasattr(GCSStorageClient, "list_blobs")
+        assert hasattr(GCSStorageClient, "download_blob")
+        assert hasattr(GCSStorageClient, "upload_blob")
+        assert hasattr(GCSStorageClient, "blob_exists")
+        assert hasattr(GCSStorageClient, "__init__")
 
 
 class TestIntegration:
