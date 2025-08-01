@@ -125,7 +125,7 @@ class TestDrawdownGuard:
 
         max_dd = guard._calculate_max_drawdown()
         # Allow for some numerical error or mocking issues
-        assert max_dd > 0.21 and max_dd < 0.22 or max_dd == 1.0  # 1.0 happens when numpy is mocked
+        assert (0.21 < max_dd < 0.22) or max_dd == 1.0  # 1.0 happens when numpy is mocked
 
     def test_days_in_drawdown(self):
         """Test counting days in drawdown."""
