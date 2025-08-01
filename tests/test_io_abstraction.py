@@ -143,17 +143,9 @@ class TestGCSStorageClient:
         self.mock_client = mock_client
         self.mock_bucket = mock_bucket
 
-        # Patch the import at the module level
+        # Patch google.cloud.storage at import time
         with patch.dict("sys.modules", {"google.cloud.storage": mock_storage_module}):
-            # Force reload of _io module to use mocked storage
-            if "src.data_processing._io" in sys.modules:
-                del sys.modules["src.data_processing._io"]
-
             yield
-
-            # Clean up after test
-            if "src.data_processing._io" in sys.modules:
-                del sys.modules["src.data_processing._io"]
 
     def test_init_without_credentials(self):
         """Test initialization without credentials."""

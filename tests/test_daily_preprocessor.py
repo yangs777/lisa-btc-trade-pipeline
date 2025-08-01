@@ -35,7 +35,7 @@ class MockDataFrame:
             self.data = []
             self.columns = []
             self._items = {}
-        
+
         self.empty = len(self.data) == 0
         self.index = None
 
@@ -128,7 +128,7 @@ def preprocessor(tmp_path):
     """Create a DailyPreprocessor instance with mocked GCS client."""
     # Import here to ensure mocks are in place
     from src.data_processing.daily_preprocessor import DailyPreprocessor
-    
+
     with patch("src.data_processing.daily_preprocessor.storage.Client") as mock_client:
         mock_bucket = MagicMock()
         mock_client.return_value.bucket.return_value = mock_bucket
@@ -139,24 +139,24 @@ def preprocessor(tmp_path):
             local_work_dir=str(tmp_path),
         )
         preprocessor.bucket = mock_bucket
-        
+
         # Add the private methods that are used in tests
         def _download_blob(blob_name, local_path):
             """Mock download blob."""
             blob = mock_bucket.blob(blob_name)
             blob.download_to_filename(str(local_path))
-        
+
         def _upload_blob(local_path, blob_name):
             """Mock upload blob."""
             blob = mock_bucket.blob(blob_name)
             blob.upload_from_filename(str(local_path))
-        
+
         def _list_blobs_for_date(date):
             """Mock list blobs for date."""
             prefix = f"raw/{date.strftime('%Y/%m/%d')}/"
             blobs = mock_bucket.list_blobs(prefix=prefix)
             return [blob.name for blob in blobs]
-        
+
         # Bind methods to instance
         preprocessor._download_blob = _download_blob
         preprocessor._upload_blob = _upload_blob
@@ -389,7 +389,7 @@ async def test_process_date_with_data(preprocessor, tmp_path):
 
     preprocessor._download_blob = MagicMock(side_effect=mock_download)
     preprocessor._upload_blob = MagicMock()
-    
+
     # Mock parse methods to return non-empty MockDataFrames
     mock_orderbook_df = MockDataFrame({
         "mid_price": [30000.5],
@@ -400,7 +400,7 @@ async def test_process_date_with_data(preprocessor, tmp_path):
     })
     mock_orderbook_df.empty = False
     mock_orderbook_df.index = None
-    
+
     mock_trade_df = MockDataFrame({
         "price": [30000.5],
         "quantity": [0.1],
@@ -409,7 +409,7 @@ async def test_process_date_with_data(preprocessor, tmp_path):
     })
     mock_trade_df.empty = False
     mock_trade_df.index = None
-    
+
     # Mock the parsing methods
     with patch.object(preprocessor, '_parse_orderbook_data', return_value=mock_orderbook_df):
         with patch.object(preprocessor, '_parse_trade_data', return_value=mock_trade_df):
@@ -422,7 +422,7 @@ async def test_process_date_with_data(preprocessor, tmp_path):
                 "volume": [0.1]
             })
             mock_aggregated.empty = False
-            
+
             mock_merged = MockDataFrame({
                 "open": [30000.5],
                 "high": [30000.5],
@@ -432,7 +432,7 @@ async def test_process_date_with_data(preprocessor, tmp_path):
                 "mid_price": [30000.5]
             })
             mock_merged.empty = False
-            
+
             with patch.object(preprocessor, '_aggregate_trade_features', return_value=mock_aggregated):
                 with patch.object(preprocessor, '_merge_data', return_value=mock_merged):
                     # Process date
@@ -462,7 +462,7 @@ def test_empty_dataframe_handling(preprocessor):
 def test_init_with_credentials(preprocessor):
     """Test initialization with credentials path."""
     from src.data_processing.daily_preprocessor import DailyPreprocessor
-    
+
     with patch("os.environ") as mock_environ:
         with patch("src.data_processing.daily_preprocessor.storage.Client"):
             DailyPreprocessor(
@@ -480,7 +480,7 @@ def test_init_with_credentials(preprocessor):
 def test_init_error_handling():
     """Test initialization error handling."""
     from src.data_processing.daily_preprocessor import DailyPreprocessor
-    
+
     with patch("src.data_processing.daily_preprocessor.storage.Client") as mock_client:
         mock_client.side_effect = Exception("GCS connection failed")
 
@@ -505,7 +505,7 @@ def test_parse_orderbook_with_invalid_data(preprocessor, tmp_path):
     # Mock the method to avoid real pandas operations
     with patch.object(preprocessor, "_parse_orderbook_data") as mock_parse:
         mock_parse.return_value = MockDataFrame()
-        result = preprocessor._parse_orderbook_data(file_path)
+        preprocessor._parse_orderbook_data(file_path)
         mock_parse.assert_called_once_with(file_path)
         # Should handle errors gracefully and return empty or partial data
 
@@ -525,7 +525,7 @@ def test_parse_trade_with_type_errors(preprocessor, tmp_path):
     # Mock the method to avoid real pandas operations
     with patch.object(preprocessor, "_parse_trade_data") as mock_parse:
         mock_parse.return_value = MockDataFrame()
-        result = preprocessor._parse_trade_data(file_path)
+        preprocessor._parse_trade_data(file_path)
         mock_parse.assert_called_once_with(file_path)
         # Should handle type errors gracefully
 
